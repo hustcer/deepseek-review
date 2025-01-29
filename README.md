@@ -20,7 +20,7 @@ jobs:
     name: Code Review
     steps:
       - name: Deepseek Code Review
-        uses: hustcer/deepseek-review@develop
+        uses: hustcer/deepseek-review@v1
         with:
           deepseek-token: ${{ secrets.DEEPSEEK_TOKEN }}
 ```

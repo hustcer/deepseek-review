@@ -14,8 +14,6 @@ permissions:
 
 jobs:
   setup-deepseek-review:
-    strategy:
-      fail-fast: false
     runs-on: ubuntu-latest
     name: Code Review
     steps:
