@@ -1,5 +1,5 @@
 # Description:
-#   - Setup Moonbit with GitHub Actions
+#   - Deepseek code review with GitHub Actions
 # REF:
 #   - https://github.com/marketplace/actions/checkout
 
@@ -20,11 +20,8 @@ jobs:
     strategy:
       fail-fast: false
     runs-on: ubuntu-latest
-    name: Deepseek Code Review
+    name: Code Review
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Deepseek Code Review
         uses: hustcer/deepseek-review@develop
         with:
