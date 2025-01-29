@@ -91,13 +91,13 @@ export def deepseek-review [
   }
   let review = $response | get -i choices.0.message.content
   if ($env.GITHUB_ACTIONS? != 'true') {
-    print $'Code review result:'; hr-line
+    print $'Code Review Result:'; hr-line
     print $review
   } else {
     gh pr comment $pr_number --body $review --repo $repo
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
   }
-  print $'(char nl)Usage Info:'; hr-line
+  print $'(char nl)Token Usage Info:'; hr-line
   $response.usage | table -e | print
 }
 
