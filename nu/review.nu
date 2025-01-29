@@ -11,6 +11,9 @@
 # Env vars:
 #  GITHUB_TOKEN: Your GitHub API token
 #  DEEPSEEK_TOKEN: Your Deepseek API token
+#  BASE_URL: Deepseek API base URL
+#  SYSTEM_PROMPT: System prompt message
+#  USER_PROMPT: User prompt message
 # Usage:
 #  1. Local: just cr
 #  2. Local: just cr -f HEAD~1 --debug
