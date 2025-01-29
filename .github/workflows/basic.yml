@@ -23,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Deepseek Code Review
+      - name: Deepseek Code Review
         uses: hustcer/deepseek-review@main
         with:
           deepseek-token: ${{ secrets.DEEPSEEK_TOKEN }}
