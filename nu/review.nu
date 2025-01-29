@@ -45,9 +45,9 @@ export def deepseek-review [
     return
   }
   let hint = if ($env.GITHUB_ACTIONS? != 'true') {
-    $'🚀 Start code review for local changes by Deepseek AI ...'
+    $'🚀 Initiate the code review by Deepseek AI for local changes ...'
   } else {
-    $'🚀 Start code review for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) by Deepseek AI ...'
+    $'🚀 Initiate the code review by Deepseek AI for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) ...'
   }
   print $hint; print -n (char nl)
   $env.GITHUB_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
