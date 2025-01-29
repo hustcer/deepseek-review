@@ -7,9 +7,6 @@ name: Code Review@Dev
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
-  push:
-    branches:
-      - main
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
 permissions:
