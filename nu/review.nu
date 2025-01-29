@@ -5,7 +5,8 @@
 #   [√] Deepseek code reivew for Github PRs
 #   [√] Deepseek code reivew for local commit changes
 #   [√] Debug mode
-#   [√] Output usage info
+#   [√] Output token usage info
+#   [ ] Add more action outputs
 # Description: A script to do code review by deepseek
 # Env vars:
 #  GITHUB_TOKEN: Your Github API token
