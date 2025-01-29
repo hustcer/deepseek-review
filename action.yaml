@@ -52,7 +52,6 @@ runs:
         let baseUrl = '${{inputs.base-url}}'
         let token = '${{inputs.deepseek-token}}'
         let sysPrompt = '${{inputs.sys-prompt}}'
-        let ghToken = '${{secrets.GITHUB_TOKEN}}'
         let userPrompt = '${{inputs.user-prompt}}'
         let repo = '${{ github.repository }}'
         let pr = '${{ github.event.pull_request.number }}'
@@ -60,7 +59,6 @@ runs:
           --model $model
           --repo $repo
           --pr-number $pr
-          --gh-token $ghToken
           --base-url $baseUrl
           --sys-prompt $sysPrompt
           --user-prompt $userPrompt
