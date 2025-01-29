@@ -3,7 +3,7 @@
 # REF:
 #   - https://github.com/marketplace/actions/checkout
 
-name: Code Review@Dev
+name: Code Review
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
