@@ -2,14 +2,14 @@
 # Author: hustcer
 # Created: 2025/01/29 13:02:15
 # TODO:
-#   [√] Deepseek code reivew for Github PRs
-#   [√] Deepseek code reivew for local commit changes
+#   [√] Deepseek code review for GitHub PRs
+#   [√] Deepseek code review for local commit changes
 #   [√] Debug mode
 #   [√] Output token usage info
 #   [ ] Add more action outputs
 # Description: A script to do code review by deepseek
 # Env vars:
-#  GITHUB_TOKEN: Your Github API token
+#  GITHUB_TOKEN: Your GitHub API token
 #  DEEPSEEK_TOKEN: Your Deepseek API token
 # Usage:
 #  1. Local: just cr
@@ -27,9 +27,9 @@ const DEFAULT_OPTIONS = {
 export def deepseek-review [
   token?: string,       # Your Deepseek API token, fallback to DEEPSEEK_TOKEN
   --debug(-d),          # Debug mode
-  --repo: string,       # Github repository name, e.g. hustcer/deepseek-review
-  --pr-number: string,  # Github PR number
-  --gh-token: string,   # Your Github token, GITHUB_TOKEN by default
+  --repo: string,       # GitHub repository name, e.g. hustcer/deepseek-review
+  --pr-number: string,  # GitHub PR number
+  --gh-token: string,   # Your GitHub token, GITHUB_TOKEN by default
   --diff-to(-t): string,       # Diff to git ref
   --diff-from(-f): string,     # Diff from git ref
   --model: string = $DEFAULT_OPTIONS.MODEL,   # Model name, deepseek-chat by default

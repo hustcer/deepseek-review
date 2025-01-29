@@ -15,7 +15,7 @@ export def 'make-release' [
   --update-log(-u)    # Add flag to enable updating CHANGELOG.md
 ] {
 
-  cd $env.DEEPSEEK_REIVEW_PATH
+  cd $env.DEEPSEEK_REVIEW_PATH
   let releaseVer = (open meta.json | get actionVer)
 
   if (has-ref $releaseVer) {

@@ -6,5 +6,9 @@
 words:
 - justfile
 - lefthook
-
+- deepseek
+- hustcer
+- endfor
+- dotenv
+- linewise
 ignorePaths:

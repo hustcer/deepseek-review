@@ -26,7 +26,7 @@ alias cr := code-review
 # Use `just --evaluate` to show env vars
 
 # Used to handle the path separator issue
-DEEPSEEK_REIVEW_PATH := parent_directory(justfile())
+DEEPSEEK_REVIEW_PATH := parent_directory(justfile())
 NU_DIR := parent_directory(`(which nu).path.0`)
 _query_plugin := if os_family() == 'windows' { 'nu_plugin_query.exe' } else { 'nu_plugin_query' }
 
@@ -40,12 +40,12 @@ default:
 
 # Release a new version for `deepseek-review`
 release *OPTIONS:
-  @overlay use {{ join(DEEPSEEK_REIVEW_PATH, 'nu', 'release.nu') }}; \
+  @overlay use {{ join(DEEPSEEK_REVIEW_PATH, 'nu', 'release.nu') }}; \
     make-release {{OPTIONS}}
 
 # Code review for GitHub PRs or local changes
 code-review *OPTIONS:
-  @overlay use {{ join(DEEPSEEK_REIVEW_PATH, 'nu', 'review.nu') }}; \
+  @overlay use {{ join(DEEPSEEK_REVIEW_PATH, 'nu', 'review.nu') }}; \
     deepseek-review {{OPTIONS}}
 
 # Plugins need to be registered only once after nu v0.61
