@@ -2,6 +2,10 @@
 
 [中文说明](README.zh-CN.md)
 
+## Code Review Locally
+
+To be updated ...
+
 ## Code Review with GitHub Action
 
 ```yaml
