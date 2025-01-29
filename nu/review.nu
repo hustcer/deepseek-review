@@ -18,8 +18,8 @@
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-chat',
   BASE_URL: 'https://api.deepseek.com',
-  USER_PROMPT: 'Please review the following code changes：',
-  SYS_PROMPT: '你是一个专业的代码审查助手，负责分析GitHub Pull Request的代码变更，指出潜在的问题，如代码风格、逻辑错误、安全漏洞，并提供改进建议。请用简洁明了的语言列出问题及建议。',
+  USER_PROMPT: 'Please review the following code changes:',
+  SYS_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.',
 }
 
 # Use Deepseek AI to review code changes
@@ -96,7 +96,7 @@ export def deepseek-review [
     gh pr comment $pr_number --body $review --repo $repo
     print $'✅ Code review finished！PR #($pr_number) review result was posted as a comment.'
   }
-  print '(char nl)Usage Info:'; hr-line
+  print $'(char nl)Usage Info:'; hr-line
   $response.usage | table -e | print
 }
 
