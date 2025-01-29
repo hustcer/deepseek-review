@@ -6,7 +6,7 @@
 name: Code Review@Dev
 on:
   pull_request_target:
-    types: [opened]
+    types: [opened, synchronize]
   push:
     branches:
       - main
@@ -18,7 +18,7 @@ jobs:
       matrix:
         os: [macos-latest]
     runs-on: ${{ matrix.os }}
-    name: Deepseek Code Review@${{ matrix.os }}
+    name: Deepseek Code Review
     steps:
       - name: Checkout
         uses: actions/checkout@v4
