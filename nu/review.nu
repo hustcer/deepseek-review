@@ -51,7 +51,7 @@ export def deepseek-review [
   print $hint; print -n (char nl)
   $env.GITHUB_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
   let diff_content = if ($pr_number | is-not-empty) {
-      GH_TOKEN=$env.GH_TOKEN gh pr diff $pr_number --repo $repo | str trim
+      gh pr diff $pr_number --repo $repo | str trim
     } else if ($diff_from | is-not-empty) {
       git diff $diff_from ($diff_to | default HEAD)
     } else { git diff }
@@ -93,7 +93,7 @@ export def deepseek-review [
     print $'Code review result:'; hr-line
     print $review
   } else {
-    GH_TOKEN=$env.GH_TOKEN gh pr comment $pr_number --body $review --repo $repo
+    gh pr comment $pr_number --body $review --repo $repo
     print $'✅ Code review finished！PR #($pr_number) review result was posted as a comment.'
   }
   print '(char nl)Usage Info:'; hr-line
