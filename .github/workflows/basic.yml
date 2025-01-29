@@ -19,15 +19,13 @@ jobs:
   setup-deepseek-review:
     strategy:
       fail-fast: false
-      matrix:
-        os: [macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     name: Deepseek Code Review
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Deepseek Code Review
-        uses: hustcer/deepseek-review@main
+        uses: hustcer/deepseek-review@develop
         with:
           deepseek-token: ${{ secrets.DEEPSEEK_TOKEN }}
