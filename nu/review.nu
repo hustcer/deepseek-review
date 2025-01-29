@@ -24,11 +24,11 @@ const DEFAULT_OPTIONS = {
 
 # Use Deepseek AI to review code changes
 export def deepseek-review [
-  token?: string,     # Your Deepseek API token, fallback to DEEPSEEK_TOKEN
-  --debug(-d),        # Debug mode
-  --repo: string,     # Github repository name, e.g. hustcer/deepseek-review
-  --pr-number: int,   # Github PR number
-  --gh-token: string, # Your Github token, GITHUB_TOKEN by default
+  token?: string,       # Your Deepseek API token, fallback to DEEPSEEK_TOKEN
+  --debug(-d),          # Debug mode
+  --repo: string,       # Github repository name, e.g. hustcer/deepseek-review
+  --pr-number: string,  # Github PR number
+  --gh-token: string,   # Your Github token, GITHUB_TOKEN by default
   --diff-to(-t): string,       # Diff to git ref
   --diff-from(-f): string,     # Diff from git ref
   --model: string = $DEFAULT_OPTIONS.MODEL,   # Model name, deepseek-chat by default
@@ -42,6 +42,12 @@ export def deepseek-review [
     print $'(ansi r)Please provide your Deepseek API token by setting `DEEPSEEK_TOKEN` or passing it as an argument.(ansi reset)'
     return
   }
+  let hint = if ($env.GITHUB_ACTIONS? != 'true') {
+    $'🚀 Start code review for local changes by Deepseek AI ...'
+  } else {
+    $'🚀 Start code review for PR #($pr_number) in ($repo) by Deepseek AI ...'
+  }
+  print $hint; print -n (char nl)
   $env.GITHUB_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
   let diff_content = if ($pr_number | is-not-empty) {
       gh pr diff $pr_number --repo $repo | str trim
@@ -49,7 +55,7 @@ export def deepseek-review [
       git diff $diff_from ($diff_to | default HEAD)
     } else { git diff }
   if ($diff_content | is-empty) {
-    print $'(ansi r)Please provide the diff content by passing `--diff` or `--pr-number`.(ansi reset)'
+    print $'(ansi r)Please provide the diff content by passing `--pr-number`.(ansi reset)'
     return
   }
   let payload = {
@@ -60,13 +66,6 @@ export def deepseek-review [
       { role: 'user', content: $"($user_prompt):\n($diff_content)" }
     ]
   }
-  let hint = if ($env.GITHUB_ACTIONS? != 'true') {
-    $'🚀 Start code review for local changes by Deepseek AI ...'
-  } else {
-    $'🚀 Start code review for PR #($pr_number) in ($repo) by Deepseek AI ...'
-  }
-
-  print $hint; print -n (char nl)
   if $debug {
     print $'Code Changes:'; hr-line; print $diff_content
   }
