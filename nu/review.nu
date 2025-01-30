@@ -52,12 +52,20 @@ export def --env deepseek-review [
   --sys-prompt(-s): string = $DEFAULT_OPTIONS.SYS_PROMPT,
   --user-prompt(-u): string = $DEFAULT_OPTIONS.USER_PROMPT,
 ] {
-
+  $env.config.table.mode = 'psql'
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
   let token = $token | default $env.DEEPSEEK_TOKEN?
   let repo = $repo | default $env.DEFAULT_GITHUB_REPO?
   let header = [Authorization $'Bearer ($token)']
   let url = $'($base_url)/chat/completions'
+  let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
+  let setting = {
+    repo: $repo,
+    diff_to: $diff_to,
+    diff_from: $diff_from,
+    pr_number: $pr_number,
+    local_repo: $local_repo,
+  }
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
   if ($token | is-empty) {
     print $'(ansi r)Please provide your Deepseek API token by setting `DEEPSEEK_TOKEN` or passing it as an argument.(ansi reset)'
@@ -67,12 +75,14 @@ export def --env deepseek-review [
     print $'(ansi r)Please install GitHub CLI from https://cli.github.com (ansi reset)'
     return
   }
-  let hint = if not $is_action {
+  let hint = if not $is_action and ($pr_number | is-empty) {
     $'🚀 Initiate the code review by Deepseek AI for local changes ...'
   } else {
     $'🚀 Initiate the code review by Deepseek AI for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) ...'
   }
   print $hint; print -n (char nl)
+  if ($pr_number | is-empty) { $setting | compact-record | reject repo | print }
+
   let diff_content = get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to --diff-from $diff_from
   let payload = {
     model: $model,
@@ -82,9 +92,7 @@ export def --env deepseek-review [
       { role: 'user', content: $"($user_prompt):\n($diff_content)" }
     ]
   }
-  if $debug {
-    print $'Code Changes:'; hr-line; print $diff_content
-  }
+  if $debug { print $'Code Changes:'; hr-line; print $diff_content }
   print $'(char nl)(ansi g)Waiting for response from Deepseek ...(ansi reset)'
   let response = http post -e -H $header -t application/json $url $payload
   if ($response | is-empty) {
@@ -92,10 +100,7 @@ export def --env deepseek-review [
     exit $ECODE.SERVER_ERROR
     return
   }
-  if $debug {
-    print $'Deepseek Response:'; hr-line
-    $response | table -e | print
-  }
+  if $debug { print $'Deepseek Response:'; hr-line; $response | table -e | print }
   if ($response | describe) == 'string' {
     print $'❌ Code review failed！Error: '; hr-line; print $response
     exit $ECODE.SERVER_ERROR
@@ -103,8 +108,7 @@ export def --env deepseek-review [
   }
   let review = $response | get -i choices.0.message.content
   if not $is_action {
-    print $'Code Review Result:'; hr-line
-    print $review
+    print $'Code Review Result:'; hr-line; print $review
   } else {
     gh pr comment $pr_number --body $review --repo $repo
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
@@ -152,6 +156,13 @@ export def get-diff [
     exit $ECODE.SUCCESS
   }
   $diff_content
+}
+
+# Compact the record by removing empty columns
+export def compact-record [] {
+  let record = $in
+  let empties = $record | columns | filter {|it| $record | get $it | is-empty }
+  $record | reject ...$empties
 }
 
 # Check if some command available in current shell

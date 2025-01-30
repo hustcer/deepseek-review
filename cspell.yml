@@ -4,13 +4,14 @@
 #   npx cspell --no-progress .
 
 words:
+- psql
 - ECODE
+- endfor
+- dotenv
+- hustcer
+- Nushell
 - justfile
 - lefthook
 - deepseek
-- hustcer
-- endfor
-- dotenv
-- Nushell
 - linewise
 ignorePaths:
