@@ -2,6 +2,14 @@
 
 [中文说明](README.zh-CN.md)
 
+## Features
+
+- Automate PR Reviews with Deepseek via GitHub Action
+- Review Remote GitHub PRs Directly from Your Local CLI
+- Analyze Commit Changes with Deepseek for Any Local Repository with CLI
+- Fully Customizable: Choose Models, Base URLs, and Prompts
+- Supports Self-Hosted Deepseek Models for Enhanced Flexibility
+
 ## Code Review Locally
 
 To be updated ...

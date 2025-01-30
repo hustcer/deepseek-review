@@ -1,5 +1,13 @@
 # Deepseek Code Review
 
+## 特性
+
+- 通过 GitHub Action 使用 Deepseek 进行自动化 PR 审查
+- 通过本地 CLI 直接审查远程 GitHub PR
+- 通过本地 CLI 使用 Deepseek 分析任何本地仓库的提交变更
+- 完全可定制：选择模型、基础 URL 和提示词
+- 支持自托管 Deepseek 模型，提供更强的灵活性
+
 ## 在本机进行 Code Review
 
 未完待续 ...
