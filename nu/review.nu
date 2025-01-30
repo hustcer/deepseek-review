@@ -41,13 +41,18 @@ export def deepseek-review [
   --user-prompt: string = $DEFAULT_OPTIONS.USER_PROMPT,
 ] {
 
+  let is_action = ($env.GITHUB_ACTIONS? == 'true')
   let token = $token | default $env.DEEPSEEK_TOKEN?
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
   if ($token | is-empty) {
     print $'(ansi r)Please provide your Deepseek API token by setting `DEEPSEEK_TOKEN` or passing it as an argument.(ansi reset)'
     return
   }
-  let hint = if ($env.GITHUB_ACTIONS? != 'true') {
+  if $is_action and not (is-installed gh) {
+    print $'(ansi r)Please install GitHub CLI from https://cli.github.com (ansi reset)'
+    return
+  }
+  let hint = if not $is_action {
     $'🚀 Initiate the code review by Deepseek AI for local changes ...'
   } else {
     $'🚀 Initiate the code review by Deepseek AI for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) ...'
@@ -92,7 +97,7 @@ export def deepseek-review [
     return
   }
   let review = $response | get -i choices.0.message.content
-  if ($env.GITHUB_ACTIONS? != 'true') {
+  if not $is_action {
     print $'Code Review Result:'; hr-line
     print $review
   } else {
