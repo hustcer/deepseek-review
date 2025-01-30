@@ -12,7 +12,35 @@
 
 ## Local Code Review
 
-To be updated ...
+More detail to be updated ...
+
+Use Deepseek AI to review code changes
+
+Usage:
+  > deepseek-review {flags} (token)
+
+Flags:
+  -d, --debug: Debug mode
+  -r, --repo <string>: GitHub repository name, e.g. hustcer/deepseek-review
+  -n, --pr-number <string>: GitHub PR number
+  --gh-token <string>: Your GitHub token, GITHUB_TOKEN by default
+  -t, --diff-to <string>: Diff to git REF
+  -f, --diff-from <string>: Diff from git REF
+  -m, --model <string>: Model name, deepseek-chat by default (default: 'deepseek-chat')
+  --base-url <string> (default: 'https://api.deepseek.com')
+  -s, --sys-prompt <string> (default: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.')
+  -u, --user-prompt <string> (default: 'Please review the following code changes:')
+  -h, --help: Display the help message for this command
+
+Parameters:
+  token <string>: Your Deepseek API token, fallback to DEEPSEEK_TOKEN (optional)
+
+Input/output types:
+  ╭───┬───────┬────────╮
+  │ # │ input │ output │
+  ├───┼───────┼────────┤
+  │ 0 │ any   │ any    │
+  ╰───┴───────┴────────╯
 
 ## Code Review with GitHub Action
 
