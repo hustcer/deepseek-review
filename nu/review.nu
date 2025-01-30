@@ -55,6 +55,7 @@ export def --env deepseek-review [
 
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
   let token = $token | default $env.DEEPSEEK_TOKEN?
+  let repo = $repo | default $env.DEFAULT_GITHUB_REPO?
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
   if ($token | is-empty) {
     print $'(ansi r)Please provide your Deepseek API token by setting `DEEPSEEK_TOKEN` or passing it as an argument.(ansi reset)'
@@ -119,6 +120,8 @@ export def get-diff [
   --diff-to: string,       # Diff to git ref
   --diff-from: string,     # Diff from git ref
 ] {
+  let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
+  cd $local_repo
   let diff_content = if ($pr_number | is-not-empty) {
       if ($repo | is-empty) {
         print $'(ansi r)Please provide the GitHub repository name by `--repo` option.(ansi reset)'
@@ -135,8 +138,8 @@ export def get-diff [
         exit $ECODE.INVALID_PARAMETER
       }
       git diff $diff_from ($diff_to | default HEAD)
-    } else if not (git-check (pwd) --check-repo=1) {
-      print $'Current directory (pwd) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
+    } else if not (git-check $local_repo --check-repo=1) {
+      print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
       exit $ECODE.CONDITION_NOT_SATISFIED
     } else { git diff }
 
