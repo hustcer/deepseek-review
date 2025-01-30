@@ -44,10 +44,10 @@ jobs:
 | deepseek-token | String | Required, Deepseek API Token                                            |
 | model          | String | Optional, the model used for code review, defaults to `deepseek-chat`   |
 | base-url       | String | Optional, Deepseek API Base URL, defaults to `https://api.deepseek.com` |
-| sys-prompt     | String | Optional, system prompt corresponding to `$sys_prompt` in the input, default value see note below |
-| user-prompt    | String | Optional, user prompt corresponding to `$user_prompt` in the input, default value see note below |
+| sys-prompt     | String | Optional, system prompt corresponding to `$sys_prompt` in the payload, default value see note below |
+| user-prompt    | String | Optional, user prompt corresponding to `$user_prompt` in the payload, default value see note below |
 
-**API Call Input**:
+**Deepseek API Call Payload**:
 
 ```js
 {

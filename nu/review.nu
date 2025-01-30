@@ -40,17 +40,17 @@ const DEFAULT_OPTIONS = {
 
 # Use Deepseek AI to review code changes
 export def --env deepseek-review [
-  token?: string,       # Your Deepseek API token, fallback to DEEPSEEK_TOKEN
-  --debug(-d),          # Debug mode
-  --repo: string,       # GitHub repository name, e.g. hustcer/deepseek-review
-  --pr-number: string,  # GitHub PR number
-  --gh-token: string,   # Your GitHub token, GITHUB_TOKEN by default
-  --diff-to(-t): string,       # Diff to git ref
-  --diff-from(-f): string,     # Diff from git ref
-  --model: string = $DEFAULT_OPTIONS.MODEL,   # Model name, deepseek-chat by default
+  token?: string,           # Your Deepseek API token, fallback to DEEPSEEK_TOKEN
+  --debug(-d),              # Debug mode
+  --repo(-r): string,       # GitHub repository name, e.g. hustcer/deepseek-review
+  --pr-number(-n): string,  # GitHub PR number
+  --gh-token: string,       # Your GitHub token, GITHUB_TOKEN by default
+  --diff-to(-t): string,    # Diff to git REF
+  --diff-from(-f): string,  # Diff from git REF
+  --model(-m): string = $DEFAULT_OPTIONS.MODEL,   # Model name, deepseek-chat by default
   --base-url: string = $DEFAULT_OPTIONS.BASE_URL,
-  --sys-prompt: string = $DEFAULT_OPTIONS.SYS_PROMPT,
-  --user-prompt: string = $DEFAULT_OPTIONS.USER_PROMPT,
+  --sys-prompt(-s): string = $DEFAULT_OPTIONS.SYS_PROMPT,
+  --user-prompt(-u): string = $DEFAULT_OPTIONS.USER_PROMPT,
 ] {
 
   let is_action = ($env.GITHUB_ACTIONS? == 'true')

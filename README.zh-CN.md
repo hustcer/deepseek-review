@@ -45,7 +45,7 @@ jobs:
 | sys-prompt     | String | 可选，系统 Prompt 对应入参中的 `$sys_prompt`, 默认值见后文注释      |
 | user-prompt    | String | 可选，用户 Prompt 对应入参中的 `$user_prompt`, 默认值见后文注释     |
 
-接口调用入参:
+Deepseek 接口调用入参:
 
 ```js
 {
