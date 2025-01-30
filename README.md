@@ -18,7 +18,13 @@
 
 ## Local Code Review
 
-**More details to be updated** ...
+### Required Tools
+
+To perform code reviews locally, you need to install the following tools:
+
+- [`Nushell`](https://www.nushell.sh/book/installation.html) & [`Just`](https://just.systems/man/en/packages.html). It is recommended to install the latest versions.
+- If you need to review GitHub PRs locally, you also need to install [`gh`](https://cli.github.com/).
+- Once the tools are installed, simply clone this repository to your local machine, navigate to the repository directory, and run `just code-review -h` or `just cr -h`. You should see an output similar to the following:
 
 ```console
 Use Deepseek AI to review code changes
@@ -42,6 +48,25 @@ Flags:
 Parameters:
   token <string>: Your Deepseek API token, fallback to DEEPSEEK_TOKEN (optional)
 
+```
+
+### Environment Configuration
+
+To perform code reviews locally, you need to modify the configuration file. A sample configuration file `.env.example` is already provided in the repository. Copy it to `.env` and adjust it according to your actual setup.
+
+### Usage Examples
+
+```sh
+# Perform code review on the `git diff` changes in the local DEFAULT_LOCAL_REPO repo
+just cr
+# Perform code review on the `git diff f536acc` changes in the local DEFAULT_LOCAL_REPO repo
+just cr --diff-from f536acc
+# Perform code review on the `git diff f536acc 0dd0eb5` changes in the local DEFAULT_LOCAL_REPO repo
+just cr --diff-from f536acc --diff-to 0dd0eb5
+# Perform code review on PR #31 in the remote DEFAULT_GITHUB_REPO repo
+just cr --pr-number 31
+# Perform code review on PR #31 in the remote hustcer/deepseek-review repo
+just cr --pr-number 31 --repo hustcer/deepseek-review
 ```
 
 ## Code Review with GitHub Action

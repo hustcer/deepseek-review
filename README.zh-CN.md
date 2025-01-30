@@ -1,4 +1,4 @@
-# Deepseek Code Review
+# Deepseek 代码审核
 
 ## 特性
 
@@ -14,9 +14,15 @@
 - [ ] **通过提交信息跳过代码审查**：在提交信息中添加 `skip cr` 或 `skip review` 以跳过该 PR 的代码审查
 - [ ] **忽略指定文件变更**：忽略对指定文件的更改，例如 `Cargo.lock`、`pnpm-lock.yaml` 等
 
-## 本地 Code Review
+## 本地代码审核
 
-**未完待续** ...
+### 依赖工具
+
+在本地进行代码审核需要安装以下工具：
+
+- [`Nushell`](https://www.nushell.sh/book/installation.html) & [`Just`](https://just.systems/man/en/packages.html), 建议安装最新版本
+- 如果你需要在本地审核 GitHub PRs 还需要安装 [`gh`](https://cli.github.com/)
+- 接下来只需要把本仓库代码克隆到本地，然后进入仓库目录执行 `just code-review -h` 或者 `just cr -h` 即可看到类似如下输出:
 
 ```console
 Use Deepseek AI to review code changes
@@ -40,6 +46,25 @@ Flags:
 Parameters:
   token <string>: Your Deepseek API token, fallback to DEEPSEEK_TOKEN (optional)
 
+```
+
+### 环境配置
+
+在本地进行代码审核需要先修改配置文件，仓库里已经有了 `.env.example` 配置文件示例，将其拷贝到 `.env` 然后根据自己的实际情况进行修改即可。
+
+### 使用举例
+
+```sh
+# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff` 修改内容进行代码审核
+just cr
+# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc` 修改内容进行代码审核
+just cr --diff-from f536acc
+# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审核
+just cr --diff-from f536acc --diff-to 0dd0eb5
+# 对远程 DEFAULT_GITHUB_REPO 仓库编号为 31 的 PR 进行代码审核
+just cr --pr-number 31
+# 对远程 hustcer/deepseek-review 仓库编号为 31 的 PR 进行代码审核
+just cr --pr-number 31 --repo hustcer/deepseek-review
 ```
 
 ## 通过 GitHub Action 进行代码审核

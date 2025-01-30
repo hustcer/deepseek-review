@@ -170,6 +170,7 @@ export def git-check [
       exit $ECODE.CONDITION_NOT_SATISFIED
     }
   }
+  true
 }
 
 # Check if a git repo has the specified ref: could be a branch or tag, etc.
