@@ -4,6 +4,7 @@
 #   npx cspell --no-progress .
 
 words:
+- ECODE
 - justfile
 - lefthook
 - deepseek

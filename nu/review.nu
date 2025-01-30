@@ -19,6 +19,18 @@
 #  2. Local: just cr -f HEAD~1 --debug
 #
 
+# Commonly used exit codes
+const ECODE = {
+  SUCCESS: 0,
+  OUTDATED: 1,
+  MISSING_BINARY: 2,
+  MISSING_DEPENDENCY: 3,
+  CONDITION_NOT_SATISFIED: 5,
+  SERVER_ERROR: 6,
+  INVALID_PARAMETER: 7,
+  AUTH_FAILED: 8,
+}
+
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-chat',
   BASE_URL: 'https://api.deepseek.com',
@@ -27,7 +39,7 @@ const DEFAULT_OPTIONS = {
 }
 
 # Use Deepseek AI to review code changes
-export def deepseek-review [
+export def --env deepseek-review [
   token?: string,       # Your Deepseek API token, fallback to DEEPSEEK_TOKEN
   --debug(-d),          # Debug mode
   --repo: string,       # GitHub repository name, e.g. hustcer/deepseek-review
@@ -58,15 +70,7 @@ export def deepseek-review [
     $'🚀 Initiate the code review by Deepseek AI for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) ...'
   }
   print $hint; print -n (char nl)
-  let diff_content = if ($pr_number | is-not-empty) {
-      gh pr diff $pr_number --repo $repo | str trim
-    } else if ($diff_from | is-not-empty) {
-      git diff $diff_from ($diff_to | default HEAD)
-    } else { git diff }
-  if ($diff_content | is-empty) {
-    print $'(ansi r)Please provide the diff content by passing `--pr-number`.(ansi reset)'
-    return
-  }
+  let diff_content = get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to --diff-from $diff_from
   let payload = {
     model: $model,
     stream: false,
@@ -84,7 +88,7 @@ export def deepseek-review [
   let response = http post -e -H $header -t application/json $url $payload
   if ($response | is-empty) {
     print $'(ansi r)Oops, No response returned from Deepseek API.(ansi reset)'
-    exit 1
+    exit $ECODE.SERVER_ERROR
     return
   }
   if $debug {
@@ -93,7 +97,7 @@ export def deepseek-review [
   }
   if ($response | describe) == 'string' {
     print $'❌ Code review failed！Error: '; hr-line; print $response
-    exit 1
+    exit $ECODE.SERVER_ERROR
     return
   }
   let review = $response | get -i choices.0.message.content
@@ -108,9 +112,71 @@ export def deepseek-review [
   $response.usage | table -e | print
 }
 
+# Get the diff content from GitHub PR or local git changes
+export def get-diff [
+  --pr-number: string,  # GitHub PR number
+  --repo: string,       # GitHub repository name
+  --diff-to: string,       # Diff to git ref
+  --diff-from: string,     # Diff from git ref
+] {
+  let diff_content = if ($pr_number | is-not-empty) {
+      gh pr diff $pr_number --repo $repo | str trim
+    } else if ($diff_from | is-not-empty) {
+      if not (has-ref $diff_from) {
+        print $'(ansi r)The specified git ref ($diff_from) does not exist, please check it again.(ansi reset)'
+        exit $ECODE.INVALID_PARAMETER
+      }
+      if ($diff_to | is-not-empty) and not (has-ref $diff_to) {
+        print $'(ansi r)The specified git ref ($diff_to) does not exist, please check it again.(ansi reset)'
+        exit $ECODE.INVALID_PARAMETER
+      }
+      git diff $diff_from ($diff_to | default HEAD)
+    } else if not (git-check (pwd) --check-repo=1) {
+      print $'Current directory (pwd) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
+      exit $ECODE.CONDITION_NOT_SATISFIED
+    } else { git diff }
+
+  if ($diff_content | is-empty) {
+    print $'(ansi g)Nothing to review.(ansi reset)'
+    exit $ECODE.SUCCESS
+  }
+  $diff_content
+}
+
 # Check if some command available in current shell
 export def is-installed [ app: string ] {
   (which $app | length) > 0
+}
+
+# Check if git was installed and if current directory is a git repo
+export def git-check [
+  dest: string,        # The dest dir to check
+  --check-repo: int,   # Check if current directory is a git repo
+] {
+  cd $dest
+  if not (is-installed git) {
+    print $'You should (ansi r)INSTALL git(ansi reset) first to run this command, bye...'
+    exit $ECODE.MISSING_BINARY
+  }
+  # If we don't need repo check just quit now
+  if ($check_repo != 0) {
+    let checkRepo = (do -i { git rev-parse --is-inside-work-tree } | complete)
+    if not ($checkRepo.stdout =~ 'true') {
+      print $'Current directory is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
+      exit $ECODE.CONDITION_NOT_SATISFIED
+    }
+  }
+}
+
+# Check if a git repo has the specified ref: could be a branch or tag, etc.
+export def has-ref [
+  ref: string   # The git ref to check
+] {
+  let checkRepo = (do -i { git rev-parse --is-inside-work-tree } | complete)
+  if not ($checkRepo.stdout =~ 'true') { return false }
+  # Brackets were required here, or error will occur
+  let parse = (do -i { git rev-parse --verify -q $ref } | complete)
+  if ($parse.stdout | is-empty) { false } else { true }
 }
 
 export def hr-line [
