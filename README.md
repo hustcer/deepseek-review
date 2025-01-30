@@ -10,7 +10,7 @@
 - Fully Customizable: Choose Models, Base URLs, and Prompts
 - Supports Self-Hosted Deepseek Models for Enhanced Flexibility
 
-## Code Review Locally
+## Local Code Review
 
 To be updated ...
 
