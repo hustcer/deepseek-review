@@ -121,6 +121,10 @@ export def get-diff [
   --diff-from: string,     # Diff from git ref
 ] {
   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
+  if not ($local_repo | path exists) {
+    print $'(ansi r)The directory ($local_repo) does not exist.(ansi reset)'
+    exit $ECODE.CONDITION_NOT_SATISFIED
+  }
   cd $local_repo
   let diff_content = if ($pr_number | is-not-empty) {
       if ($repo | is-empty) {
