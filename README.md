@@ -10,9 +10,15 @@
 - Fully Customizable: Choose Models, Base URLs, and Prompts
 - Supports Self-Hosted Deepseek Models for Enhanced Flexibility
 
+## Planned Features
+
+[ ] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
+[ ] **Skip Code Review via Commit Message**: Add `skip cr` or `skip review` to a commit message to disable code review for the associated PR.
+[ ] **Exclude Specific File Changes**: Ignore changes to specified files, such as `Cargo.lock`, `pnpm-lock.yaml`, and others.
+
 ## Local Code Review
 
-More details to be updated ...
+**More details to be updated** ...
 
 ```console
 Use Deepseek AI to review code changes

@@ -8,9 +8,15 @@
 - 完全可定制：选择模型、基础 URL 和提示词
 - 支持自托管 Deepseek 模型，提供更强的灵活性
 
+## 计划支持特性
+
+[ ] **通过提及触发代码审查**：当 PR 评论中提及 `github-actions bot` 时，自动触发代码审查
+[ ] **通过提交信息跳过代码审查**：在提交信息中添加 `skip cr` 或 `skip review` 以跳过该 PR 的代码审查
+[ ] **忽略指定文件变更**：忽略对指定文件的更改，例如 `Cargo.lock`、`pnpm-lock.yaml` 等
+
 ## 本地 Code Review
 
-未完待续 ...
+**未完待续** ...
 
 ```console
 Use Deepseek AI to review code changes
