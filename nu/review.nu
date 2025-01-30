@@ -53,7 +53,6 @@ export def deepseek-review [
     $'🚀 Initiate the code review by Deepseek AI for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) ...'
   }
   print $hint; print -n (char nl)
-  $env.GITHUB_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
   let diff_content = if ($pr_number | is-not-empty) {
       gh pr diff $pr_number --repo $repo | str trim
     } else if ($diff_from | is-not-empty) {
