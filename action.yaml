@@ -6,12 +6,12 @@
 #   - https://docs.github.com/cn/actions/creating-actions/metadata-syntax-for-github-actions
 #   - https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
 
-name: 'Deepseek Code Review'
+name: 'Deepseek CR'
 author: 'hustcer'
-description: 'A github action to do code review by Deepseek for PRs.'
+description: '🚀 Sharpen Your Code, Ship with Confidence – Elevate Your Workflow with Deepseek Code Review 🚀'
 
 branding:
-  icon: 'code'
+  icon: 'eye'
   color: 'purple'
 
 inputs:
