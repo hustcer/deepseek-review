@@ -120,6 +120,10 @@ export def get-diff [
   --diff-from: string,     # Diff from git ref
 ] {
   let diff_content = if ($pr_number | is-not-empty) {
+      if ($repo | is-empty) {
+        print $'(ansi r)Please provide the GitHub repository name by `--repo` option.(ansi reset)'
+        exit $ECODE.INVALID_PARAMETER
+      }
       gh pr diff $pr_number --repo $repo | str trim
     } else if ($diff_from | is-not-empty) {
       if not (has-ref $diff_from) {
