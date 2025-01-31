@@ -20,4 +20,4 @@ jobs:
       - name: Deepseek Code Review
         uses: hustcer/deepseek-review@develop
         with:
-          deepseek-token: ${{ secrets.DEEPSEEK_TOKEN }}
+          chat-token: ${{ secrets.CHAT_TOKEN }}

@@ -15,7 +15,7 @@ branding:
   color: 'purple'
 
 inputs:
-  deepseek-token:
+  chat-token:
     required: true
     description: 'Your deepseek API token.'
   model:
@@ -52,7 +52,7 @@ runs:
         let ghToken = '${{ github.token }}'
         let baseUrl = '${{inputs.base-url}}'
         let repo = '${{ github.repository }}'
-        let token = '${{inputs.deepseek-token}}'
+        let token = '${{inputs.chat-token}}'
         let sysPrompt = '${{inputs.sys-prompt}}'
         let userPrompt = '${{inputs.user-prompt}}'
         let pr = '${{ github.event.pull_request.number }}'

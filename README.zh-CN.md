@@ -34,14 +34,14 @@ jobs:
       - name: Deepseek Code Review
         uses: hustcer/deepseek-review@v1
         with:
-          deepseek-token: ${{ secrets.DEEPSEEK_TOKEN }}
+          chat-token: ${{ secrets.CHAT_TOKEN }}
 ```
 
 ## 输入参数
 
 | 名称           | 类型   | 描述                                                           |
 | -------------- | ------ | -------------------------------------------------------------- |
-| deepseek-token | String | 必填，Deepseek API Token                                       |
+| chat-token     | String | 必填，Deepseek API Token                                       |
 | model          | String | 可选，配置代码审核选用的模型，默认为 `deepseek-chat`           |
 | base-url       | String | 可选，Deepseek API Base URL, 默认为 `https://api.deepseek.com` |
 | sys-prompt     | String | 可选，系统 Prompt 对应入参中的 `$sys_prompt`, 默认值见后文注释      |
@@ -97,7 +97,7 @@ Flags:
   -h, --help: Display the help message for this command
 
 Parameters:
-  token <string>: Your Deepseek API token, fallback to DEEPSEEK_TOKEN (optional)
+  token <string>: Your Deepseek API token, fallback to CHAT_TOKEN (optional)
 
 ```
 

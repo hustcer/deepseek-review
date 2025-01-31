@@ -36,14 +36,14 @@ jobs:
       - name: Deepseek Code Review
         uses: hustcer/deepseek-review@v1
         with:
-          deepseek-token: ${{ secrets.DEEPSEEK_TOKEN }}
+          chat-token: ${{ secrets.CHAT_TOKEN }}
 ```
 
 ## Input Parameters
 
 | Name           | Type   | Description                                                             |
 | -------------- | ------ | ----------------------------------------------------------------------- |
-| deepseek-token | String | Required, Deepseek API Token                                            |
+| chat-token     | String | Required, Deepseek API Token                                            |
 | model          | String | Optional, the model used for code review, defaults to `deepseek-chat`   |
 | base-url       | String | Optional, Deepseek API Base URL, defaults to `https://api.deepseek.com` |
 | sys-prompt     | String | Optional, system prompt corresponding to `$sys_prompt` in the payload, default value see note below |
@@ -99,7 +99,7 @@ Flags:
   -h, --help: Display the help message for this command
 
 Parameters:
-  token <string>: Your Deepseek API token, fallback to DEEPSEEK_TOKEN (optional)
+  token <string>: Your Deepseek API token, fallback to CHAT_TOKEN (optional)
 
 ```
 
