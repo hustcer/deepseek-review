@@ -9,7 +9,8 @@
 - Analyze Commit Changes with Deepseek for Any Local Repository with CLI
 - Fully Customizable: Choose Models, Base URLs, and Prompts
 - Supports Self-Hosted Deepseek Models for Enhanced Flexibility
-- Add `skip cr` or `skip review` to PR title or body to disable code review
+- Add `skip cr` or `skip review` to PR title or body to disable code review in GitHub Actions
+- Cross-platform Support: Compatible with GitHub Runners across `macOS`, `Ubuntu`, and `Windows`.
 
 ## Planned Features
 
@@ -18,11 +19,16 @@
 
 ## Code Review with GitHub Action
 
+Add a GitHub workflow with the following contents:
+
 ```yaml
 name: Code Review
 on:
   pull_request_target:
-    types: [opened]
+    types:
+      - opened      # Triggers when a PR is opened
+      - reopened    # Triggers when a PR is reopened
+      - synchronize # Triggers when a commit is pushed to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
 permissions:
@@ -39,6 +45,8 @@ jobs:
           chat-token: ${{ secrets.CHAT_TOKEN }}
 ```
 
+When a PR is created, Deepseek code review will be automatically triggered, and the review results will be posted as comments on the corresponding PR. For example: [Example](https://github.com/hustcer/deepseek-review/pull/30) & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
+
 ## Input Parameters
 
 | Name           | Type   | Description                                                             |
@@ -46,7 +54,7 @@ jobs:
 | chat-token     | String | Required, Deepseek API Token                                            |
 | model          | String | Optional, the model used for code review, defaults to `deepseek-chat`   |
 | base-url       | String | Optional, Deepseek API Base URL, defaults to `https://api.deepseek.com` |
-| max-length     | Int    | Optional, Maximum length of the content for review, if the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
+| max-length     | Int    | Optional, Maximum length(Unicode width) of the content for review, if the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
 | sys-prompt     | String | Optional, system prompt corresponding to `$sys_prompt` in the payload, default value see note below |
 | user-prompt    | String | Optional, user prompt corresponding to `$user_prompt` in the payload, default value see note below |
 | github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `github.token`. |
@@ -75,7 +83,7 @@ jobs:
 
 ### Required Tools
 
-To perform code reviews locally, you need to install the following tools:
+To perform code reviews locally(should works for `macOS`, `Ubuntu`, and `Windows`), you need to install the following tools:
 
 - [`Nushell`](https://www.nushell.sh/book/installation.html) & [`Just`](https://just.systems/man/en/packages.html). It is recommended to install the latest versions.
 - If you need to review GitHub PRs locally, you also need to install [`gh`](https://cli.github.com/).

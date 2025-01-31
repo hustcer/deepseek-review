@@ -6,7 +6,10 @@
 name: Code Review
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened]
+    types:
+      - opened      # Triggers when a PR is opened
+      - reopened    # Triggers when a PR is reopened
+      - synchronize # Triggers when a commit is pushed to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
 permissions:
