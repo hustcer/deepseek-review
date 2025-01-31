@@ -47,6 +47,15 @@ jobs:
           chat-token: ${{ secrets.CHAT_TOKEN }}
 ```
 
+Follow these steps to config your `CHAT_TOKEN`:
+
+- Click on the "Settings" tab in your repository navigation bar.
+- In the left sidebar, click on "Secrets and variables" under "Security".
+- Click on "Actions" -> "New repository secret" button.
+- Enter `CHAT_TOKEN` in the "Name" field.
+- Enter the value of your `CHAT_TOKEN` in the "Secret" field.
+- Finally, click the "Add secret" button to save the secret.
+
 When a PR is created, Deepseek code review will be automatically triggered, and the review results will be posted as comments on the corresponding PR. For example: [Example](https://github.com/hustcer/deepseek-review/pull/30) & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
 
 ### Trigger CR When a Specific Label was Added
@@ -113,8 +122,8 @@ With this setup, Deepseek code review will not run automatically upon PR creatio
 
 > [!NOTE]
 >
-> You can control the language of the code review results by setting the language of
-> the Prompt. The default Prompt language is currently English. When you use a Chinese
+> You can control the language of the code review results by the language of the
+> Prompt. The default Prompt language is currently English. When you use a Chinese
 > Prompt, the generated code review results will be in Chinese.
 
 ## Local Code Review
