@@ -9,10 +9,10 @@
 - Analyze Commit Changes with Deepseek for Any Local Repository with CLI
 - Fully Customizable: Choose Models, Base URLs, and Prompts
 - Supports Self-Hosted Deepseek Models for Enhanced Flexibility
+- Add `skip cr` or `skip review` to PR title or body to disable code review
 
 ## Planned Features
 
-- [ ] **Skip Code Review via Commit Message**: Add `skip cr` or `skip review` to a commit message to disable code review for the associated PR.
 - [ ] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
 - [ ] **Exclude Specific File Changes**: Ignore changes to specified files, such as `Cargo.lock`, `pnpm-lock.yaml`, and others.
 

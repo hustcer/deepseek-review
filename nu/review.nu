@@ -38,6 +38,9 @@ const DEFAULT_OPTIONS = {
   SYS_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.',
 }
 
+# If the PR title or body contains any of these keywords, skip the review
+let IGNORE_REVIEW_KEYWORDS = ['skip review' 'skip cr']
+
 # Use Deepseek AI to review code changes locally or in GitHub Actions
 export def --env deepseek-review [
   token?: string,           # Your Deepseek API token, fallback to CHAT_TOKEN env var
@@ -141,6 +144,12 @@ export def get-diff [
       if ($repo | is-empty) {
         print $'(ansi r)Please provide the GitHub repository name by `--repo` option.(ansi reset)'
         exit $ECODE.INVALID_PARAMETER
+      }
+      # TODO: Ignore keywords checking when triggering by mentioning the bot
+      let description = gh pr view $pr_number --repo $repo --json title,body
+      if ($IGNORE_REVIEW_KEYWORDS | any {|it| ($description | values | str join ' ') =~ $it }) {
+        print $'(ansi r)The PR title or body contains keywords to skip the review, bye...(ansi reset)'
+        exit $ECODE.SUCCESS
       }
       gh pr diff $pr_number --repo $repo | str trim
     } else if ($diff_from | is-not-empty) {
