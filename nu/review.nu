@@ -54,6 +54,7 @@ export def --env deepseek-review [
   --user-prompt(-u): string = $DEFAULT_OPTIONS.USER_PROMPT,
 ]: nothing -> nothing {
   $env.config.table.mode = 'psql'
+  print $max_length
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
   let token = $token | default $env.CHAT_TOKEN?
   let repo = $repo | default $env.DEFAULT_GITHUB_REPO?
