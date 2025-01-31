@@ -1,4 +1,4 @@
-# Deepseek 代码审核
+# Deepseek 代码审查
 
 ## 特性
 
@@ -15,9 +15,9 @@
 - [ ] **通过提及触发代码审查**：当 PR 评论中提及 `github-actions bot` 时，自动触发代码审查
 - [ ] **忽略指定文件变更**：忽略对指定文件的更改，例如 `Cargo.lock`、`pnpm-lock.yaml` 等
 
-## 通过 GitHub Action 进行代码审核
+## 通过 GitHub Action 进行代码审查
 
-### 创建 PR 时自动触发代码审核
+### 创建 PR 时自动触发代码审查
 
 创建一个 GitHub workflow 内容如下：
 
@@ -45,11 +45,11 @@ jobs:
           chat-token: ${{ secrets.CHAT_TOKEN }}
 ```
 
-当 PR 创建的时候会自动触发 Deepseek 代码审核，并将审核结果以评论的方式发布到对应的 PR 上。比如：[示例](https://github.com/hustcer/deepseek-review/pull/30) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53)
+当 PR 创建的时候会自动触发 Deepseek 代码审查，并将审查结果以评论的方式发布到对应的 PR 上。比如：[示例](https://github.com/hustcer/deepseek-review/pull/30) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53)
 
-### 当 PR 添加指定 Label 时触发审核
+### 当 PR 添加指定 Label 时触发审查
 
-如果你不希望创建 PR 时自动审核可以选择通过添加标签时触发代码审核，比如创建如下 Workflow：
+如果你不希望创建 PR 时自动审查可以选择通过添加标签时触发代码审查，比如创建如下 Workflow：
 
 ```yaml
 name: Code Review
@@ -75,16 +75,16 @@ jobs:
           chat-token: ${{ secrets.CHAT_TOKEN }}
 ```
 
-如此以来当 PR 创建的时候不会自动触发 Deepseek 代码审核，只有你手工添加 `ai review` 标签的时候才会触发审核。
+如此以来当 PR 创建的时候不会自动触发 Deepseek 代码审查，只有你手工添加 `ai review` 标签的时候才会触发审查。
 
 ## 输入参数
 
 | 名称           | 类型   | 描述                                                           |
 | -------------- | ------ | -------------------------------------------------------------- |
 | chat-token     | String | 必填，Deepseek API Token                                       |
-| model          | String | 可选，配置代码审核选用的模型，默认为 `deepseek-chat`           |
+| model          | String | 可选，配置代码审查选用的模型，默认为 `deepseek-chat`           |
 | base-url       | String | 可选，Deepseek API Base URL, 默认为 `https://api.deepseek.com` |
-| max-length     | Int    | 可选，待审核内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审核 |
+| max-length     | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查 |
 | sys-prompt     | String | 可选，系统 Prompt 对应入参中的 `$sys_prompt`, 默认值见后文注释      |
 | user-prompt    | String | 可选，用户 Prompt 对应入参中的 `$user_prompt`, 默认值见后文注释     |
 | github-token   | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}` |
@@ -109,14 +109,19 @@ Deepseek 接口调用入参:
 }
 ```
 
-## 本地代码审核
+> [!NOTE]
+>
+> 可以通过 Prompt 的语言来控制代码审查结果的语言，当前默认的 Prompt 语言是英文的，
+> 当你使用中文 Prompt 的时候生成的代码审查结果就是中文的
+
+## 本地代码审查
 
 ### 依赖工具
 
-在本地进行代码审核，支持 `macOS`, `Ubuntu` & `Windows` 不过需要安装以下工具：
+在本地进行代码审查，支持 `macOS`, `Ubuntu` & `Windows` 不过需要安装以下工具：
 
 - [`Nushell`](https://www.nushell.sh/book/installation.html) & [`Just`](https://just.systems/man/en/packages.html), 建议安装最新版本
-- 如果你需要在本地审核 GitHub PRs 还需要安装 [`gh`](https://cli.github.com/)
+- 如果你需要在本地审查 GitHub PRs 还需要安装 [`gh`](https://cli.github.com/)
 - 接下来只需要把本仓库代码克隆到本地，然后进入仓库目录执行 `just code-review -h` 或者 `just cr -h` 即可看到类似如下输出:
 
 ```console
@@ -146,20 +151,25 @@ Parameters:
 
 ### 环境配置
 
-在本地进行代码审核需要先修改配置文件，仓库里已经有了 `.env.example` 配置文件示例，将其拷贝到 `.env` 然后根据自己的实际情况进行修改即可。
+在本地进行代码审查需要先修改配置文件，仓库里已经有了 `.env.example` 配置文件示例，将其拷贝到 `.env` 然后根据自己的实际情况进行修改即可。
+
+> [!WARNING]
+>
+> `.env` 配置文件仅在本地使用，在 GitHub Workflow 里面不会使用，里面的敏感信息请
+> 妥善保存，不要提交到代码仓库里面
 
 ### 使用举例
 
 ```sh
-# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff` 修改内容进行代码审核
+# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff` 修改内容进行代码审查
 just cr
-# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc` 修改内容进行代码审核
+# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc` 修改内容进行代码审查
 just cr --diff-from f536acc
-# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审核
+# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审查
 just cr --diff-from f536acc --diff-to 0dd0eb5
-# 对远程 DEFAULT_GITHUB_REPO 仓库编号为 31 的 PR 进行代码审核
+# 对远程 DEFAULT_GITHUB_REPO 仓库编号为 31 的 PR 进行代码审查
 just cr --pr-number 31
-# 对远程 hustcer/deepseek-review 仓库编号为 31 的 PR 进行代码审核
+# 对远程 hustcer/deepseek-review 仓库编号为 31 的 PR 进行代码审查
 just cr --pr-number 31 --repo hustcer/deepseek-review
 ```
 

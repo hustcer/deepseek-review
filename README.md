@@ -111,6 +111,12 @@ With this setup, Deepseek code review will not run automatically upon PR creatio
 }
 ```
 
+> [!NOTE]
+>
+> You can control the language of the code review results by setting the language of
+> the Prompt. The default Prompt language is currently English. When you use a Chinese
+> Prompt, the generated code review results will be in Chinese.
+
 ## Local Code Review
 
 ### Required Tools
@@ -149,6 +155,12 @@ Parameters:
 ### Environment Configuration
 
 To perform code reviews locally, you need to modify the configuration file. A sample configuration file `.env.example` is already provided in the repository. Copy it to `.env` and adjust it according to your actual setup.
+
+> [!WARNING]
+>
+> The `.env` configuration file is only used locally and will not be utilized in GitHub
+> Workflow. Please securely store any sensitive information in it and avoid committing
+> it to the code repository.
 
 ### Usage Examples
 
