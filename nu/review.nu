@@ -60,7 +60,7 @@ export def --env deepseek-review [
   let header = [Authorization $'Bearer ($token)']
   let url = $'($base_url)/chat/completions'
   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
-  let max_length = $max_length | default ($env.MAX_LENGTH? | default 0) | into int
+  let max_length = $max_length | default ($env.MAX_LENGTH? | default 0 | into int)
   let setting = {
     repo: $repo,
     diff_to: $diff_to,

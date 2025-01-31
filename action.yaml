@@ -59,7 +59,7 @@ runs:
         let token = '${{inputs.chat-token}}'
         let sysPrompt = '${{inputs.sys-prompt}}'
         let userPrompt = '${{inputs.user-prompt}}'
-        let maxLen = ${{inputs.max-length}} | into int
+        let maxLength = ${{inputs.max-length}} | into int
         let pr = '${{ github.event.pull_request.number }}'
         (deepseek-review $token
           --model $model
@@ -67,7 +67,7 @@ runs:
           --pr-number $pr
           --gh-token $ghToken
           --base-url $baseUrl
-          --max-length $maxLen
+          --max-length $maxLength
           --sys-prompt $sysPrompt
           --user-prompt $userPrompt
         )
