@@ -47,6 +47,7 @@ jobs:
 | max-length     | Int    | 可选，待审核内容的最大长度, 默认 `0` 表示没有限制，超过非零值则跳过审核 |
 | sys-prompt     | String | 可选，系统 Prompt 对应入参中的 `$sys_prompt`, 默认值见后文注释      |
 | user-prompt    | String | 可选，用户 Prompt 对应入参中的 `$user_prompt`, 默认值见后文注释     |
+| github-token   | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}` |
 
 Deepseek 接口调用入参:
 

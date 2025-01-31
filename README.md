@@ -49,6 +49,7 @@ jobs:
 | max-length     | Int    | Optional, Maximum length of the content for review, if the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
 | sys-prompt     | String | Optional, system prompt corresponding to `$sys_prompt` in the payload, default value see note below |
 | user-prompt    | String | Optional, user prompt corresponding to `$user_prompt` in the payload, default value see note below |
+| github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `github.token`. |
 
 **Deepseek API Call Payload**:
 

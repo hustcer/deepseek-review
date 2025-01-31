@@ -38,6 +38,10 @@ inputs:
     required: false
     default: 'Please review the following code changes'
     description: 'The user prompt for deepseek API.'
+  github-token:
+    required: false
+    default: '${{ github.token }}'
+    description: 'The GITHUB_TOKEN secret or personal access token to authenticate. Defaults to `github.token`.'
 
 runs:
   using: 'composite'
@@ -53,10 +57,10 @@ runs:
         const NU_LIB_DIRS = [ ${{ github.action_path }}/nu ]
         use review.nu *
         let model = '${{ inputs.model }}'
-        let ghToken = '${{ github.token }}'
         let baseUrl = '${{ inputs.base-url }}'
         let repo = '${{ github.repository }}'
         let token = '${{ inputs.chat-token }}'
+        let ghToken = '${{ inputs.github-token }}'
         let sysPrompt = '${{ inputs.sys-prompt }}'
         let userPrompt = '${{ inputs.user-prompt }}'
         let pr = '${{ github.event.pull_request.number }}'
