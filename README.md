@@ -19,6 +19,8 @@
 
 ## Code Review with GitHub Action
 
+### Initiate Code Review When PR was Created
+
 Add a GitHub workflow with the following contents:
 
 ```yaml
@@ -29,6 +31,33 @@ on:
       - opened      # Triggers when a PR is opened
       - reopened    # Triggers when a PR is reopened
       - synchronize # Triggers when a commit is pushed to the PR
+
+# fix: GraphQL: Resource not accessible by integration (addComment) error
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: Deepseek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+```
+
+When a PR is created, Deepseek code review will be automatically triggered, and the review results will be posted as comments on the corresponding PR. For example: [Example](https://github.com/hustcer/deepseek-review/pull/30) & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
+
+### Trigger CR When a Specific Label was Added
+
+If you don't want automatic review on PR creation, you can choose to trigger code review by adding a label. For example, create the following workflow:
+
+```yaml
+name: Code Review
+on:
+  pull_request_target:
+    types:
       - labeled     # Triggers when a label is added to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
@@ -48,7 +77,7 @@ jobs:
           chat-token: ${{ secrets.CHAT_TOKEN }}
 ```
 
-When a PR is created, Deepseek code review will be automatically triggered, and the review results will be posted as comments on the corresponding PR. For example: [Example](https://github.com/hustcer/deepseek-review/pull/30) & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
+With this setup, Deepseek code review will not run automatically upon PR creation. Instead, it will only be triggered when you manually add the `ai review` label.
 
 ## Input Parameters
 

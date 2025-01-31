@@ -17,6 +17,8 @@
 
 ## 通过 GitHub Action 进行代码审核
 
+### 创建 PR 时自动触发代码审核
+
 创建一个 GitHub workflow 内容如下：
 
 ```yaml
@@ -27,6 +29,33 @@ on:
       - opened      # Triggers when a PR is opened
       - reopened    # Triggers when a PR is reopened
       - synchronize # Triggers when a commit is pushed to the PR
+
+# fix: GraphQL: Resource not accessible by integration (addComment) error
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: Deepseek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+```
+
+当 PR 创建的时候会自动触发 Deepseek 代码审核，并将审核结果以评论的方式发布到对应的 PR 上。比如：[示例](https://github.com/hustcer/deepseek-review/pull/30) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53)
+
+### 当 PR 添加指定 Label 时触发审核
+
+如果你不希望创建 PR 时自动审核可以选择通过添加标签时触发代码审核，比如创建如下 Workflow：
+
+```yaml
+name: Code Review
+on:
+  pull_request_target:
+    types:
       - labeled     # Triggers when a label is added to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
@@ -46,7 +75,7 @@ jobs:
           chat-token: ${{ secrets.CHAT_TOKEN }}
 ```
 
-当 PR 创建的时候会自动触发 Deepseek 代码审核，并将审核结果以评论的方式发布到对应的 PR 上。比如：[示例](https://github.com/hustcer/deepseek-review/pull/30) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53)
+如此以来当 PR 创建的时候不会自动触发 Deepseek 代码审核，只有你手工添加 `ai review` 标签的时候才会触发审核。
 
 ## 输入参数
 
