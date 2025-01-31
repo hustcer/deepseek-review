@@ -79,7 +79,7 @@ Deepseek 接口调用入参:
 - 接下来只需要把本仓库代码克隆到本地，然后进入仓库目录执行 `just code-review -h` 或者 `just cr -h` 即可看到类似如下输出:
 
 ```console
-Use Deepseek AI to review code changes
+Use Deepseek AI to review code changes locally or in GitHub Actions
 
 Usage:
   > deepseek-review {flags} (token)
@@ -88,9 +88,10 @@ Flags:
   -d, --debug: Debug mode
   -r, --repo <string>: GitHub repository name, e.g. hustcer/deepseek-review
   -n, --pr-number <string>: GitHub PR number
-  --gh-token <string>: Your GitHub token, GITHUB_TOKEN by default
+  --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
   -f, --diff-from <string>: Diff from git REF
+  -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, deepseek-chat by default (default: 'deepseek-chat')
   --base-url <string> (default: 'https://api.deepseek.com')
   -s, --sys-prompt <string> (default: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.')
@@ -98,7 +99,7 @@ Flags:
   -h, --help: Display the help message for this command
 
 Parameters:
-  token <string>: Your Deepseek API token, fallback to CHAT_TOKEN (optional)
+  token <string>: Your Deepseek API token, fallback to CHAT_TOKEN env var (optional)
 
 ```
 

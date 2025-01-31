@@ -81,7 +81,7 @@ To perform code reviews locally, you need to install the following tools:
 - Once the tools are installed, simply clone this repository to your local machine, navigate to the repository directory, and run `just code-review -h` or `just cr -h`. You should see an output similar to the following:
 
 ```console
-Use Deepseek AI to review code changes
+Use Deepseek AI to review code changes locally or in GitHub Actions
 
 Usage:
   > deepseek-review {flags} (token)
@@ -90,9 +90,10 @@ Flags:
   -d, --debug: Debug mode
   -r, --repo <string>: GitHub repository name, e.g. hustcer/deepseek-review
   -n, --pr-number <string>: GitHub PR number
-  --gh-token <string>: Your GitHub token, GITHUB_TOKEN by default
+  --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
   -f, --diff-from <string>: Diff from git REF
+  -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, deepseek-chat by default (default: 'deepseek-chat')
   --base-url <string> (default: 'https://api.deepseek.com')
   -s, --sys-prompt <string> (default: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.')
@@ -100,7 +101,7 @@ Flags:
   -h, --help: Display the help message for this command
 
 Parameters:
-  token <string>: Your Deepseek API token, fallback to CHAT_TOKEN (optional)
+  token <string>: Your Deepseek API token, fallback to CHAT_TOKEN env var (optional)
 
 ```
 
