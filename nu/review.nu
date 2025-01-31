@@ -69,11 +69,11 @@ export def --env deepseek-review [
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
   if ($token | is-empty) {
     print $'(ansi r)Please provide your Deepseek API token by setting `CHAT_TOKEN` or passing it as an argument.(ansi reset)'
-    return
+    exit $ECODE.INVALID_PARAMETER
   }
   if $is_action and not (is-installed gh) {
     print $'(ansi r)Please install GitHub CLI from https://cli.github.com (ansi reset)'
-    return
+    exit $ECODE.MISSING_BINARY
   }
   let hint = if not $is_action and ($pr_number | is-empty) {
     $'🚀 Initiate the code review by Deepseek AI for local changes ...'
@@ -98,13 +98,11 @@ export def --env deepseek-review [
   if ($response | is-empty) {
     print $'(ansi r)Oops, No response returned from Deepseek API.(ansi reset)'
     exit $ECODE.SERVER_ERROR
-    return
   }
   if $debug { print $'Deepseek Response:'; hr-line; $response | table -e | print }
   if ($response | describe) == 'string' {
     print $'❌ Code review failed！Error: '; hr-line; print $response
     exit $ECODE.SERVER_ERROR
-    return
   }
   let review = $response | get -i choices.0.message.content
   if not $is_action {
