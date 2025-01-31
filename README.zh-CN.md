@@ -46,7 +46,8 @@ jobs:
 ```
 
 <details>
-  <summary>`CHAT_TOKEN` 配置</summary>
+  <summary>CHAT_TOKEN 配置</summary>
+
   按照以下步骤配置你的 `CHAT_TOKEN`：
 
   1. 点击仓库导航栏中的 "Settings" 选项卡
@@ -55,6 +56,7 @@ jobs:
   4. 在 "Name" 字段中输入 `CHAT_TOKEN`
   5. 在 "Secret" 字段中输入你的 `CHAT_TOKEN` 值
   6. 最后，点击 "Add secret"按钮保存密钥
+
 </details>
 
 当 PR 创建的时候会自动触发 Deepseek 代码审查，并将审查结果以评论的方式发布到对应的 PR 上。比如：[示例](https://github.com/hustcer/deepseek-review/pull/30) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53)

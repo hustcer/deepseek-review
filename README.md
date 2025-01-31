@@ -48,7 +48,8 @@ jobs:
 ```
 
 <details>
-  <summary>`CHAT_TOKEN` Config</summary>
+  <summary>CHAT_TOKEN Config</summary>
+
   Follow these steps to config your `CHAT_TOKEN`:
 
   - Click on the "Settings" tab in your repository navigation bar.
@@ -57,6 +58,7 @@ jobs:
   - Enter `CHAT_TOKEN` in the "Name" field.
   - Enter the value of your `CHAT_TOKEN` in the "Secret" field.
   - Finally, click the "Add secret" button to save the secret.
+
 </details>
 
 When a PR is created, Deepseek code review will be automatically triggered, and the review results will be posted as comments on the corresponding PR. For example: [Example](https://github.com/hustcer/deepseek-review/pull/30) & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
