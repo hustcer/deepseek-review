@@ -54,7 +54,6 @@ export def --env deepseek-review [
   --user-prompt(-u): string = $DEFAULT_OPTIONS.USER_PROMPT,
 ]: nothing -> nothing {
   $env.config.table.mode = 'psql'
-  print $max_length
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
   let token = $token | default $env.CHAT_TOKEN?
   let repo = $repo | default $env.DEFAULT_GITHUB_REPO?
@@ -91,8 +90,7 @@ export def --env deepseek-review [
   let length = $diff_content | str stats | get unicode-width
   if ($max_length != 0) and ($length > $max_length) {
     print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
-    # Must return here? Or the action won't stop
-    exit $ECODE.SUCCESS; return
+    exit $ECODE.SUCCESS
   }
   print $'Review content length: (ansi g)($length)(ansi reset), current max length: (ansi g)($max_length)(ansi reset)'
   let payload = {
