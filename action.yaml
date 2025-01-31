@@ -19,7 +19,7 @@ inputs:
     required: true
     description: 'Your deepseek API token.'
   max-length:
-    default: '0'
+    default: 0
     required: false
     description: 'The maximum length of the content for review, 0 means no limit.'
   model:
@@ -59,8 +59,8 @@ runs:
         let token = '${{ inputs.chat-token }}'
         let sysPrompt = '${{ inputs.sys-prompt }}'
         let userPrompt = '${{ inputs.user-prompt }}'
-        let maxLength = '${{ inputs.max-length }}' | into int
         let pr = '${{ github.event.pull_request.number }}'
+        let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
         (deepseek-review $token
           --model $model
           --repo $repo
