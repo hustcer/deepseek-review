@@ -147,7 +147,7 @@ export def get-diff [
       }
       # TODO: Ignore keywords checking when triggering by mentioning the bot
       let description = gh pr view $pr_number --repo $repo --json title,body
-      if ($IGNORE_REVIEW_KEYWORDS | any {|it| ($description | values | str join ' ') =~ $it }) {
+      if ($IGNORE_REVIEW_KEYWORDS | any {|it| $description =~ $it }) {
         print $'(ansi r)The PR title or body contains keywords to skip the review, bye...(ansi reset)'
         exit $ECODE.SUCCESS
       }
