@@ -47,6 +47,7 @@ export def --env deepseek-review [
   --gh-token: string,       # Your GitHub token, fallback to GITHUB_TOKEN env var
   --diff-to(-t): string,    # Diff to git REF
   --diff-from(-f): string,  # Diff from git REF
+  --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --model(-m): string = $DEFAULT_OPTIONS.MODEL,   # Model name, deepseek-chat by default
   --base-url: string = $DEFAULT_OPTIONS.BASE_URL,
   --sys-prompt(-s): string = $DEFAULT_OPTIONS.SYS_PROMPT,
@@ -59,11 +60,13 @@ export def --env deepseek-review [
   let header = [Authorization $'Bearer ($token)']
   let url = $'($base_url)/chat/completions'
   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
+  let max_length = $max_length | default ($env.MAX_LENGTH? | default 0) | into int
   let setting = {
     repo: $repo,
     diff_to: $diff_to,
     diff_from: $diff_from,
     pr_number: $pr_number,
+    max_length: $max_length,
     local_repo: $local_repo,
   }
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
@@ -84,6 +87,12 @@ export def --env deepseek-review [
   if ($pr_number | is-empty) { $setting | compact-record | reject repo | print }
 
   let diff_content = get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to --diff-from $diff_from
+  let length = $diff_content | str stats | get unicode-width
+  if ($max_length != 0) and ($length > $max_length) {
+    print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
+    exit $ECODE.SUCCESS
+  }
+  print $'Review content length: (ansi g)($length)(ansi reset)'
   let payload = {
     model: $model,
     stream: false,

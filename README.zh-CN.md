@@ -44,6 +44,7 @@ jobs:
 | chat-token     | String | 必填，Deepseek API Token                                       |
 | model          | String | 可选，配置代码审核选用的模型，默认为 `deepseek-chat`           |
 | base-url       | String | 可选，Deepseek API Base URL, 默认为 `https://api.deepseek.com` |
+| max-length     | Int    | 可选，待审核内容的最大长度, 默认 `0` 表示没有限制，超过非零值则跳过审核 |
 | sys-prompt     | String | 可选，系统 Prompt 对应入参中的 `$sys_prompt`, 默认值见后文注释      |
 | user-prompt    | String | 可选，用户 Prompt 对应入参中的 `$user_prompt`, 默认值见后文注释     |
 
