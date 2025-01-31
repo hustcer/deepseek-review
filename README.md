@@ -29,6 +29,7 @@ on:
       - opened      # Triggers when a PR is opened
       - reopened    # Triggers when a PR is reopened
       - synchronize # Triggers when a commit is pushed to the PR
+      - labeled     # Triggers when a label is added to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
 permissions:
@@ -38,6 +39,8 @@ jobs:
   setup-deepseek-review:
     runs-on: ubuntu-latest
     name: Code Review
+    # Make sure the code review happens only when the PR has the label 'ai review'
+    if: contains(github.event.pull_request.labels.*.name, 'ai review')
     steps:
       - name: Deepseek Code Review
         uses: hustcer/deepseek-review@v1
