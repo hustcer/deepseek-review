@@ -21,4 +21,4 @@ jobs:
         uses: hustcer/deepseek-review@develop
         with:
           chat-token: ${{ secrets.CHAT_TOKEN }}
-          max-length: 10
+          max-length: '10'
