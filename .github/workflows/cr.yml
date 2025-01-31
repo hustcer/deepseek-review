@@ -27,6 +27,7 @@ jobs:
         uses: hustcer/deepseek-review@develop
         with:
           max-length: 10000
+          # Store the chat token in GitHub Secrets, don't expose it in the workflow file
           chat-token: ${{ secrets.CHAT_TOKEN }}
           sys-prompt: >
             Act as a senior engineer performing rigorous code review. Analyze the provided git diff output through
@@ -48,7 +49,7 @@ jobs:
             - Prioritize critical blockers first
 
             Rules:
-            - Keep all statements <16 words
+            - Keep all statements <30 words
             - Omit empty sections
             - Use technical terminology
             - Reference checklist items explicitly
