@@ -39,7 +39,7 @@ const DEFAULT_OPTIONS = {
 }
 
 # If the PR title or body contains any of these keywords, skip the review
-let IGNORE_REVIEW_KEYWORDS = ['skip review' 'skip cr']
+const IGNORE_REVIEW_KEYWORDS = ['skip review' 'skip cr']
 
 # Use Deepseek AI to review code changes locally or in GitHub Actions
 export def --env deepseek-review [
