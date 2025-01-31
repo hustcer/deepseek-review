@@ -20,7 +20,6 @@ inputs:
     description: 'Your deepseek API token.'
   max-length:
     required: false
-    type: number
     description: 'The maximum length of the content for review, 0 means no limit.'
   model:
     required: false
