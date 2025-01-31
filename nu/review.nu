@@ -197,8 +197,7 @@ export def git-check [
   }
   # If we don't need repo check just quit now
   if ($check_repo != 0) {
-    let checkRepo = (do -i { git rev-parse --is-inside-work-tree } | complete)
-    if not ($checkRepo.stdout =~ 'true') {
+    if not (is-repo) {
       print $'Current directory is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
       exit $ECODE.CONDITION_NOT_SATISFIED
     }
@@ -206,12 +205,21 @@ export def git-check [
   true
 }
 
+# Check if current directory is a git repo
+export def is-repo [] {
+  let checkRepo = try {
+      do -i { git rev-parse --is-inside-work-tree } | complete
+    } catch {
+      ({ stdout: 'false' })
+    }
+  if ($checkRepo.stdout =~ 'true') { true } else { false }
+}
+
 # Check if a git repo has the specified ref: could be a branch or tag, etc.
 export def has-ref [
   ref: string   # The git ref to check
 ] {
-  let checkRepo = (do -i { git rev-parse --is-inside-work-tree } | complete)
-  if not ($checkRepo.stdout =~ 'true') { return false }
+  if not (is-repo) { return false }
   # Brackets were required here, or error will occur
   let parse = (do -i { git rev-parse --verify -q $ref } | complete)
   if ($parse.stdout | is-empty) { false } else { true }
