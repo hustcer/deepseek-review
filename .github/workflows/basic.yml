@@ -20,5 +20,5 @@ jobs:
       - name: Deepseek Code Review
         uses: hustcer/deepseek-review@develop
         with:
-          max-length: '10'
+          max-length: 10
           chat-token: ${{ secrets.CHAT_TOKEN }}

@@ -61,7 +61,6 @@ runs:
         let userPrompt = '${{ inputs.user-prompt }}'
         let maxLength = '${{ inputs.max-length }}' | into int
         let pr = '${{ github.event.pull_request.number }}'
-        print $maxLength
         (deepseek-review $token
           --model $model
           --repo $repo
