@@ -196,15 +196,29 @@ export def get-diff [
   if ($content | is-empty) {
     print $'(ansi g)Nothing to review.(ansi reset)'; exit $ECODE.SUCCESS
   }
+  let awk_bin = (prepare-awk)
   if ($include | is-not-empty) {
     let patterns = $include | split row ','
-    $content = $content | awk (generate-include-regex $patterns)
+    $content = $content | ^$awk_bin (generate-include-regex $patterns)
   }
   if ($exclude | is-not-empty) {
     let patterns = $exclude | split row ','
-    $content = $content | awk (generate-exclude-regex $patterns)
+    $content = $content | ^$awk_bin (generate-exclude-regex $patterns)
   }
   $content
+}
+
+# Prepare gawk for macOS
+export def prepare-awk [] {
+  if (is-installed awk) {
+    print $'Current awk version: (awk --version | lines | first)'
+  }
+  if ($env.GITHUB_ACTIONS? != 'true') { return 'awk' }
+  if (sys host | get name) == 'Darwin' {
+    brew install gawk
+    print $'Current gawk version: (gawk --version | lines | first)'
+  }
+  'gawk'
 }
 
 # Compact the record by removing empty columns
