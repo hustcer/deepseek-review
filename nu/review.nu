@@ -15,10 +15,9 @@
 #  SYSTEM_PROMPT: System prompt message
 #  USER_PROMPT: User prompt message
 # Usage:
-#  1. Local Repo Review: just cr
-#  2. Local Repo Review: just cr -f HEAD~1 --debug
-#  3. Local PR Review: just cr -r hustcer/deepseek-review -n 32
-#
+#  - Local Repo Review: just cr
+#  - Local Repo Review: just cr -f HEAD~1 --debug
+#  - Local PR Review: just cr -r hustcer/deepseek-review -n 32
 
 # Commonly used exit codes
 const ECODE = {
@@ -259,6 +258,18 @@ export def hr-line [
 
   print $'(ansi $color)(build-line $width)(if $with_arrow {'>'})(ansi reset)'
   if $blank_line { char nl }
+}
+
+# Generate the awk include regex pattern string for the specified patterns
+export def generate-include-regex [patterns: list<string>] {
+  let pattern = ($patterns | each {|pat| $pat | str replace '/' '\/' } | str join '|')
+  $"/^diff --git/{p=/^diff --git a\\/($pattern)/}p"
+}
+
+# Generate the awk exclude regex pattern string for the specified patterns
+def generate-exclude-regex [patterns: list<string>] {
+  let pattern = ($patterns | each {|pat| $pat | str replace '/' '\/' } | str join '|')
+  $"/^diff --git/{p=/^diff --git a\\/($pattern)/}!p"
 }
 
 alias main = deepseek-review
