@@ -8,12 +8,12 @@
 - 完全可定制：选择模型、基础 URL 和提示词
 - 支持自托管 Deepseek 模型，提供更强的灵活性
 - 在 PR 的标题或描述中添加 `skip cr` or `skip review` 可跳过 GitHub Actions 里的代码审查
+- 对指定文件变更进行包含/排除式代码审查
 - 跨平台：支持 GitHub `macOS`, `Ubuntu` & `Windows` Runners
 
 ## 计划支持特性
 
 - [ ] **通过提及触发代码审查**：当 PR 评论中提及 `github-actions bot` 时，自动触发代码审查
-- [ ] **忽略指定文件变更**：忽略对指定文件的更改，例如 `Cargo.lock`、`pnpm-lock.yaml` 等
 
 ## 通过 GitHub Action 进行代码审查
 
@@ -101,6 +101,8 @@ jobs:
 | max-length     | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查 |
 | sys-prompt     | String | 可选，系统 Prompt 对应入参中的 `$sys_prompt`, 默认值见后文注释      |
 | user-prompt    | String | 可选，用户 Prompt 对应入参中的 `$user_prompt`, 默认值见后文注释     |
+| include-patterns | String | 可选，代码审查中要包含的以逗号分隔的文件模式，无默认值 |
+| exclude-patterns | String | 可选，代码审查中要排除的以逗号分隔的文件模式，默认值为 `pnpm-lock.yaml,package-lock.json,*.lock` |
 | github-token   | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}` |
 
 Deepseek 接口调用入参:
@@ -148,14 +150,16 @@ Flags:
   -d, --debug: Debug mode
   -r, --repo <string>: GitHub repository name, e.g. hustcer/deepseek-review
   -n, --pr-number <string>: GitHub PR number
-  --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
+  -k, --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
   -f, --diff-from <string>: Diff from git REF
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, deepseek-chat by default (default: 'deepseek-chat')
-  --base-url <string> (default: 'https://api.deepseek.com')
-  -s, --sys-prompt <string> (default: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.')
-  -u, --user-prompt <string> (default: 'Please review the following code changes:')
+  -b, --base-url <string> (default: 'https://api.deepseek.com')
+  -s, --sys-prompt <string>: Default to $DEFAULT_OPTIONS.SYS_PROMPT,
+  -u, --user-prompt <string>: Default to $DEFAULT_OPTIONS.USER_PROMPT,
+  -i, --include <string>: Comma separated file patterns to include in the code review
+  -x, --exclude <string>: Comma separated file patterns to exclude in the code review
   -h, --help: Display the help message for this command
 
 Parameters:

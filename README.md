@@ -9,13 +9,13 @@
 - Analyze Commit Changes with Deepseek for Any Local Repository with CLI
 - Fully Customizable: Choose Models, Base URLs, and Prompts
 - Supports Self-Hosted Deepseek Models for Enhanced Flexibility
+- Perform code reviews for changes that either include or exclude specific files
 - Add `skip cr` or `skip review` to PR title or body to disable code review in GitHub Actions
 - Cross-platform Support: Compatible with GitHub Runners across `macOS`, `Ubuntu`, and `Windows`.
 
 ## Planned Features
 
 - [ ] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
-- [ ] **Exclude Specific File Changes**: Ignore changes to specified files, such as `Cargo.lock`, `pnpm-lock.yaml`, and others.
 
 ## Code Review with GitHub Action
 
@@ -103,6 +103,8 @@ With this setup, Deepseek code review will not run automatically upon PR creatio
 | max-length     | Int    | Optional, Maximum length(Unicode width) of the content for review, if the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
 | sys-prompt     | String | Optional, system prompt corresponding to `$sys_prompt` in the payload, default value see note below |
 | user-prompt    | String | Optional, user prompt corresponding to `$user_prompt` in the payload, default value see note below |
+| include-patterns | String | Optional, The comma separated file patterns to include in the code review. No default |
+| exclude-patterns | String | Optional, The comma separated file patterns to exclude in the code review. Default to `pnpm-lock.yaml,package-lock.json,*.lock` |
 | github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `github.token`. |
 
 **Deepseek API Call Payload**:
@@ -151,14 +153,16 @@ Flags:
   -d, --debug: Debug mode
   -r, --repo <string>: GitHub repository name, e.g. hustcer/deepseek-review
   -n, --pr-number <string>: GitHub PR number
-  --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
+  -k, --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
   -f, --diff-from <string>: Diff from git REF
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, deepseek-chat by default (default: 'deepseek-chat')
-  --base-url <string> (default: 'https://api.deepseek.com')
-  -s, --sys-prompt <string> (default: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.')
-  -u, --user-prompt <string> (default: 'Please review the following code changes:')
+  -b, --base-url <string> (default: 'https://api.deepseek.com')
+  -s, --sys-prompt <string>: Default to $DEFAULT_OPTIONS.SYS_PROMPT,
+  -u, --user-prompt <string>: Default to $DEFAULT_OPTIONS.USER_PROMPT,
+  -i, --include <string>: Comma separated file patterns to include in the code review
+  -x, --exclude <string>: Comma separated file patterns to exclude in the code review
   -h, --help: Display the help message for this command
 
 Parameters:

@@ -38,6 +38,13 @@ inputs:
     required: false
     default: 'Please review the following code changes'
     description: 'The user prompt for deepseek API.'
+  include-patterns:
+    required: false
+    description: 'The comma separated file patterns to include in the code review.'
+  exclude-patterns:
+    required: false
+    default: 'pnpm-lock.yaml,package-lock.json,*.lock'
+    description: 'The comma separated file patterns to exclude in the code review.'
   github-token:
     required: false
     default: '${{ github.token }}'
@@ -64,6 +71,8 @@ runs:
         let sysPrompt = '${{ inputs.sys-prompt }}'
         let userPrompt = '${{ inputs.user-prompt }}'
         let pr = '${{ github.event.pull_request.number }}'
+        let includePatterns = '${{ inputs.include-patterns }}'
+        let excludePatterns = '${{ inputs.exclude-patterns }}'
         let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
         (deepseek-review $token
           --model $model
@@ -74,5 +83,7 @@ runs:
           --max-length $maxLength
           --sys-prompt $sysPrompt
           --user-prompt $userPrompt
+          --include $includePatterns
+          --exclude $excludePatterns
         )
 
