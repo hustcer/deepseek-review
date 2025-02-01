@@ -54,8 +54,8 @@ export def --env deepseek-review [
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --model(-m): string = $DEFAULT_OPTIONS.MODEL,   # Model name, deepseek-chat by default
   --base-url: string = $DEFAULT_OPTIONS.BASE_URL,
-  --sys-prompt(-s): string = $DEFAULT_OPTIONS.SYS_PROMPT,
-  --user-prompt(-u): string = $DEFAULT_OPTIONS.USER_PROMPT,
+  --sys-prompt(-s): string  # Default to $DEFAULT_OPTIONS.SYS_PROMPT,
+  --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
 ]: nothing -> nothing {
   $env.config.table.mode = 'psql'
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
@@ -97,6 +97,8 @@ export def --env deepseek-review [
     exit $ECODE.SUCCESS
   }
   print $'Review content length: (ansi g)($length)(ansi reset), current max length: (ansi g)($max_length)(ansi reset)'
+  let sys_prompt = $sys_prompt | default (load-prompt-from-env SYSTEM_PROMPT) | default $DEFAULT_OPTIONS.SYS_PROMPT
+  let user_prompt = $user_prompt | default (load-prompt-from-env USER_PROMPT) | default $DEFAULT_OPTIONS.USER_PROMPT
   let payload = {
     model: $model,
     stream: false,
@@ -126,6 +128,21 @@ export def --env deepseek-review [
   }
   print $'(char nl)Token Usage Info:'; hr-line
   $response.usage | table -e | print
+}
+
+# Load the prompt content from the specified env var
+export def load-prompt-from-env [
+  prompt_key: string,
+] {
+  let prompt = $env | get -i $prompt_key | default ''
+  if $prompt =~ '.yaml' {
+    let key = $prompt | split row : | last
+    let path = $prompt | split row : | first
+    try { open $path | get -i $key } catch {
+      print $'(ansi r)Failed to load the prompt content from ($path), please check it again.(ansi reset)'
+      exit $ECODE.INVALID_PARAMETER
+    }
+  } else { $prompt }
 }
 
 # Get the diff content from GitHub PR or local git changes
