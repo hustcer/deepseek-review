@@ -1,6 +1,26 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2025-02-01
+
+### Documentation
+
+- Update README (#61)
+
+### Features
+
+- Add example of triggering code review by adding `ai review` label (#60)
+- Load multi-line prompts from yaml config for local code reviewing (#67)
+- Add `include` and `exclude` for file pattern filtering support (#68)
+
+### Miscellaneous Tasks
+
+- Update prompts for current repo's workflow (#63)
+
+### Refactor
+
+- Extracted git repo check into `is-repo` custom command (#64)
+
 ## [1.3.0] - 2025-01-31
 
 ### Documentation

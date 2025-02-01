@@ -59,7 +59,9 @@ jobs:
 
 </details>
 
-当 PR 创建的时候会自动触发 Deepseek 代码审查，并将审查结果以评论的方式发布到对应的 PR 上。比如：[示例](https://github.com/hustcer/deepseek-review/pull/30) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53)
+当 PR 创建的时候会自动触发 Deepseek 代码审查，并将审查结果（依赖于提示词）以评论的方式发布到对应的 PR 上。比如：
+- [示例 1](https://github.com/hustcer/deepseek-review/pull/30) 基于默认提示词 & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
+- [示例 2](https://github.com/hustcer/deepseek-review/pull/68) 基于 [这个提示词](https://github.com/hustcer/deepseek-review/blob/eba892d969049caff00b51a31e5c093aeeb536e3/.github/workflows/cr.yml#L32)
 
 ### 当 PR 添加指定 Label 时触发审查
 
@@ -99,8 +101,8 @@ jobs:
 | model          | String | 可选，配置代码审查选用的模型，默认为 `deepseek-chat`           |
 | base-url       | String | 可选，Deepseek API Base URL, 默认为 `https://api.deepseek.com` |
 | max-length     | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查 |
-| sys-prompt     | String | 可选，系统 Prompt 对应入参中的 `$sys_prompt`, 默认值见后文注释      |
-| user-prompt    | String | 可选，用户 Prompt 对应入参中的 `$user_prompt`, 默认值见后文注释     |
+| sys-prompt     | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释      |
+| user-prompt    | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释     |
 | include-patterns | String | 可选，代码审查中要包含的以逗号分隔的文件模式，无默认值 |
 | exclude-patterns | String | 可选，代码审查中要排除的以逗号分隔的文件模式，默认值为 `pnpm-lock.yaml,package-lock.json,*.lock` |
 | github-token   | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}` |
@@ -127,8 +129,8 @@ Deepseek 接口调用入参:
 
 > [!NOTE]
 >
-> 可以通过 Prompt 的语言来控制代码审查结果的语言，当前默认的 Prompt 语言是英文的，
-> 当你使用中文 Prompt 的时候生成的代码审查结果就是中文的
+> 可以通过提示词的语言来控制代码审查结果的语言，当前默认的提示词语言是英文的，
+> 当你使用中文提示词的时候生成的代码审查结果就是中文的
 
 ## 本地代码审查
 

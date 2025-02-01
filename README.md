@@ -9,7 +9,7 @@
 - Analyze Commit Changes with Deepseek for Any Local Repository with CLI
 - Fully Customizable: Choose Models, Base URLs, and Prompts
 - Supports Self-Hosted Deepseek Models for Enhanced Flexibility
-- Perform code reviews for changes that either include or exclude specific files
+- Perform Code Reviews for Changes That either Include or Exclude Specific Files
 - Add `skip cr` or `skip review` to PR title or body to disable code review in GitHub Actions
 - Cross-platform Support: Compatible with GitHub Runners across `macOS`, `Ubuntu`, and `Windows`.
 
@@ -61,7 +61,9 @@ jobs:
 
 </details>
 
-When a PR is created, Deepseek code review will be automatically triggered, and the review results will be posted as comments on the corresponding PR. For example: [Example](https://github.com/hustcer/deepseek-review/pull/30) & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
+When a PR is created, Deepseek code review will be automatically triggered, and the review results(depend on your prompt) will be posted as comments on the corresponding PR. For example:
+- [Example 1](https://github.com/hustcer/deepseek-review/pull/30) with default prompt & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
+- [Example 2](https://github.com/hustcer/deepseek-review/pull/68) with [this prompt](https://github.com/hustcer/deepseek-review/blob/eba892d969049caff00b51a31e5c093aeeb536e3/.github/workflows/cr.yml#L32)
 
 ### Trigger CR When a Specific Label was Added
 

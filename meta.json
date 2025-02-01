@@ -1,7 +1,7 @@
 {
     "name": "deepseek-review",
-    "version": "1.3.0",
-    "actionVer": "v1.3",
+    "version": "1.5.0",
+    "actionVer": "v1.5",
     "author": "hustcer",
     "license": "MIT",
     "github": "https://github.com/hustcer/deepseek-review",
