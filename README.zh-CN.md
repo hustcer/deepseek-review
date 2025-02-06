@@ -139,7 +139,6 @@ DeepSeek 接口调用入参:
 在本地进行代码审查，支持 `macOS`, `Ubuntu` & `Windows` 不过需要安装以下工具：
 
 - [`Nushell`](https://www.nushell.sh/book/installation.html) & [`Just`](https://just.systems/man/en/packages.html), 建议安装最新版本
-- 如果你需要在本地审查 GitHub PRs 还需要安装 [`gh`](https://cli.github.com/)
 - 接下来只需要把本仓库代码克隆到本地，然后进入仓库目录执行 `just code-review -h` 或者 `just cr -h` 即可看到类似如下输出:
 
 ```console

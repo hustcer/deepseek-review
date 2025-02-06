@@ -9,6 +9,9 @@
 #  [√] Perform CR for changes that either include or exclude specific files
 #  [ ] Add more action outputs
 # Description: A script to do code review by DeepSeek
+# REF:
+#   - https://docs.github.com/en/rest/issues/comments
+#   - https://docs.github.com/en/rest/pulls/pulls
 # Env vars:
 #  GITHUB_TOKEN: Your GitHub API token
 #  CHAT_TOKEN: Your DeepSeek API token
@@ -31,6 +34,12 @@ const ECODE = {
   MISSING_DEPENDENCY: 7,
   CONDITION_NOT_SATISFIED: 8,
 }
+
+const GITHUB_API_BASE = 'https://api.github.com'
+
+# It takes longer to respond to requests made with unknown/rare user agents.
+# When make http post pretend to be curl, it gets a response just as quickly as curl.
+const HTTP_HEADERS = [User-Agent curl/8.9]
 
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-chat',
@@ -63,7 +72,7 @@ export def --env deepseek-review [
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
   let token = $token | default $env.CHAT_TOKEN?
   let repo = $repo | default $env.DEFAULT_GITHUB_REPO?
-  let header = [Authorization $'Bearer ($token)']
+  let CHAT_HEADER = [Authorization $'Bearer ($token)']
   let url = $'($base_url)/chat/completions'
   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
   let max_length = $max_length | default ($env.MAX_LENGTH? | default 0 | into int)
@@ -81,10 +90,6 @@ export def --env deepseek-review [
   if ($token | is-empty) {
     print $'(ansi r)Please provide your DeepSeek API token by setting `CHAT_TOKEN` or passing it as an argument.(ansi reset)'
     exit $ECODE.INVALID_PARAMETER
-  }
-  if $is_action and not (is-installed gh) {
-    print $'(ansi r)Please install GitHub CLI from https://cli.github.com (ansi reset)'
-    exit $ECODE.MISSING_BINARY
   }
   let hint = if not $is_action and ($pr_number | is-empty) {
     $'🚀 Initiate the code review by DeepSeek AI for local changes ...'
@@ -115,7 +120,7 @@ export def --env deepseek-review [
   }
   if $debug { print $'Code Changes:'; hr-line; print $content }
   print $'(char nl)(ansi g)Waiting for response from DeepSeek ...(ansi reset)'
-  let response = http post -e -H $header -t application/json $url $payload
+  let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
   if ($response | is-empty) {
     print $'(ansi r)Oops, No response returned from DeepSeek API.(ansi reset)'
     exit $ECODE.SERVER_ERROR
@@ -129,7 +134,8 @@ export def --env deepseek-review [
   if not $is_action {
     print $'Code Review Result:'; hr-line; print $review
   } else {
-    gh pr comment $pr_number --body $review --repo $repo
+    let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json ...$HTTP_HEADERS]
+    http post -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments' { body: $review }
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
   }
   print $'(char nl)Token Usage Info:'; hr-line
@@ -160,6 +166,8 @@ export def get-diff [
   --include: string,    # Comma separated file patterns to include in the code review
   --exclude: string,    # Comma separated file patterns to exclude in the code review
 ] {
+  let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json]
+  let DIFF_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3.diff]
   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
   if not ($local_repo | path exists) {
     print $'(ansi r)The directory ($local_repo) does not exist.(ansi reset)'
@@ -172,12 +180,13 @@ export def get-diff [
         exit $ECODE.INVALID_PARAMETER
       }
       # TODO: Ignore keywords checking when triggering by mentioning the bot
-      let description = gh pr view $pr_number --repo $repo --json title,body
+      let description = http get -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)'
+                                          | select title body | values | str join "\n"
       if ($IGNORE_REVIEW_KEYWORDS | any {|it| $description =~ $it }) {
         print $'(ansi r)The PR title or body contains keywords to skip the review, bye...(ansi reset)'
         exit $ECODE.SUCCESS
       }
-      gh pr diff $pr_number --repo $repo | str trim
+      http get -H $DIFF_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)' | str trim
     } else if ($diff_from | is-not-empty) {
       if not (has-ref $diff_from) {
         print $'(ansi r)The specified git ref ($diff_from) does not exist, please check it again.(ansi reset)'

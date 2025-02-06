@@ -142,7 +142,6 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 To perform code reviews locally(should works for `macOS`, `Ubuntu`, and `Windows`), you need to install the following tools:
 
 - [`Nushell`](https://www.nushell.sh/book/installation.html) & [`Just`](https://just.systems/man/en/packages.html). It is recommended to install the latest versions.
-- If you need to review GitHub PRs locally, you also need to install [`gh`](https://cli.github.com/).
 - Once the tools are installed, simply clone this repository to your local machine, navigate to the repository directory, and run `just code-review -h` or `just cr -h`. You should see an output similar to the following:
 
 ```console
