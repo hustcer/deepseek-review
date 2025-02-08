@@ -139,7 +139,7 @@ export def --env deepseek-review [
     print $'Code Review Result:'; hr-line; print $review
   } else {
     let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json ...$HTTP_HEADERS]
-    http post -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments' ({ body: $review } | to json)
+    http post -t application/json -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments' { body: $review }
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
   }
   print $'(char nl)Token Usage Info:'; hr-line
