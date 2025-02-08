@@ -151,14 +151,18 @@ export def load-prompt-from-env [
   prompt_key: string,
 ] {
   let prompt = $env | get -i $prompt_key | default ''
-  if $prompt =~ '.yaml' {
-    let key = $prompt | split row : | last
-    let path = $prompt | split row : | first
-    try { open $path | get -i $key } catch {
-      print $'(ansi r)Failed to load the prompt content from ($path), please check it again.(ansi reset)'
-      exit $ECODE.INVALID_PARAMETER
-    }
-  } else { $prompt }
+  if ($prompt !~ '.ya?ml') { return $prompt }
+  let parts = $prompt | split row :
+  if ($parts | length) != 2 {
+    print $'(ansi r)Invalid prompt format: expected path:key for YAML files.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
+  let key = $parts | last
+  let path = $parts | first
+  try { open $path | get -i $key } catch {
+    print $'(ansi r)Failed to load the prompt content from ($path), please check it again.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
 }
 
 # Get the diff content from GitHub PR or local git changes
