@@ -138,14 +138,14 @@ DeepSeek 接口调用入参:
 
 在本地进行代码审查，支持 `macOS`, `Ubuntu` & `Windows` 不过需要安装以下工具：
 
-- [`Nushell`](https://www.nushell.sh/book/installation.html) & [`Just`](https://just.systems/man/en/packages.html), 建议安装最新版本
-- 接下来只需要把本仓库代码克隆到本地，然后进入仓库目录执行 `just code-review -h` 或者 `just cr -h` 即可看到类似如下输出:
+- [`Nushell`](https://www.nushell.sh/book/installation.html), 建议安装最新版本
+- 接下来只需要把本仓库代码克隆到本地，然后进入仓库目录执行 `nu cr -h` 即可看到类似如下输出:
 
 ```console
 Use DeepSeek AI to review code changes locally or in GitHub Actions
 
 Usage:
-  > deepseek-review {flags} (token)
+  > cr {flags} (token)
 
 Flags:
   -d, --debug: Debug mode
@@ -181,15 +181,15 @@ Parameters:
 
 ```sh
 # 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff` 修改内容进行代码审查
-just cr
+nu cr
 # 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc` 修改内容进行代码审查
-just cr --diff-from f536acc
+nu cr --diff-from f536acc
 # 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审查
-just cr --diff-from f536acc --diff-to 0dd0eb5
+nu cr --diff-from f536acc --diff-to 0dd0eb5
 # 对远程 DEFAULT_GITHUB_REPO 仓库编号为 31 的 PR 进行代码审查
-just cr --pr-number 31
+nu cr --pr-number 31
 # 对远程 hustcer/deepseek-review 仓库编号为 31 的 PR 进行代码审查
-just cr --pr-number 31 --repo hustcer/deepseek-review
+nu cr --pr-number 31 --repo hustcer/deepseek-review
 ```
 
 ## 许可
