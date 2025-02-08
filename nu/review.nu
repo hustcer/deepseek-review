@@ -24,7 +24,7 @@
 #  - Local PR Review: just cr -r hustcer/deepseek-review -n 32
 
 # Commonly used exit codes
-const ECODE = {
+export const ECODE = {
   SUCCESS: 0,
   OUTDATED: 1,
   AUTH_FAILED: 2,
