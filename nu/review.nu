@@ -81,6 +81,10 @@ export def --env deepseek-review [
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
+  if ($temperature < 0) or ($temperature > 2) {
+    print $'(ansi r)Invalid temperature value, should be in the range of 0 to 2.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
   let url = $'($base_url)/chat/completions'
   let setting = {
     repo: $repo,
