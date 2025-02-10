@@ -137,6 +137,10 @@ export def --env deepseek-review [
     exit $ECODE.SERVER_ERROR
   }
   let review = $response | get -i choices.0.message.content
+  if ($review | is-empty) {
+    print $'❌ Code review failed！No review result returned from DeepSeek API.'
+    exit $ECODE.SERVER_ERROR
+  }
   if not $is_action {
     print $'Code Review Result:'; hr-line; print $review
   } else {
