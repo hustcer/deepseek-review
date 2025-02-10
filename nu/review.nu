@@ -220,28 +220,38 @@ export def get-diff [
     print $'(ansi g)Nothing to review.(ansi reset)'; exit $ECODE.SUCCESS
   }
   let awk_bin = (prepare-awk)
+  let outdated_awk = $'You may using an (ansi r)outdated awk version(ansi reset), please upgrade to the latest version or use gawk latest instead.'
   if ($include | is-not-empty) {
     let patterns = $include | split row ','
-    $content = $content | ^$awk_bin (generate-include-regex $patterns)
+    $content = $content | try { ^$awk_bin (generate-include-regex $patterns) } catch { print $outdated_awk; exit $ECODE.OUTDATED }
   }
   if ($exclude | is-not-empty) {
     let patterns = $exclude | split row ','
-    $content = $content | ^$awk_bin (generate-exclude-regex $patterns)
+    $content = $content | try { ^$awk_bin (generate-exclude-regex $patterns) } catch { print $outdated_awk; exit $ECODE.OUTDATED }
   }
   $content
 }
 
 # Prepare gawk for macOS
 export def prepare-awk [] {
+  const MIN_GAWK_VERSION = '5.3.1'
+  const MIN_AWK_VERSION = '20250116'
   if (is-installed awk) {
-    print $'Current awk version: (awk --version | lines | first)'
+    let awk_version = awk --version | lines | first | split row ' ' | last
+    print $'Current awk version: ($awk_version)'
+    if (compare-ver $awk_version $MIN_AWK_VERSION) >= 0 { return 'awk' }
   }
-  if ($env.GITHUB_ACTIONS? != 'true') { return 'awk' }
-  if (sys host | get name) == 'Darwin' {
+  if (is-installed gawk) {
+    let gawk_version = gawk --version | lines | first | split row , | first | split row ' ' | last
+    print $'Current gawk version: ($gawk_version)'
+    if (compare-ver $gawk_version $MIN_GAWK_VERSION) >= 0 { return 'gawk' }
+  }
+  if (sys host | get name) == 'Darwin' and (is-installed brew) {
     brew install gawk
     print $'Current gawk version: (gawk --version | lines | first)'
+    return 'gawk'
   }
-  'gawk'
+  'awk'
 }
 
 # Compact the record by removing empty columns
@@ -343,6 +353,37 @@ export def "from env" []: string -> record {
           | str replace -a "\\t" "\t"   # replace `\t` with tab
       }
     | transpose -r -d
+}
+
+# Compare two version number, return `1` if first one is higher than second one,
+# Return `0` if they are equal, otherwise return `-1`
+# Examples:
+#   compare-ver 1.2.3 1.2.0    # Returns 1
+#   compare-ver 2.0.0 2.0.0    # Returns 0
+#   compare-ver 1.9.9 2.0.0    # Returns -1
+# Format: Expects semantic version strings (major.minor.patch)
+#   - Optional 'v' prefix
+#   - Pre-release suffixes (-beta, -rc, etc.) are ignored
+#   - Missing segments default to 0
+export def compare-ver [v1: string, v2: string] {
+  # Parse the version number: remove pre-release and build information,
+  # only take the main version part, and convert it to a list of numbers
+  def parse-ver [v: string] {
+    $v | str downcase | str trim -c v | str trim
+       | split row - | first | split row . | each { into int }
+  }
+  let a = parse-ver $v1
+  let b = parse-ver $v2
+  # Compare the major, minor, and patch parts; fill in the missing parts with 0
+  # If you want to compare more parts use the following code:
+  # for i in 0..([2 ($a | length) ($b | length)] | math max)
+  for i in 0..2 {
+    let x = $a | get -i $i | default 0
+    let y = $b | get -i $i | default 0
+    if $x > $y { return 1    }
+    if $x < $y { return (-1) }
+  }
+  0
 }
 
 alias main = deepseek-review
