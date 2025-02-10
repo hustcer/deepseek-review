@@ -102,11 +102,12 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 | Name           | Type   | Description                                                             |
 | -------------- | ------ | ----------------------------------------------------------------------- |
 | chat-token     | String | Required, DeepSeek API Token                                            |
-| model          | String | Optional, the model used for code review, defaults to `deepseek-chat`   |
+| model          | String | Optional, The model used for code review, defaults to `deepseek-chat`   |
 | base-url       | String | Optional, DeepSeek API Base URL, defaults to `https://api.deepseek.com` |
 | max-length     | Int    | Optional, Maximum length(Unicode width) of the content for review, if the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
-| sys-prompt     | String | Optional, system prompt corresponding to `$sys_prompt` in the payload, default value see note below |
-| user-prompt    | String | Optional, user prompt corresponding to `$user_prompt` in the payload, default value see note below |
+| sys-prompt     | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below |
+| user-prompt    | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below |
+| temperature    | Number | Optional, The temperature for the model to generate the response, between `0` and `2`, default value `1.0` |
 | include-patterns | String | Optional, The comma separated file patterns to include in the code review. No default |
 | exclude-patterns | String | Optional, The comma separated file patterns to exclude in the code review. Default to `pnpm-lock.yaml,package-lock.json,*.lock` |
 | github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `github.token`. |
@@ -118,6 +119,7 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
   // `$model` default value: deepseek-chat
   model: $model,
   stream: false,
+  temperature: $temperature,
   messages: [
     // `$sys_prompt` default value: You are a professional code review assistant responsible for
     // analyzing code changes in GitHub Pull Requests. Identify potential issues such as code

@@ -105,6 +105,7 @@ jobs:
 | max-length     | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查 |
 | sys-prompt     | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释      |
 | user-prompt    | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释     |
+| temperature    | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `1.0`        |
 | include-patterns | String | 可选，代码审查中要包含的以逗号分隔的文件模式，无默认值 |
 | exclude-patterns | String | 可选，代码审查中要排除的以逗号分隔的文件模式，默认值为 `pnpm-lock.yaml,package-lock.json,*.lock` |
 | github-token   | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}` |
@@ -116,6 +117,7 @@ DeepSeek 接口调用入参:
   // `$model` default value: deepseek-chat
   model: $model,
   stream: false,
+  temperature: $temperature,
   messages: [
     // `$sys_prompt` default value: You are a professional code review assistant responsible for
     // analyzing code changes in GitHub Pull Requests. Identify potential issues such as code

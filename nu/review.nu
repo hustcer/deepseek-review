@@ -43,6 +43,7 @@ const HTTP_HEADERS = [User-Agent curl/8.9]
 
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-chat',
+  TEMPERATURE: 1.0,
   BASE_URL: 'https://api.deepseek.com',
   USER_PROMPT: 'Please review the following code changes:',
   SYS_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.',
@@ -67,6 +68,7 @@ export def --env deepseek-review [
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
+  --temperature: float,     # Temperature for the model
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
@@ -76,8 +78,9 @@ export def --env deepseek-review [
   let CHAT_HEADER = [Authorization $'Bearer ($token)']
   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
   let model = $model | default $env.CHAT_MODEL? | default $DEFAULT_OPTIONS.MODEL
-  let max_length = $max_length | default ($env.MAX_LENGTH? | default 0 | into int)
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
+  let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
+  let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
   let url = $'($base_url)/chat/completions'
   let setting = {
     repo: $repo,
@@ -90,6 +93,7 @@ export def --env deepseek-review [
     pr_number: $pr_number,
     max_length: $max_length,
     local_repo: $local_repo,
+    temperature: $temperature,
   }
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
 
@@ -119,6 +123,7 @@ export def --env deepseek-review [
   let payload = {
     model: $model,
     stream: false,
+    temperature: $temperature,
     messages: [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $"($user_prompt):\n($content)" }
