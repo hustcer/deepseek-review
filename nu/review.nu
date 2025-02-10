@@ -236,12 +236,15 @@ export def get-diff [
 export def prepare-awk [] {
   const MIN_GAWK_VERSION = '5.3.1'
   const MIN_AWK_VERSION = '20250116'
-  if (is-installed awk) {
+  let awk_installed = is-installed awk
+  let gawk_installed = is-installed gawk
+
+  if $awk_installed {
     let awk_version = awk --version | lines | first | split row ' ' | last
     print $'Current awk version: ($awk_version)'
     if (compare-ver $awk_version $MIN_AWK_VERSION) >= 0 { return 'awk' }
   }
-  if (is-installed gawk) {
+  if $gawk_installed {
     let gawk_version = gawk --version | lines | first | split row , | first | split row ' ' | last
     print $'Current gawk version: ($gawk_version)'
     if (compare-ver $gawk_version $MIN_GAWK_VERSION) >= 0 { return 'gawk' }
@@ -250,6 +253,10 @@ export def prepare-awk [] {
     brew install gawk
     print $'Current gawk version: (gawk --version | lines | first)'
     return 'gawk'
+  }
+  if (not $awk_installed) and (not $gawk_installed) {
+    print $'(ansi r)Neither `awk` nor `gawk` is installed, please install the latest version of `gawk`.(ansi reset)'
+    exit $ECODE.MISSING_BINARY
   }
   'awk'
 }
@@ -339,11 +346,11 @@ def generate-exclude-regex [patterns: list<string>] {
 # Converts a .env file into a record
 # may be used like this: open .env | load-env
 # works with quoted and unquoted .env files
-export def "from env" []: string -> record {
+export def 'from env' []: string -> record {
   lines
     | split column '#' # remove comments
     | get column1
-    | parse "{key}={value}"
+    | parse '{key}={value}'
     | update value {
         str trim                        # Trim whitespace between value and inline comments
           | str trim -c '"'             # unquote double-quoted values
@@ -357,10 +364,6 @@ export def "from env" []: string -> record {
 
 # Compare two version number, return `1` if first one is higher than second one,
 # Return `0` if they are equal, otherwise return `-1`
-# Examples:
-#   compare-ver 1.2.3 1.2.0    # Returns 1
-#   compare-ver 2.0.0 2.0.0    # Returns 0
-#   compare-ver 1.9.9 2.0.0    # Returns -1
 # Format: Expects semantic version strings (major.minor.patch)
 #   - Optional 'v' prefix
 #   - Pre-release suffixes (-beta, -rc, etc.) are ignored
