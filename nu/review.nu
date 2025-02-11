@@ -7,6 +7,7 @@
 #  [√] Debug mode
 #  [√] Output token usage info
 #  [√] Perform CR for changes that either include or exclude specific files
+#  [√] Support streaming output for local code review
 #  [ ] Add more action outputs
 # Description: A script to do code review by DeepSeek
 # REF:
@@ -34,6 +35,9 @@ export const ECODE = {
   MISSING_DEPENDENCY: 7,
   CONDITION_NOT_SATISFIED: 8,
 }
+
+const RESPONSE_END = 'data: [DONE]'
+const LAST_REPLY_TMP = '.last-reply.json'
 
 const GITHUB_API_BASE = 'https://api.github.com'
 
@@ -73,6 +77,7 @@ export def --env deepseek-review [
 
   $env.config.table.mode = 'psql'
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
+  let stream = if $is_action { false } else { true }
   let token = $token | default $env.CHAT_TOKEN?
   let repo = $repo | default $env.DEFAULT_GITHUB_REPO?
   let CHAT_HEADER = [Authorization $'Bearer ($token)']
@@ -126,7 +131,7 @@ export def --env deepseek-review [
   let user_prompt = $user_prompt | default (load-prompt-from-env USER_PROMPT) | default $DEFAULT_OPTIONS.USER_PROMPT
   let payload = {
     model: $model,
-    stream: false,
+    stream: $stream,
     temperature: $temperature,
     messages: [
       { role: 'system', content: $sys_prompt },
@@ -135,6 +140,8 @@ export def --env deepseek-review [
   }
   if $debug { print $'Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
+  if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
+
   let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
   if ($response | is-empty) {
     print $'(ansi r)Oops, No response returned from DeepSeek API.(ansi reset)'
@@ -159,6 +166,31 @@ export def --env deepseek-review [
   }
   print $'(char nl)Token Usage Info:'; hr-line
   $response.usage | table -e | print
+}
+
+# Output the streaming response of review result from DeepSeek API
+def streaming-output [
+  url: string,        # The Full DeepSeek API URL
+  payload: record,    # The payload to send to DeepSeek API
+  --debug,            # Debug mode
+  --headers: list,    # The headers to send to DeepSeek API
+] {
+  print -n (char nl)
+  http post -e -H $headers -t application/json $url $payload
+    | lines
+    | each {|line|
+        if $line == $RESPONSE_END { return }
+        if ($line | is-empty) { return }
+        let $last = $line | str substring 6.. | from json
+        if $debug { $last | to json | save -rf $LAST_REPLY_TMP }
+        $last | get choices.0.delta | if ($in | is-not-empty) { print -n $in.content }
+      }
+
+  if $debug and ($LAST_REPLY_TMP | path exists) {
+    print $'(char nl)(char nl)DeepSeek Token Usage:'; hr-line
+    open $LAST_REPLY_TMP | select model usage | table -e | print
+    rm -f $LAST_REPLY_TMP
+  }
 }
 
 # Load the prompt content from the specified env var

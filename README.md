@@ -9,6 +9,7 @@
 - Automate PR Reviews with DeepSeek via GitHub Action
 - Review Remote GitHub PRs Directly from Your Local CLI
 - Analyze Commit Changes with DeepSeek for Any Local Repository with CLI
+- Streaming Output Support for Local Code Review
 - Fully Customizable: Choose Models, Base URLs, and Prompts
 - Supports Self-Hosted DeepSeek Models for Enhanced Flexibility
 - Perform Code Reviews for Changes That either Include or Exclude Specific Files
