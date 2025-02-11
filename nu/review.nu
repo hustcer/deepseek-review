@@ -192,11 +192,7 @@ def streaming-output [
         if $debug { $last | to json | save -rf $LAST_REPLY_TMP }
         $last | get choices.0.delta | if ($in | is-not-empty) {
           let delta = $in
-          let content = ($delta.reasoning_content | default $delta.content)
-          if 'reasoning_content' in ($delta | columns) and ($content | is-empty) {
-            print $'(ansi g)-------------- REASONING --------------(ansi reset)'
-          }
-          print -n $content
+          print -n ($delta.reasoning_content | default $delta.content)
         }
       }
 
