@@ -155,16 +155,18 @@ export def --env deepseek-review [
     print $'❌ Code review failed！Error: '; hr-line; print $response
     exit $ECODE.SERVER_ERROR
   }
+  let reason = $response | get -i choices.0.message.reasoning_content
   let review = $response | get -i choices.0.message.content
+  let result = [$reason $review] | str join "\n"
   if ($review | is-empty) {
     print $'❌ Code review failed！No review result returned from DeepSeek API.'
     exit $ECODE.SERVER_ERROR
   }
   if not $is_action {
-    print $'Code Review Result:'; hr-line; print $review
+    print $'Code Review Result:'; hr-line; print $result
   } else {
     let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json ...$HTTP_HEADERS]
-    http post -t application/json -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments' { body: $review }
+    http post -t application/json -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments' { body: $result }
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
   }
   print $'(char nl)Token Usage Info:'; hr-line
@@ -180,6 +182,7 @@ def streaming-output [
 ] {
   print -n (char nl)
   http post -e -H $headers -t application/json $url $payload
+    | tee { let res = $in; if ($res | describe) =~ 'record' { $res | table -e | print; exit $ECODE.SERVER_ERROR } }
     | lines
     | each {|line|
         if $line == $RESPONSE_END { return }
@@ -187,7 +190,14 @@ def streaming-output [
         let $last = $line | str substring 6.. | from json
         if $last == '-alive' { print $last; return }
         if $debug { $last | to json | save -rf $LAST_REPLY_TMP }
-        $last | get choices.0.delta | if ($in | is-not-empty) { print -n $in.content }
+        $last | get choices.0.delta | if ($in | is-not-empty) {
+          let delta = $in
+          let content = ($delta.reasoning_content | default $delta.content)
+          if 'reasoning_content' in ($delta | columns) and ($content | is-empty) {
+            print $'(ansi g)-------------- REASONING --------------(ansi reset)'
+          }
+          print -n $content
+        }
       }
 
   if $debug and ($LAST_REPLY_TMP | path exists) {
