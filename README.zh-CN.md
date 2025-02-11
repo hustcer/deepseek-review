@@ -160,6 +160,7 @@ Flags:
   -k, --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
   -f, --diff-from <string>: Diff from git REF
+  -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
@@ -193,6 +194,13 @@ nu cr
 nu cr --diff-from f536acc
 # 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审查
 nu cr --diff-from f536acc --diff-to 0dd0eb5
+# 通过 --patch-cmd 参数对本地 DEFAULT_LOCAL_REPO 仓库变更内容进行审查
+nu cr --patch-cmd 'git diff head~3'
+nu cr -c 'git show head~3'
+nu cr -c 'git diff 2393375 71f5a31'
+nu cr -c 'git diff 2393375 71f5a31 nu/*'
+nu cr -c 'git diff 2393375 71f5a31 :!nu/*'
+nu cr -c 'git diff --since=2025-02-09 HEAD'
 # 对远程 DEFAULT_GITHUB_REPO 仓库编号为 31 的 PR 进行代码审查
 nu cr --pr-number 31
 # 对远程 hustcer/deepseek-review 仓库编号为 31 的 PR 进行代码审查

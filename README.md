@@ -163,6 +163,7 @@ Flags:
   -k, --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
   -f, --diff-from <string>: Diff from git REF
+  -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
@@ -197,6 +198,13 @@ nu cr
 nu cr --diff-from f536acc
 # Perform code review on the `git diff f536acc 0dd0eb5` changes in the local DEFAULT_LOCAL_REPO repo
 nu cr --diff-from f536acc --diff-to 0dd0eb5
+# Review the changes in the local `DEFAULT_LOCAL_REPO` repo using the `--patch-cmd` flag
+nu cr --patch-cmd 'git diff head~3'
+nu cr -c 'git show head~3'
+nu cr -c 'git diff 2393375 71f5a31'
+nu cr -c 'git diff 2393375 71f5a31 nu/*'
+nu cr -c 'git diff 2393375 71f5a31 :!nu/*'
+nu cr -c 'git diff --since=2025-02-09 HEAD'
 # Perform code review on PR #31 in the remote DEFAULT_GITHUB_REPO repo
 nu cr --pr-number 31
 # Perform code review on PR #31 in the remote hustcer/deepseek-review repo

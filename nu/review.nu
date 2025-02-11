@@ -185,7 +185,7 @@ def streaming-output [
         if $line == $RESPONSE_END { return }
         if ($line | is-empty) { return }
         let $last = $line | str substring 6.. | from json
-        if ($last | describe) =~ 'string' { print $last; return }
+        if $last == '-alive' { print $last; return }
         if $debug { $last | to json | save -rf $LAST_REPLY_TMP }
         $last | get choices.0.delta | if ($in | is-not-empty) { print -n $in.content }
       }
