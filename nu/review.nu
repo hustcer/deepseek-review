@@ -111,7 +111,7 @@ export def --env deepseek-review [
     $'🚀 Initiate the code review by DeepSeek AI for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) ...'
   }
   print $hint; print -n (char nl)
-  if ($pr_number | is-empty) { $setting | compact-record | reject repo | print }
+  if ($pr_number | is-empty) { $setting | compact-record | reject -i repo | print }
 
   let content = (
     get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to
