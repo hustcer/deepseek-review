@@ -146,7 +146,7 @@ export def --env deepseek-review [
     ]
   }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
-  print $'(char nl)Waiting for response from (ansi g)($base_url)(ansi reset) ...'; hr-line
+  print $'(char nl)Waiting for response from (ansi g)($base_url)(ansi reset) ...'
   if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
 
   let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
@@ -161,7 +161,7 @@ export def --env deepseek-review [
   }
   let reason = $response | get -i choices.0.message.reasoning_content
   let review = $response | get -i choices.0.message.content
-  let result = [$reason $review] | str join "\n"
+  let result = ['<details>' '<summary> Reasoning Details</summary>' $reason '</details>' $review] | str join "\n"
   if ($review | is-empty) {
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
     exit $ECODE.SERVER_ERROR
@@ -185,6 +185,8 @@ def streaming-output [
   --headers: list,    # The headers to send to DeepSeek API
 ] {
   print -n (char nl)
+  kv set content 0
+  kv set reasoning 0
   http post -e -H $headers -t application/json $url $payload
     | tee { let res = $in; if ($res | describe) =~ 'record' { $res | table -e | print; exit $ECODE.SERVER_ERROR } }
     | lines
@@ -196,6 +198,10 @@ def streaming-output [
         if $debug { $last | to json | kv set last-reply }
         $last | get -i choices.0.delta | if ($in | is-not-empty) {
           let delta = $in
+          if ($delta.reasoning_content | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
+          if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
+          if ($delta.content | is-not-empty) { kv set content ((kv get content) + 1) }
+          if (kv get content) == 1 { print $'(char nl)Review Details:'; hr-line }
           print -n ($delta.reasoning_content | default $delta.content)
         }
       }
@@ -390,7 +396,7 @@ export def hr-line [
   }
 
   print $'(ansi $color)(build-line $width)(if $with_arrow {'>'})(ansi reset)'
-  if $blank_line { char nl }
+  if $blank_line { char nl | print -n }
 }
 
 # Generate the awk include regex pattern string for the specified patterns
