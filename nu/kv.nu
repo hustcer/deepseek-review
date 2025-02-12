@@ -47,7 +47,7 @@ export def "kv set" [
   let db_open = (db_setup --universal=$universal)
   try {
     # Delete the existing key if it does exist
-    do $db_open | query db $"DELETE FROM std_kv_store WHERE key = '($key)'"
+    do $db_open | query db "DELETE FROM std_kv_store WHERE key = :key" --params { key: $key }
   }
 
   match $universal {
@@ -139,7 +139,7 @@ export def --env "kv drop" [
   try {
     do $db_open
       # Hack to turn a SQLiteDatabase into a table
-    | query db $"DELETE FROM std_kv_store WHERE key = '($key)'"
+      | query db "DELETE FROM std_kv_store WHERE key = :key" --params { key: $key }
   }
 
   if $universal and ($env.NU_KV_UNIVERSALS? | default false) {
@@ -170,7 +170,7 @@ def db_setup [
           value: ''
         }
         $dummy_record | into sqlite (universal_db_path) -t std_kv_store
-        open (universal_db_path) | query db $"DELETE FROM std_kv_store WHERE key = '($uuid)'"
+        open (universal_db_path) | query db "DELETE FROM std_kv_store WHERE key = :key" --params { key: $uuid }
       }
       false => {
         # Create the stor table if it doesn't exist
