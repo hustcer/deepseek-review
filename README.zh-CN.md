@@ -9,6 +9,7 @@
 - 通过本地 CLI 使用 DeepSeek 分析任何本地仓库的提交变更
 - 本地代码审查的时候支持流式输出
 - 完全可定制：选择模型、基础 URL 和提示词
+- 支持 DeepSeek V3 和 R1 模型
 - 支持自托管 DeepSeek 模型，提供更强的灵活性
 - 在 PR 的标题或描述中添加 `skip cr` or `skip review` 可跳过 GitHub Actions 里的代码审查
 - 对指定文件变更进行包含/排除式代码审查

@@ -11,6 +11,7 @@
 - Analyze Commit Changes with DeepSeek for Any Local Repository with CLI
 - Streaming Output Support for Local Code Review
 - Fully Customizable: Choose Models, Base URLs, and Prompts
+- Support Both DeepSeek's V3 & R1 Models
 - Supports Self-Hosted DeepSeek Models for Enhanced Flexibility
 - Perform Code Reviews for Changes That either Include or Exclude Specific Files
 - Add `skip cr` or `skip review` to PR title or body to disable code review in GitHub Actions
