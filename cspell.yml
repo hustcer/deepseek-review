@@ -5,6 +5,7 @@
 
 words:
 - psql
+- MPFR
 - ECODE
 - endfor
 - dotenv

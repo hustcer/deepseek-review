@@ -296,7 +296,10 @@ export def prepare-awk [] {
   let gawk_installed = is-installed gawk
 
   if $awk_installed {
-    let awk_version = awk --version | lines | first | split row ' ' | last
+    # AWK family version check for both awk and gawk
+    #  awk: awk version 20250116 -> 20250116
+    # gawk: GNU Awk 5.3.1, API 4.0, (GNU MPFR 4.2.1, GNU MP 6.3.0) -> 5.3.1
+    let awk_version = awk --version | lines | first | split row , | first | split row ' ' | last
     print $'Current awk version: ($awk_version)'
     if (compare-ver $awk_version $MIN_AWK_VERSION) >= 0 { return 'awk' }
   }
