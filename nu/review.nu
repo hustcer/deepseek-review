@@ -25,6 +25,8 @@
 #  - Local Repo Review: just cr -f HEAD~1 --debug
 #  - Local PR Review: just cr -r hustcer/deepseek-review -n 32
 
+use kv.nu *
+
 # Commonly used exit codes
 export const ECODE = {
   SUCCESS: 0,
@@ -38,7 +40,6 @@ export const ECODE = {
 }
 
 const RESPONSE_END = 'data: [DONE]'
-const LAST_REPLY_TMP = '.last-reply.json'
 
 const GITHUB_API_BASE = 'https://api.github.com'
 
@@ -192,17 +193,16 @@ def streaming-output [
         if ($line | is-empty) { return }
         let $last = $line | str substring 6.. | from json
         if $last == '-alive' { print $last; return }
-        if $debug { $last | to json | save -rf $LAST_REPLY_TMP }
+        if $debug { $last | to json | kv set last-reply }
         $last | get -i choices.0.delta | if ($in | is-not-empty) {
           let delta = $in
           print -n ($delta.reasoning_content | default $delta.content)
         }
       }
 
-  if $debug and ($LAST_REPLY_TMP | path exists) {
+  if $debug and (kv get last-reply | is-not-empty) {
     print $'(char nl)(char nl)Model & Token Usage:'; hr-line
-    open $LAST_REPLY_TMP | select -i model usage | table -e | print
-    rm -f $LAST_REPLY_TMP
+    kv get last-reply | from json | select -i model usage | table -e | print
   }
 }
 

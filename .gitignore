@@ -1,6 +1,5 @@
 .env
 .env.dev
 .env.local
-.last-reply.json
 config.yml
 prompts.yaml

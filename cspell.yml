@@ -6,6 +6,8 @@
 words:
 - psql
 - MPFR
+- nuon
+- nuons
 - ECODE
 - endfor
 - dotenv
