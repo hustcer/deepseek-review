@@ -74,7 +74,7 @@ export def --env deepseek-review [
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
-  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`
+  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`, Only for V3
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
@@ -119,7 +119,10 @@ export def --env deepseek-review [
     $'🚀 Initiate the code review by DeepSeek AI for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) ...'
   }
   print $hint; print -n (char nl)
-  if ($pr_number | is-empty) { $setting | compact-record | reject -i repo | print }
+  if ($pr_number | is-empty) {
+    print 'Current Settings:'; hr-line
+    $setting | compact-record | reject -i repo | print; print -n (char nl)
+  }
 
   let content = (
     get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to
@@ -141,25 +144,25 @@ export def --env deepseek-review [
       { role: 'user', content: $"($user_prompt):\n($content)" }
     ]
   }
-  if $debug { print $'Code Changes:'; hr-line; print $content }
-  print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
+  if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
+  print $'(char nl)Waiting for response from (ansi g)($base_url)(ansi reset) ...'; hr-line
   if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
 
   let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
   if ($response | is-empty) {
-    print $'(ansi r)Oops, No response returned from DeepSeek API.(ansi reset)'
+    print $'(ansi r)Oops, No response returned from ($base_url) ...(ansi reset)'
     exit $ECODE.SERVER_ERROR
   }
-  if $debug { print $'DeepSeek Response:'; hr-line; $response | table -e | print }
+  if $debug { print $'DeepSeek Model Response:'; hr-line; $response | table -e | print }
   if ($response | describe) == 'string' {
-    print $'❌ Code review failed！Error: '; hr-line; print $response
+    print $'✖️ Code review failed！Error: '; hr-line; print $response
     exit $ECODE.SERVER_ERROR
   }
   let reason = $response | get -i choices.0.message.reasoning_content
   let review = $response | get -i choices.0.message.content
   let result = [$reason $review] | str join "\n"
   if ($review | is-empty) {
-    print $'❌ Code review failed！No review result returned from DeepSeek API.'
+    print $'✖️ Code review failed！No review result returned from ($base_url) ...'
     exit $ECODE.SERVER_ERROR
   }
   if not $is_action {
@@ -169,7 +172,7 @@ export def --env deepseek-review [
     http post -t application/json -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments' { body: $result }
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
   }
-  print $'(char nl)Token Usage Info:'; hr-line
+  print $'(char nl)Token Usage:'; hr-line
   $response.usage | table -e | print
 }
 
@@ -197,7 +200,7 @@ def streaming-output [
       }
 
   if $debug and ($LAST_REPLY_TMP | path exists) {
-    print $'(char nl)(char nl)DeepSeek Token Usage:'; hr-line
+    print $'(char nl)(char nl)Model & Token Usage:'; hr-line
     open $LAST_REPLY_TMP | select -i model usage | table -e | print
     rm -f $LAST_REPLY_TMP
   }
