@@ -200,7 +200,7 @@ nu cr -c 'git show head~3'
 nu cr -c 'git diff 2393375 71f5a31'
 nu cr -c 'git diff 2393375 71f5a31 nu/*'
 nu cr -c 'git diff 2393375 71f5a31 :!nu/*'
-nu cr -c 'git diff --since=2025-02-09 HEAD'
+# 像 `nu cr -c 'git show head~3; rm ./*'` 这样危险的命令将会被禁止
 # 对远程 DEFAULT_GITHUB_REPO 仓库编号为 31 的 PR 进行代码审查
 nu cr --pr-number 31
 # 对远程 hustcer/deepseek-review 仓库编号为 31 的 PR 进行代码审查
