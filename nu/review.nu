@@ -191,8 +191,8 @@ def streaming-output [
     | tee {
         let res = $in
         let type = $res | describe
-        let record_error = $type =~ 'record'
-        let other_error  = $type =~ 'string' and $res !~ 'data: '
+        let record_error = $type =~ '^record'
+        let other_error  = $type =~ '^string' and $res !~ 'data: '
         if $record_error or $other_error {
           $res | table -e | print
           exit $ECODE.SERVER_ERROR
