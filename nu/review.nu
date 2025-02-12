@@ -198,7 +198,7 @@ def streaming-output [
           exit $ECODE.SERVER_ERROR
         }
       }
-    | try { lines } catch { print $'(ansi r)Server Error Happened ...(ansi reset)' }
+    | try { lines } catch { print $'(ansi r)Error Happened ...(ansi reset)'; exit $ECODE.SERVER_ERROR }
     | each {|line|
         if $line == $RESPONSE_END { return }
         if ($line | is-empty) { return }
