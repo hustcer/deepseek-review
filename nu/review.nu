@@ -188,8 +188,17 @@ def streaming-output [
   kv set content 0
   kv set reasoning 0
   http post -e -H $headers -t application/json $url $payload
-    | tee { let res = $in; if ($res | describe) =~ 'record' { $res | table -e | print; exit $ECODE.SERVER_ERROR } }
-    | lines
+    | tee {
+        let res = $in
+        let type = $res | describe
+        let record_error = $type =~ 'record'
+        let other_error  = $type =~ 'string' and $res !~ 'data: '
+        if $record_error or $other_error {
+          $res | table -e | print
+          exit $ECODE.SERVER_ERROR
+        }
+      }
+    | try { lines } catch { print $'(ansi r)Server Error Happened ...(ansi reset)' }
     | each {|line|
         if $line == $RESPONSE_END { return }
         if ($line | is-empty) { return }
