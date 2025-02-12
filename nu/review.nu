@@ -190,7 +190,7 @@ def streaming-output [
         let $last = $line | str substring 6.. | from json
         if $last == '-alive' { print $last; return }
         if $debug { $last | to json | save -rf $LAST_REPLY_TMP }
-        $last | get choices.0.delta | if ($in | is-not-empty) {
+        $last | get -i choices.0.delta | if ($in | is-not-empty) {
           let delta = $in
           print -n ($delta.reasoning_content | default $delta.content)
         }
