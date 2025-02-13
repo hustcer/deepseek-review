@@ -166,6 +166,7 @@ export def --env deepseek-review [
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
     exit $ECODE.SERVER_ERROR
   }
+  let result = if ($reason | is-empty) { $review } else { $result }
   if not $is_action {
     print $'Code Review Result:'; hr-line; print $result
   } else {
