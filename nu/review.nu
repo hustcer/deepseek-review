@@ -295,7 +295,7 @@ export def get-diff [
     print $'(ansi g)Nothing to review.(ansi reset)'; exit $ECODE.SUCCESS
   }
   let awk_bin = (prepare-awk)
-  let outdated_awk = $'You may using an (ansi r)outdated awk version(ansi reset), please upgrade to the latest version or use gawk latest instead.'
+  let outdated_awk = $'If you are using an (ansi r)outdated awk version(ansi reset), please upgrade to the latest version or use gawk latest instead.'
   if ($include | is-not-empty) {
     let patterns = $include | split row ','
     $content = $content | try { ^$awk_bin (generate-include-regex $patterns) } catch { print $outdated_awk; exit $ECODE.OUTDATED }
