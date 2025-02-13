@@ -409,33 +409,30 @@ export def hr-line [
   if $blank_line { char nl | print -n }
 }
 
+# Convert glob patterns to regex patterns
+# Pass in *.nu directly as a regular expression does not work, because * in
+# a regular expression needs to be attached to the previous pattern, the correct
+# form should be .* So we should convert each glob pattern to a regex pattern:
+# 1. Convert * to .*
+# 2. Convert ? to . (optional, as needed)
+# 3. Convert / to \/
+def glob-to-regex [patterns: list<string>] {
+  $patterns
+    | each { |pat|
+        $pat | str replace "*" ".*" | str replace "?" "." | str replace "/" "\\/"
+      }
+    | str join "|"
+}
+
 # Generate the awk include regex pattern string for the specified patterns
 export def generate-include-regex [patterns: list<string>] {
-  # Pass in *.nu directly as a regular expression does not work,
-  # because * in a regular expression needs to be attached to the previous pattern,
-  # the correct form should be .* So we should convert each glob pattern to a regex pattern:
-  # 1. Convert * to .*
-  # 2. Convert ? to . (optional, as needed)
-  # 3. Convert / to \/
-  let pattern = (
-      $patterns
-        | each { |pat|
-            $pat | str replace "*" ".*" | str replace "?" "." | str replace "/" "\\/"
-          }
-        | str join "|"
-    )
+  let pattern = glob-to-regex $patterns
   $"/^diff --git/{p=/^diff --git a\\/($pattern)/}p"
 }
 
 # Generate the awk exclude regex pattern string for the specified patterns
-def generate-exclude-regex [patterns: list<string>] {
-  let pattern = (
-      $patterns
-        | each { |pat|
-            $pat | str replace "*" ".*" | str replace "?" "." | str replace "/" "\\/"
-          }
-        | str join "|"
-    )
+export def generate-exclude-regex [patterns: list<string>] {
+  let pattern = glob-to-regex $patterns
   $"/^diff --git/{p=/^diff --git a\\/($pattern)/}!p"
 }
 
