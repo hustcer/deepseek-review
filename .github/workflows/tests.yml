@@ -50,11 +50,11 @@ jobs:
           $env.NU_LIB_DIRS | print
           ls $NU_LIB_DIRS.0 | print
           pwd | print
-          # use ./nutest/nutest
-          # (
-          #   nutest run-tests
-          #     --fail
-          #     --display terminal
-          #     --report { type: junit, path: test-report.xml }
-          #     --returns summary | to json | save --force test-summary.json
-          # )
+          use ${{ github.workspace }}/nutest/nutest
+          (
+            nutest run-tests
+              --fail
+              --display terminal
+              --report { type: junit, path: test-report.xml }
+              --returns summary | to json | save --force test-summary.json
+          )
