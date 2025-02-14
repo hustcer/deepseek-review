@@ -1,0 +1,226 @@
+# DeepSeek-Review Config File for Local Code Review Only
+#   @author : hustcer
+#   @created: 2025/02/12 19:05:20
+# WARN:
+#  - This file is for local code review only, don't commit it to the git repository
+#  - This file may contain sensitive information, such as API tokens, don't expose it to others
+# RULES:
+#   - Multiple providers could be defined, but only one could be selected, with its name in 'settings.provider'
+#   - One and Only one model could be enabled in one model group
+#   - Model in model groups is disabled by default, even if there is no 'enabled' field
+#   - Use `-u` or `--user-prompt` to specify the user prompt to use by name to override the default user prompt
+#   - Use `-s` or `--system-prompt` to specify the system prompt to use by name to override the default system prompt
+
+settings:
+  # The provider to use for code review, with it's name in 'providers'
+  provider: 'DeepSeek'
+  # The maximum length of the content for review, 0 means no limit
+  # The value should be a positive integer, with default value 0
+  # If the content length exceeds the non-zero limit, the review will be skipped
+  # Note that it's unicode width not LLM token length
+  max-length: 0
+  # The temperature of the model, Note: It works only for DeepSeek V3 model
+  # The value should be between 0 and 2, with default value 1.0
+  temperature: 1.0
+  # The user prompt name to use for DeepSeek API select from 'prompts.user'
+  user-prompt: 'default'
+  # The system prompt name to use for DeepSeek API select from 'prompts.system'
+  system-prompt: 'default'
+  # The GITHUB_TOKEN secret or personal access token(PAT) to authenticate
+  # This token is used to fetch the PR changes from GitHub API
+  github-token: 'YOUR_GITHUB_TOKEN'
+  # Default local repository to review, could be overrode by '-r' or '--repo'
+  default-local-repo: 'review'
+  # Default GitHub repository to review, could be overrode by '-r' or '--repo' if used with `-n` or `--pr-number`
+  default-github-repo: 'hustcer/deepseek-review'
+  # Include changes in the following file patterns
+  include-patterns: ''
+  # Exclude changes in the following file patterns
+  exclude-patterns: 'pnpm-lock.yaml,package-lock.json,*.lock'
+
+# Multiple providers could be defined, select the one by name in 'settings.provider'
+# This way you could switch between different predefined providers easily
+providers:
+  - name: 'DeepSeek'
+    token: 'YOUR_DEEPSEEK_TOKEN'    # Required, The API token for the provider
+    base-url: 'https://api.deepseek.com'
+    models:
+      - name: 'deepseek-chat'       # Required, Pass the model name to --model flag to use it
+        alias: v3                   # Optional, Alias name could also be passed to --model flag
+        enabled: true               # One and Only one model could be enabled in one model group
+        description: 'DeepSeek V3'  # Optional, Description of the model, won't be used actually
+      - name: 'deepseek-reasoner'
+        alias: r1
+        enabled: false  # Model is disabled by default
+        description: 'DeepSeek R1'
+
+  - name: 'SiliconFlow'
+    token: 'YOUR_SILICONFLOW_TOKEN'
+    base-url: 'https://api.siliconflow.cn/v1' # Required if not the official API
+    models:
+      - name: 'deepseek-ai/DeepSeek-V3'
+        alias: v3
+        enabled: true
+        description: 'SiliconFlow DeepSeek V3 model'
+      - name: 'deepseek-ai/DeepSeek-R1'
+        alias: r1
+        description: 'SiliconFlow DeepSeek R1 model'
+
+
+# Multiple local repositories could be defined, select the one by name in 'settings.default-local-repo'
+# You can also use `-r` or `--repo` to specify the local repository to review by name to override the default
+local-repos:
+  - name: 'review'
+    path: '/Users/hustcer/deepseek-review'
+  - name: 'milestone'
+    path: '/Users/hustcer/milestone-action'
+  - name: 'setup-nu'
+    path: '/Users/hustcer/setup-nu'
+
+# Multiple Prompts could be defined, select the one by name in 'settings.user-prompt' or 'settings.system-prompt'
+# Use `-u` or `--user-prompt` to specify the user prompt to use by name to override the default user prompt
+# Use `-s` or `--system-prompt` to specify the system prompt to use by name to override the default system prompt
+prompts:
+  user:
+    - name: default
+      prompt: 'Please review the following code changes:'
+  system:
+    - name: default
+      prompt: >
+        You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests.
+        Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide
+        improvement suggestions. Clearly list the problems and recommendations in a concise manner.
+
+    - name: strict-dev
+      prompt: >
+        Act as a senior engineer performing rigorous code review. Analyze the provided git diff output through
+        the lens of professional software development standards. Structure findings using these guidelines:
+
+        1. Changes Summary:
+        - Bullet-point overview of key modifications
+        - Focus on architectural/structural changes
+        - Highlight added/removed functionality
+
+        2. Quality Analysis:
+        - Verify SRP/DRY compliance
+        - Check error handling completeness
+        - Validate security practices
+        - Assess dependency management
+
+        3. Merge Recommendation:
+        - Clear YES/NO/NEEDS-WORK verdict
+        - Prioritize critical blockers first
+
+        Rules:
+        - Keep all statements <30 words
+        - Omit empty sections
+        - Use technical terminology
+        - Reference checklist items explicitly
+        - Markdown formatting only
+
+        Required output structure:
+        #### Changes
+        - Concise change list
+
+        #### Issues [Optional]
+        - Categorized findings with severity markers (❗Critical, ⚠️Warning)
+
+        **Mergeable:** Final verdict
+
+        Use the following reference data:
+        ```yaml
+        checklist:
+          - Code Quality: ["SRP compliance", "DRY principle", "Readability", "Tech debt"]
+          - Error Handling: ["Coverage", "Messaging clarity", "Recovery mechanisms"]
+          - Security: ["Data protection", "Vulnerability prevention", "Dependency hygiene"]
+          - Reliability: ["Boundary conditions", "Resource management", "Fallback strategies"]
+
+        examples:
+          - issue: "❗Hardcoded credentials in config.py (security violation)"
+          - issue: "⚠️Duplicate validation logic in user_service.py (DRY violation)"
+          - change: "Added JWT authentication middleware"
+          - change: "Refactored payment processor into standalone module"
+
+        response_template: |
+          #### Changes
+          - {{bullet_points}}
+
+          {{#issues}}
+          #### Issues
+          - {{issues_list}}
+          {{/issues}}
+
+          **Mergeable:** {{verdict}}
+        ```
+
+    - name: devops
+      prompt: >
+        As a senior DevOps engineer, perform comprehensive review of shell scripts with focus on:
+
+        1. Core Requirements:
+        - Validate POSIX compatibility
+        - Check for proper error handling
+        - Verify safe variable usage
+        - Assess resource management
+
+        2. Security Analysis:
+        - Shell injection prevention
+        - Safe file operations
+        - Proper permissions handling
+        - Secure command execution
+
+        3. Performance Optimization:
+        - Efficient process management
+        - Proper use of subshells
+        - Stream handling best practices
+        - Avoidance of unnecessary forks
+
+        Rules:
+        - Target bash/sh compatibility
+        - Highlight security vulnerabilities
+        - Suggest performance improvements
+        - Keep feedback actionable
+        - Use technical shell terminology
+
+        Required output structure:
+        #### Script Analysis
+        - Key observations
+
+        #### Security Review
+        - Vulnerability findings
+
+        #### Optimization Suggestions
+        - Performance improvements
+
+        **Overall Quality:** Rating (1-5)
+
+        Use the following reference data:
+        ```yaml
+        checklist:
+          - Compatibility: ["POSIX compliance", "Shell-specific features", "Portability"]
+          - Security: ["Input validation", "Safe eval usage", "Permission checks"]
+          - Reliability: ["Error handling", "Exit codes", "Signal trapping"]
+          - Performance: ["Process management", "I/O operations", "Subshell usage"]
+
+        examples:
+          - issue: "❗ Unquoted variable expansion in line 42 (shell injection risk)"
+          - issue: "⚠️ Missing error handling for rm operation in line 15"
+          - suggestion: "Replace backticks with $() for better readability and nesting"
+          - suggestion: "Use exec for file handling to reduce file descriptors"
+
+        response_template: |
+          #### Script Analysis
+          - {{observations}}
+
+          {{#security_issues}}
+          #### Security Review
+          - {{security_issues}}
+          {{/security_issues}}
+
+          {{#optimizations}}
+          #### Optimization Suggestions
+          - {{optimizations}}
+          {{/optimizations}}
+
+          **Overall Quality:** {{rating}}
+        ```

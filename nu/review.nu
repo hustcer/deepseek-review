@@ -26,18 +26,8 @@
 #  - Local PR Review: just cr -r hustcer/deepseek-review -n 32
 
 use kv.nu *
+use common.nu [ECODE, hr-line]
 
-# Commonly used exit codes
-export const ECODE = {
-  SUCCESS: 0,
-  OUTDATED: 1,
-  AUTH_FAILED: 2,
-  SERVER_ERROR: 3,
-  MISSING_BINARY: 5,
-  INVALID_PARAMETER: 6,
-  MISSING_DEPENDENCY: 7,
-  CONDITION_NOT_SATISFIED: 8,
-}
 
 const RESPONSE_END = 'data: [DONE]'
 
@@ -134,8 +124,8 @@ export def --env deepseek-review [
     exit $ECODE.SUCCESS
   }
   print $'Review content length: (ansi g)($length)(ansi reset), current max length: (ansi g)($max_length)(ansi reset)'
-  let sys_prompt = $sys_prompt | default (load-prompt-from-env SYSTEM_PROMPT) | default $DEFAULT_OPTIONS.SYS_PROMPT
-  let user_prompt = $user_prompt | default (load-prompt-from-env USER_PROMPT) | default $DEFAULT_OPTIONS.USER_PROMPT
+  let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
+  let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
   let payload = {
     model: $model,
     stream: $stream,
@@ -219,25 +209,6 @@ def streaming-output [
   if $debug and (kv get last-reply | is-not-empty) {
     print $'(char nl)(char nl)Model & Token Usage:'; hr-line
     kv get last-reply | from json | select -i model usage | table -e | print
-  }
-}
-
-# Load the prompt content from the specified env var
-export def load-prompt-from-env [
-  prompt_key: string,
-] {
-  let prompt = $env | get -i $prompt_key | default ''
-  if ($prompt !~ '.ya?ml') { return $prompt }
-  let parts = $prompt | split row :
-  if ($parts | length) != 2 {
-    print $'(ansi r)Invalid prompt format: expected path:key for YAML files.(ansi reset)'
-    exit $ECODE.INVALID_PARAMETER
-  }
-  let key = $parts | last
-  let path = $parts | first
-  try { open $path | get -i $key } catch {
-    print $'(ansi r)Failed to load the prompt content from ($path), please check it again.(ansi reset)'
-    exit $ECODE.INVALID_PARAMETER
   }
 }
 
@@ -391,24 +362,6 @@ export def has-ref [
   if ($parse.stdout | is-empty) { false } else { true }
 }
 
-export def hr-line [
-  width?: int = 90,
-  --blank-line(-b),
-  --with-arrow(-a),
-  --color(-c): string = 'g',
-] {
-  # Create a line by repeating the unit with specified times
-  def build-line [
-    times: int,
-    unit: string = '-',
-  ] {
-    0..<$times | reduce -f '' { |i, acc| $unit + $acc }
-  }
-
-  print $'(ansi $color)(build-line $width)(if $with_arrow {'>'})(ansi reset)'
-  if $blank_line { char nl | print -n }
-}
-
 # Convert glob patterns to regex patterns
 # Pass in *.nu directly as a regular expression does not work, because * in
 # a regular expression needs to be attached to the previous pattern, the correct
@@ -434,25 +387,6 @@ export def generate-include-regex [patterns: list<string>] {
 export def generate-exclude-regex [patterns: list<string>] {
   let pattern = glob-to-regex $patterns
   $"/^diff --git/{p=/^diff --git a\\/($pattern)/}!p"
-}
-
-# Converts a .env file into a record
-# may be used like this: open .env | load-env
-# works with quoted and unquoted .env files
-export def 'from env' []: string -> record {
-  lines
-    | split column '#' # remove comments
-    | get column1
-    | parse '{key}={value}'
-    | update value {
-        str trim                        # Trim whitespace between value and inline comments
-          | str trim -c '"'             # unquote double-quoted values
-          | str trim -c "'"             # unquote single-quoted values
-          | str replace -a "\\n" "\n"   # replace `\n` with newline char
-          | str replace -a "\\r" "\r"   # replace `\r` with carriage return
-          | str replace -a "\\t" "\t"   # replace `\t` with tab
-      }
-    | transpose -r -d
 }
 
 # Compare two version number, return `1` if first one is higher than second one,
