@@ -69,9 +69,25 @@ def check-providers [options: record] {
   }
 }
 
+# Check if the models are correctly configured in config.yml
 def check-models [options: record] {
   # Each model group should have one and only one enabled model
+  $options.providers | each {|provider|
+    let enabled_models = $provider.models | where enabled | length
+    if ($enabled_models != 1) {
+      print $'Model group (ansi r)`($provider.name)`(ansi reset) should have one and only one enabled model.'
+      exit $ECODE.INVALID_PARAMETER
+    }
+  }
   # All models should have a name field
+  $options.providers | each {|provider|
+    $provider.models | enumerate | each {|e|
+      if ($e.item.name | is-empty) {
+        print $'Model name is missing for provider (ansi r)`($provider.name)` model #($e.index)(ansi reset).'
+        exit $ECODE.INVALID_PARAMETER
+      }
+    }
+  }
 }
 
 # Check if the config.yml file exists and if it's valid
