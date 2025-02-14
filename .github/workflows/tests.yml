@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 7 * * *' # Run every morning at 7am UTC
+
+permissions:
+  contents: read
+
+jobs:
+  nutest-tests:
+    name: Run Tests
+
+    permissions:
+      checks: write
+      pull-requests: write
+
+    strategy:
+      fail-fast: true
+      matrix:
+        version: ["*", "nightly"] # Earliest supported, latest and nightly
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nu
+        uses: hustcer/setup-nu@v3
+        with:
+          version: ${{ matrix.version }}
+
+      - name: Test Nutest
+        shell: nu {0}
+        run: |
+          git clone git@github.com:vyadh/nutest.git
+          use nutest
+          (
+            nutest run-tests
+              --fail
+              --display terminal
+              --report { type: junit, path: test-report.xml }
+              --returns summary | to json | save --force test-summary.json
+          )
