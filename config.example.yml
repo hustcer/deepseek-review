@@ -8,8 +8,6 @@
 #   - Multiple providers could be defined, but only one could be selected, with its name in 'settings.provider'
 #   - One and Only one model could be enabled in one model group
 #   - Model in model groups is disabled by default, even if there is no 'enabled' field
-#   - Use `-u` or `--user-prompt` to specify the user prompt to use by name to override the default user prompt
-#   - Use `-s` or `--system-prompt` to specify the system prompt to use by name to override the default system prompt
 
 settings:
   # The provider to use for code review, with it's name in 'providers'
@@ -78,8 +76,6 @@ local-repos:
     path: '/Users/hustcer/setup-nu'
 
 # Multiple Prompts could be defined, select the one by name in 'settings.user-prompt' or 'settings.system-prompt'
-# Use `-u` or `--user-prompt` to specify the user prompt to use by name to override the default user prompt
-# Use `-s` or `--system-prompt` to specify the system prompt to use by name to override the default system prompt
 prompts:
   user:
     - name: default

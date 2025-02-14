@@ -9,8 +9,10 @@
 
 use common.nu [ECODE, hr-line]
 
+# Config file name
 const SETTING_FILE = 'config.yml'
 
+# Check if the config.yml file exists.
 def file-exists [file: string] {
   if ($file | path exists) { return true }
   print $'The config file (ansi r)($file)(ansi reset) does not exist. '
@@ -41,8 +43,12 @@ def check-prompt [options: record, type: string] {
   }
 }
 
+# Check if the model providers and models are correctly configured in config.yml
 def check-providers [options: record] {
-
+  # settings.provider correctly configured and related provider exists
+  # Each provider should have a token and models field
+  # Each model group should have one and only one enabled model
+  # All models should have a name field
 }
 
 # Check if the config.yml file exists and if it's valid
