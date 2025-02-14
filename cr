@@ -35,9 +35,10 @@ def main [
       --debug=$debug
       --include=$include
       --exclude=$exclude
-      --diff-to=$diff_to
+      --model=$env.CHAT_MODEL
       --base-url=$base_url
       --gh-token=$gh_token
+      --diff-to=$diff_to
       --diff-from=$diff_from
       --patch-cmd=$patch_cmd
       --pr-number=$pr_number

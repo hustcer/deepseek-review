@@ -5,6 +5,7 @@
 #
 # TODO:
 #   [√] Check if the config.yml file exists.
+#   [√] Check if the prompt config keys exist.
 
 use common.nu [ECODE, hr-line]
 
@@ -17,9 +18,39 @@ def file-exists [file: string] {
   exit $ECODE.MISSING_DEPENDENCY
 }
 
+# Check if the prompt keys exist in the config.yml file
+def check-prompts [options: record] {
+  check-prompt $options user
+  check-prompt $options system
+}
+
+# Check if the specified type of prompt key exists in the config.yml file
+def check-prompt [options: record, type: string] {
+  let prompt_key = $options.settings | get -i $'($type)-prompt' | default ''
+  if ($prompt_key | is-empty) {
+    print $'(ansi r)The ($type) prompt key is missing in `settings.($type)-prompt` config.yml file.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
+  let prompt = $options.prompts | get -i $type
+    | default []
+    | where name == $prompt_key
+    | get -i 0.prompt
+  if ($prompt | is-empty) {
+    print $'The ($type) prompt (ansi r)($prompt_key)(ansi reset) is missing in `prompts.($type)` of config.yml file.'
+    exit $ECODE.INVALID_PARAMETER
+  }
+}
+
+def check-providers [options: record] {
+
+}
+
 # Check if the config.yml file exists and if it's valid
 export def config-check [] {
   file-exists $SETTING_FILE
+  let options = open $SETTING_FILE
+  check-prompts $options
+  check-providers $options
 }
 
 # Get model config information
