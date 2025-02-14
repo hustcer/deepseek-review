@@ -46,7 +46,7 @@ jobs:
       - name: Test Nutest
         shell: nu {0}
         run: |
-          # const NU_LIB_DIRS = [ ${{ github.workspace }}/nutest/nutest ]
+          const NU_LIB_DIRS = [ ${{ github.workspace }}/nutest/nutest ]
           $env.NU_LIB_DIRS | print
           ls $NU_LIB_DIRS.0 | print
           pwd | print
