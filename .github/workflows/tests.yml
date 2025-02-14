@@ -48,7 +48,8 @@ jobs:
         run: |
           # const NU_LIB_DIRS = [ ${{ github.workspace }}/nutest/nutest ]
           # ls $NU_LIB_DIRS.0 | print
-          use nutest/nutest
+          pwd | print
+          use ./nutest/nutest
           (
             nutest run-tests
               --fail
