@@ -51,7 +51,7 @@ const IGNORE_REVIEW_KEYWORDS = ['skip review' 'skip cr']
 export def --env deepseek-review [
   token?: string,           # Your DeepSeek API token, fallback to CHAT_TOKEN env var
   --debug(-d),              # Debug mode
-  --repo(-r): string,       # GitHub repository name, e.g. hustcer/deepseek-review
+  --repo(-r): string,       # GitHub repo name, e.g. hustcer/deepseek-review, or local repo path / alias
   --pr-number(-n): string,  # GitHub PR number
   --gh-token(-k): string,   # Your GitHub token, fallback to GITHUB_TOKEN env var
   --diff-to(-t): string,    # Diff to git REF

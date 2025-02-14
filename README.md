@@ -160,7 +160,7 @@ Usage:
 
 Flags:
   -d, --debug: Debug mode
-  -r, --repo <string>: GitHub repository name, e.g. hustcer/deepseek-review
+  -r, --repo <string>: GitHub repo name, e.g. hustcer/deepseek-review, or local repo path / alias
   -n, --pr-number <string>: GitHub PR number
   -k, --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
