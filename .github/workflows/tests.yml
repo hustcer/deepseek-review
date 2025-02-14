@@ -31,6 +31,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout Nutest Repo
+        uses: actions/checkout@v4
+        with:
+          ref: v1.0.1
+          path: nutest
+          repository: vyadh/nutest
+
       - name: Setup Nu
         uses: hustcer/setup-nu@v3
         with:
@@ -39,16 +46,13 @@ jobs:
       - name: Test Nutest
         shell: nu {0}
         run: |
-          git clone git@github.com:vyadh/nutest.git
-          ls nutest
-          pwd | print
           const NU_LIB_DIRS = [ ${{ github.workspace }}/nutest/nutest ]
           ls $NU_LIB_DIRS.0 | print
-          # use nutest
-          # (
-          #   nutest run-tests
-          #     --fail
-          #     --display terminal
-          #     --report { type: junit, path: test-report.xml }
-          #     --returns summary | to json | save --force test-summary.json
-          # )
+          use nutest
+          (
+            nutest run-tests
+              --fail
+              --display terminal
+              --report { type: junit, path: test-report.xml }
+              --returns summary | to json | save --force test-summary.json
+          )
