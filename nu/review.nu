@@ -224,11 +224,13 @@ export def get-diff [
   let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json]
   let DIFF_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3.diff]
   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
-  if not ($local_repo | path exists) {
-    print $'(ansi r)The directory ($local_repo) does not exist.(ansi reset)'
-    exit $ECODE.CONDITION_NOT_SATISFIED
+  if ($pr_number | is-empty) {
+    if not ($local_repo | path exists) {
+      print $'(ansi r)The directory ($local_repo) does not exist.(ansi reset)'
+      exit $ECODE.CONDITION_NOT_SATISFIED
+    }
+    cd $local_repo
   }
-  cd $local_repo
   mut content = if ($pr_number | is-not-empty) {
     if ($repo | is-empty) {
       print $'(ansi r)Please provide the GitHub repository name by `--repo` option.(ansi reset)'
