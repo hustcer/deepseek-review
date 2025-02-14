@@ -33,7 +33,6 @@ def main [
     deepseek-review $token
       --repo=$repo
       --debug=$debug
-      --model=$model
       --include=$include
       --exclude=$exclude
       --diff-to=$diff_to
