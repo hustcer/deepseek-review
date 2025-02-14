@@ -46,7 +46,30 @@ def check-prompt [options: record, type: string] {
 # Check if the model providers and models are correctly configured in config.yml
 def check-providers [options: record] {
   # settings.provider correctly configured and related provider exists
-  # Each provider should have a token and models field
+  let provider_name = $options.settings.provider
+  if ($provider_name | is-empty) {
+    print $'(ansi r)The provider name is missing in `settings.provider` of config.yml file.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
+  let provider_exists = $options.providers
+    | where name == $provider_name
+    | is-not-empty
+  if not $provider_exists {
+    print $'(ansi r)The provider ($provider_name) does not exist in `providers` of config.yml file.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
+  # Each provider should have name, token and models field
+  $options.providers | each {|it|
+    let empties = [name token models] | filter { |field| $it | get -i $field | is-empty }
+    if ($empties | is-not-empty) {
+      print $'Field (ansi r)`($empties | str join ,)`(ansi reset) should not be empty for provider:'
+      $it | table -e -t psql | print
+      exit $ECODE.INVALID_PARAMETER
+    }
+  }
+}
+
+def check-models [options: record] {
   # Each model group should have one and only one enabled model
   # All models should have a name field
 }
@@ -57,6 +80,7 @@ export def config-check [] {
   let options = open $SETTING_FILE
   check-prompts $options
   check-providers $options
+  check-models $options
 }
 
 # Get model config information
