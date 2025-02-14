@@ -40,6 +40,8 @@ jobs:
         shell: nu {0}
         run: |
           git clone git@github.com:vyadh/nutest.git
+          ls nutest
+          pwd | print
           const NU_LIB_DIRS = [ ${{ github.workspace }}/nutest/nutest ]
 
           use nutest
