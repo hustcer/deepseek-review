@@ -73,7 +73,7 @@ def check-providers [options: record] {
 def check-models [options: record] {
   # Each model group should have one and only one enabled model
   $options.providers | each {|provider|
-    let enabled_models = $provider.models | where enabled | length
+    let enabled_models = $provider.models | default false enabled | where enabled | length
     if ($enabled_models != 1) {
       print $'Model group (ansi r)`($provider.name)`(ansi reset) should have one and only one enabled model.'
       exit $ECODE.INVALID_PARAMETER
@@ -82,8 +82,8 @@ def check-models [options: record] {
   # All models should have a name field
   $options.providers | each {|provider|
     $provider.models | enumerate | each {|e|
-      if ($e.item.name | is-empty) {
-        print $'Model name is missing for provider (ansi r)`($provider.name)` model #($e.index)(ansi reset).'
+      if ($e.item.name? | is-empty) {
+        print $'Model name is missing for provider (ansi r)`($provider.name)` model #($e.index)(ansi reset)...'
         exit $ECODE.INVALID_PARAMETER
       }
     }
