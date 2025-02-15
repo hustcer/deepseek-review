@@ -58,6 +58,8 @@ jobs:
         shell: nu {0}
         run: |
           use ${{ github.workspace }}/nutest/nutest
+          use ${{ github.workspace }}/nu/review.nu
+          prepare-awk
           (
             nutest run-tests
               --fail
