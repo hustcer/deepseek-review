@@ -64,7 +64,7 @@ export def --env deepseek-review [
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
-  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`, Only for V3
+  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
