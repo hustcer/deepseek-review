@@ -2,22 +2,28 @@
 # REF:
 #   - https://github.com/vyadh/nutest/blob/main/.github/workflows/tests.yaml
 
-name: Tests
+name: Run Tests
 
 on:
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   workflow_dispatch:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   schedule:
-    - cron: '0 7 * * *'   # Run every morning at 7am UTC
+    - cron: '0 0 * * *'   # Run every morning at 0am UTC
 
 permissions:
   contents: read
 
 jobs:
-  nutest-tests:
+  run-tests:
     name: Run Tests
 
     permissions:

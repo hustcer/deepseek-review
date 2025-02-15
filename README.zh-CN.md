@@ -189,7 +189,7 @@ Parameters:
 
 ### 环境配置
 
-在本地进行代码审查需要先修改配置文件，仓库里已经有了 `config.example.yml` 配置文件示例，将其拷贝到 `config.yml` 然后根据自己的实际情况进行修改即可。
+在本地进行代码审查需要先修改配置文件，仓库里已经有了 [`config.example.yml`](https://github.com/hustcer/deepseek-review/blob/main/config.example.yml) 配置文件示例，将其拷贝到 `config.yml` 然后根据自己的实际情况进行修改即可。
 
 > [!WARNING]
 >

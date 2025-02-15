@@ -192,7 +192,7 @@ Parameters:
 
 ### Environment Configuration
 
-To perform code reviews locally, you need to modify the configuration file. A sample configuration file `config.example.yml` is already provided in the repository. Copy it to `config.yml` and adjust it according to your actual setup.
+To perform code reviews locally, you need to modify the configuration file. A sample configuration file [`config.example.yml`](https://github.com/hustcer/deepseek-review/blob/main/config.example.yml) is already provided in the repository. Copy it to `config.yml` and adjust it according to your actual setup.
 
 > [!WARNING]
 >
