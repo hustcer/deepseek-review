@@ -1,0 +1,153 @@
+commit 22e7b71776edf9ee580345368fc4c8269bb05cab
+Author: Justin Ma <hustcer@outlook.com>
+Date:   Mon Feb 10 16:41:22 2025 +0800
+
+    feat: Add support for configurable temperature parameter in DeepSeek model setup (#93)
+    
+    * feat: Add support for configurable temperature parameter in DeepSeek model setup
+    
+    * chore: Add temperature validation
+
+diff --git a/.env.example b/.env.example
+index 8966133..710f532 100644
+--- a/.env.example
++++ b/.env.example
+@@ -11,6 +11,8 @@ CHAT_TOKEN='Your DeepSeek API token'
+ GITHUB_TOKEN='Your GitHub API token'
+ # MAX_LENGTH: The maximum length of the content for review, 0 means no limit.
+ MAX_LENGTH='0'
++# The maximum temperature for the model to generate the response. 1.0 by default.
++TEMPERATURE='1.0'
+ # The comma separated file patterns to include in the code review.
+ INCLUDE_PATTERNS=''
+ # The comma separated file patterns to exclude in the code review.
+diff --git a/README.md b/README.md
+index 682f96b..79b5f1b 100644
+--- a/README.md
++++ b/README.md
+@@ -102,11 +102,12 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
+ | Name           | Type   | Description                                                             |
+ | -------------- | ------ | ----------------------------------------------------------------------- |
+ | chat-token     | String | Required, DeepSeek API Token                                            |
+-| model          | String | Optional, the model used for code review, defaults to `deepseek-chat`   |
++| model          | String | Optional, The model used for code review, defaults to `deepseek-chat`   |
+ | base-url       | String | Optional, DeepSeek API Base URL, defaults to `https://api.deepseek.com` |
+ | max-length     | Int    | Optional, Maximum length(Unicode width) of the content for review, if the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
+-| sys-prompt     | String | Optional, system prompt corresponding to `$sys_prompt` in the payload, default value see note below |
+-| user-prompt    | String | Optional, user prompt corresponding to `$user_prompt` in the payload, default value see note below |
++| sys-prompt     | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below |
++| user-prompt    | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below |
++| temperature    | Number | Optional, The temperature for the model to generate the response, between `0` and `2`, default value `1.0` |
+ | include-patterns | String | Optional, The comma separated file patterns to include in the code review. No default |
+ | exclude-patterns | String | Optional, The comma separated file patterns to exclude in the code review. Default to `pnpm-lock.yaml,package-lock.json,*.lock` |
+ | github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `github.token`. |
+@@ -118,6 +119,7 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
+   // `$model` default value: deepseek-chat
+   model: $model,
+   stream: false,
++  temperature: $temperature,
+   messages: [
+     // `$sys_prompt` default value: You are a professional code review assistant responsible for
+     // analyzing code changes in GitHub Pull Requests. Identify potential issues such as code
+diff --git a/README.zh-CN.md b/README.zh-CN.md
+index 375a2ed..b22be07 100644
+--- a/README.zh-CN.md
++++ b/README.zh-CN.md
+@@ -105,6 +105,7 @@ jobs:
+ | max-length     | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查 |
+ | sys-prompt     | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释      |
+ | user-prompt    | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释     |
++| temperature    | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `1.0`        |
+ | include-patterns | String | 可选，代码审查中要包含的以逗号分隔的文件模式，无默认值 |
+ | exclude-patterns | String | 可选，代码审查中要排除的以逗号分隔的文件模式，默认值为 `pnpm-lock.yaml,package-lock.json,*.lock` |
+ | github-token   | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}` |
+@@ -116,6 +117,7 @@ DeepSeek 接口调用入参:
+   // `$model` default value: deepseek-chat
+   model: $model,
+   stream: false,
++  temperature: $temperature,
+   messages: [
+     // `$sys_prompt` default value: You are a professional code review assistant responsible for
+     // analyzing code changes in GitHub Pull Requests. Identify potential issues such as code
+diff --git a/action.yaml b/action.yaml
+index 194424a..e258516 100644
+--- a/action.yaml
++++ b/action.yaml
+@@ -26,6 +26,10 @@ inputs:
+     required: false
+     default: 'deepseek-chat'
+     description: 'The DeepSeek model to choose for code review.'
++  temperature:
++    required: false
++    default: 1.0
++    description: 'The temperature of the model.'
+   base-url:
+     required: false
+     default: 'https://api.deepseek.com'
+@@ -74,6 +78,7 @@ runs:
+         let includePatterns = '${{ inputs.include-patterns }}'
+         let excludePatterns = '${{ inputs.exclude-patterns }}'
+         let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
++        let temperature = try { '${{ inputs.temperature }}' | into float } catch { 1.0 }
+         (deepseek-review $token
+           --model $model
+           --repo $repo
+@@ -83,6 +88,7 @@ runs:
+           --max-length $maxLength
+           --sys-prompt $sysPrompt
+           --user-prompt $userPrompt
++          --temperature $temperature
+           --include $includePatterns
+           --exclude $excludePatterns
+         )
+diff --git a/nu/review.nu b/nu/review.nu
+index 1adcd9f..4c5f4a2 100644
+--- a/nu/review.nu
++++ b/nu/review.nu
+@@ -43,6 +43,7 @@ const HTTP_HEADERS = [User-Agent curl/8.9]
+ 
+ const DEFAULT_OPTIONS = {
+   MODEL: 'deepseek-chat',
++  TEMPERATURE: 1.0,
+   BASE_URL: 'https://api.deepseek.com',
+   USER_PROMPT: 'Please review the following code changes:',
+   SYS_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.',
+@@ -67,6 +68,7 @@ export def --env deepseek-review [
+   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
+   --include(-i): string,    # Comma separated file patterns to include in the code review
+   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
++  --temperature: float,     # Temperature for the model
+ ]: nothing -> nothing {
+ 
+   $env.config.table.mode = 'psql'
+@@ -76,8 +78,13 @@ export def --env deepseek-review [
+   let CHAT_HEADER = [Authorization $'Bearer ($token)']
+   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
+   let model = $model | default $env.CHAT_MODEL? | default $DEFAULT_OPTIONS.MODEL
+-  let max_length = $max_length | default ($env.MAX_LENGTH? | default 0 | into int)
+   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
++  let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
++  let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
++  if ($temperature < 0) or ($temperature > 2) {
++    print $'(ansi r)Invalid temperature value, should be in the range of 0 to 2.(ansi reset)'
++    exit $ECODE.INVALID_PARAMETER
++  }
+   let url = $'($base_url)/chat/completions'
+   let setting = {
+     repo: $repo,
+@@ -90,6 +97,7 @@ export def --env deepseek-review [
+     pr_number: $pr_number,
+     max_length: $max_length,
+     local_repo: $local_repo,
++    temperature: $temperature,
+   }
+   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
+ 
+@@ -119,6 +127,7 @@ export def --env deepseek-review [
+   let payload = {
+     model: $model,
+     stream: false,
++    temperature: $temperature,
+     messages: [
+       { role: 'system', content: $sys_prompt },
+       { role: 'user', content: $"($user_prompt):\n($content)" }

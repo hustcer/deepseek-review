@@ -15,6 +15,7 @@ words:
 - dotenv
 - hustcer
 - Nushell
+- creatio
 - justfile
 - lefthook
 - deepseek
