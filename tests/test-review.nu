@@ -56,6 +56,7 @@ def 'generate-exclude-regex：should work as expected' [] {
 def 'both include and exclude should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
+  # TODO: Fix the issue on Windows
   if (sys host | get name) == 'Windows' { return }
   assert equal ($patch
     | ^$awk_bin (generate-include-regex [nu/*, **/*.yaml])
@@ -67,6 +68,7 @@ def 'both include and exclude should work as expected' [] {
 def 'both exclude and include should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
+  # TODO: Fix the issue on Windows
   if (sys host | get name) == 'Windows' { return }
   assert equal ($patch
     | ^$awk_bin (generate-exclude-regex [**/*.yaml])
