@@ -1,13 +1,14 @@
 
 use std/assert
 
-use ../nu/review.nu [is-safe-git, generate-include-regex, generate-exclude-regex]
+use ../nu/review.nu [is-safe-git, generate-include-regex, generate-exclude-regex, prepare-awk]
 
-[before-all]
+#[before-all]
 def setup [] {
+  let awk_bin = (prepare-awk)
   let patch = open -r tests/resources/diff.patch
   print 'Mock patch creation from commit: 22e7b71'
-  { patch: $patch, SHA: 22e7b71 }
+  { patch: $patch, awk: $awk_bin, SHA: 22e7b71 }
 }
 
 #[test]
@@ -35,34 +36,38 @@ def 'is-safe-git：should work as expected' [] {
 
 #[test]
 def 'generate-include-regex：should work as expected' [] {
-  let patch = open -r tests/resources/diff.patch
-  assert equal ($patch | awk (generate-include-regex [*]) | length) 8133
-  assert equal ($patch | awk (generate-include-regex [nu/*]) | length) 2577
-  assert equal ($patch | awk (generate-include-regex [nu/*, **/*.yaml]) | length) 3670
-  assert equal ($patch | awk (generate-include-regex [.env*, *.md, nu/*]) | length) (7020 + 20)
+  let patch = $in.patch
+  let awk_bin = $in.awk
+  assert equal ($patch | ^$awk_bin (generate-include-regex [*]) | length) 8133
+  assert equal ($patch | ^$awk_bin (generate-include-regex [nu/*]) | length) 2577
+  assert equal ($patch | ^$awk_bin (generate-include-regex [nu/*, **/*.yaml]) | length) 3670
+  assert equal ($patch | ^$awk_bin (generate-include-regex [.env*, *.md, nu/*]) | length) (7020 + 20)
 }
 
 #[test]
 def 'generate-exclude-regex：should work as expected' [] {
-  let patch = open -r tests/resources/diff.patch
-  assert equal ($patch | awk (generate-exclude-regex [*]) | length) 357
-  assert equal ($patch | awk (generate-exclude-regex [.env*, *.md, nu/*]) | length) (1350 + 100)
+  let patch = $in.patch
+  let awk_bin = $in.awk
+  assert equal ($patch | ^$awk_bin (generate-exclude-regex [*]) | length) 357
+  assert equal ($patch | ^$awk_bin (generate-exclude-regex [.env*, *.md, nu/*]) | length) (1350 + 100)
 }
 
 #[test]
 def 'both include and exclude should work as expected' [] {
-  let patch = open -r tests/resources/diff.patch
+  let patch = $in.patch
+  let awk_bin = $in.awk
   assert equal ($patch
-    | awk (generate-include-regex [nu/*, **/*.yaml])
-    | awk (generate-exclude-regex [**/*.yaml])
+    | ^$awk_bin (generate-include-regex [nu/*, **/*.yaml])
+    | ^$awk_bin (generate-exclude-regex [**/*.yaml])
     | length) 2577
 }
 
 #[test]
 def 'both exclude and include should work as expected' [] {
-  let patch = open -r tests/resources/diff.patch
+  let patch = $in.patch
+  let awk_bin = $in.awk
   assert equal ($patch
-    | awk (generate-exclude-regex [**/*.yaml])
-    | awk (generate-include-regex [nu/*])
+    | ^$awk_bin (generate-exclude-regex [**/*.yaml])
+    | ^$awk_bin (generate-include-regex [nu/*])
     | length) 2577
 }

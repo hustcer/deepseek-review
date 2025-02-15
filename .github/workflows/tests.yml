@@ -31,7 +31,7 @@ jobs:
       pull-requests: write
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         version: ['*', nightly]   # Earliest supported, latest and nightly
         platform: [ubuntu-latest, windows-latest, macos-latest]
