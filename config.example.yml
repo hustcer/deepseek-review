@@ -26,6 +26,7 @@ settings:
   system-prompt: 'default'
   # The GITHUB_TOKEN secret or personal access token(PAT) to authenticate
   # This token is used to fetch the PR changes from GitHub API
+  # Default value will be ${{ github.token }} if used in GitHub Actions
   github-token: 'YOUR_GITHUB_TOKEN'
   # Default local repository to review, could be overrode by '-r' or '--repo'
   default-local-repo: 'review'

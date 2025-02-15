@@ -4,16 +4,25 @@
 
 ## 特性
 
+### GitHub Action
+
 - 通过 GitHub Action 使用 DeepSeek 进行自动化 PR 审查
+- 在 PR 的标题或描述中添加 `skip cr` or `skip review` 可跳过 GitHub Actions 里的代码审查
+- 跨平台：支持 GitHub `macOS`, `Ubuntu` & `Windows` Runners
+
+### 本地代码审查
+
+- 本地代码审查的时候支持流式输出
 - 通过本地 CLI 直接审查远程 GitHub PR
 - 通过本地 CLI 使用 DeepSeek 分析任何本地仓库的提交变更
-- 本地代码审查的时候支持流式输出
+- 跨平台：理论上只要能运行 [Nushell](https://github.com/nushell/nushell) 即可使用本工具
+
+### 本地或 GH Action
+
+- 支持 DeepSeek `V3` 和 `R1` 模型
 - 完全可定制：选择模型、基础 URL 和提示词
-- 支持 DeepSeek V3 和 R1 模型
 - 支持自托管 DeepSeek 模型，提供更强的灵活性
-- 在 PR 的标题或描述中添加 `skip cr` or `skip review` 可跳过 GitHub Actions 里的代码审查
 - 对指定文件变更进行包含/排除式代码审查
-- 跨平台：支持 GitHub `macOS`, `Ubuntu` & `Windows` Runners
 
 ## 计划支持特性
 

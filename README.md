@@ -6,16 +6,25 @@
 
 ## Features
 
+### GitHub Action
+
 - Automate PR Reviews with DeepSeek via GitHub Action
-- Review Remote GitHub PRs Directly from Your Local CLI
-- Analyze Commit Changes with DeepSeek for Any Local Repository with CLI
+- Add `skip cr` or `skip review` to PR Title or Body to Disable Code Review in GitHub Actions
+- Cross-platform Support: Compatible with GitHub Runners across `macOS`, `Ubuntu`, and `Windows`.
+
+### Local Code Review
+
 - Streaming Output Support for Local Code Review
+- Review Remote GitHub PRs Directly from Your Local CLI
+- Review Commit Changes with DeepSeek for Any Local Repository by CLI
+- Cross-platform Compatibility: Designed to function seamlessly across all platforms capable of running [Nushell](https://github.com/nushell/nushell)
+
+### Both GH Action & Local
+
+- Support Both DeepSeek's `V3` & `R1` Models
 - Fully Customizable: Choose Models, Base URLs, and Prompts
-- Support Both DeepSeek's V3 & R1 Models
 - Supports Self-Hosted DeepSeek Models for Enhanced Flexibility
 - Perform Code Reviews for Changes That either Include or Exclude Specific Files
-- Add `skip cr` or `skip review` to PR title or body to disable code review in GitHub Actions
-- Cross-platform Support: Compatible with GitHub Runners across `macOS`, `Ubuntu`, and `Windows`.
 
 ## Planned Features
 
@@ -113,7 +122,7 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 | temperature    | Number | Optional, The temperature for the model to generate the response, between `0` and `2`, default value `1.0` |
 | include-patterns | String | Optional, The comma separated file patterns to include in the code review. No default |
 | exclude-patterns | String | Optional, The comma separated file patterns to exclude in the code review. Default to `pnpm-lock.yaml,package-lock.json,*.lock` |
-| github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `github.token`. |
+| github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`. |
 
 **DeepSeek API Call Payload**:
 
