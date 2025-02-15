@@ -70,16 +70,19 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: runner.os == 'Linux' && always()
         with:
+          comment_mode: off
           files: test-report.xml
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action/macos@v2
         if: runner.os == 'macOS' && always()
         with:
+          comment_mode: off
           files: test-report.xml
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action/windows@v2
         if: runner.os == 'Windows' && always()
         with:
+          comment_mode: off
           files: test-report.xml
