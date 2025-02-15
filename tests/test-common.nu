@@ -40,13 +40,15 @@ def 'from-env：.env load should work' [] {
 }
 
 #[test]
-def 'is-installed：git should be installed' [] {
+def 'is-installed：binary install check should work' [] {
   assert equal (is-installed git) true
+  assert equal (is-installed abc) false
 }
 
 #[test]
 def 'has-ref：git repo should has HEAD ref' [] {
   assert equal (has-ref HEAD) true
+  assert equal (has-ref 0000) false
 }
 
 #[test]
