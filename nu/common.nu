@@ -62,6 +62,13 @@ export def 'from env' []: string -> record {
     | transpose -r -d
 }
 
+# Compact the record by removing empty columns
+export def compact-record []: record -> record {
+  let record = $in
+  let empties = $record | columns | filter {|it| $record | get $it | is-empty }
+  $record | reject ...$empties
+}
+
 # Check if some command available in current shell
 export def is-installed [ app: string ] {
   (which $app | length) > 0

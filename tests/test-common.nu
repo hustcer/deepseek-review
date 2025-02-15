@@ -1,7 +1,7 @@
 
 use std/assert
 
-use ../nu/common.nu [compare-ver, 'from env', is-installed, has-ref, git-check]
+use ../nu/common.nu [compare-ver, 'from env', is-installed, has-ref, git-check, compact-record]
 
 #[test]
 def 'compare-ver：v1.0.0 is greater than v0.999.0' [] {
@@ -26,6 +26,7 @@ def 'compare-ver：v1.0.1 is greater than v1' [] {
 
 #[test]
 def 'compare-ver：v1.0.1 is lower than v1.1.0' [] {
+  assert less (compare-ver 1.0.1 v1.1) 0
   assert equal (compare-ver 1.0.1 1.1.0) (-1)
 }
 
@@ -54,4 +55,10 @@ def 'has-ref：git repo should has HEAD ref' [] {
 #[test]
 def 'git-check：current dir is a git repo' [] {
   assert equal (git-check (pwd) --check-repo=1) true
+}
+
+#[test]
+def 'compact-record：should work as expected' [] {
+  assert equal ({a: null, b: '', c: 'abc' } | compact-record) { c: 'abc' }
+  assert equal ({a: null, b: 0, c: 1, e: { f: 'g' } } | compact-record) { b: 0, c: 1, e: { f: 'g' } }
 }

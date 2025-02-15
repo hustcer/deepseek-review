@@ -26,7 +26,7 @@
 #  - Local PR Review: just cr -r hustcer/deepseek-review -n 32
 
 use kv.nu *
-use common.nu [ECODE, hr-line, is-installed, git-check, has-ref, compare-ver]
+use common.nu [ECODE, hr-line, is-installed, git-check, has-ref, compare-ver, compact-record]
 
 const RESPONSE_END = 'data: [DONE]'
 
@@ -309,13 +309,6 @@ export def prepare-awk [] {
     exit $ECODE.MISSING_BINARY
   }
   'awk'
-}
-
-# Compact the record by removing empty columns
-export def compact-record []: record -> record {
-  let record = $in
-  let empties = $record | columns | filter {|it| $record | get $it | is-empty }
-  $record | reject ...$empties
 }
 
 # Convert glob patterns to regex patterns
