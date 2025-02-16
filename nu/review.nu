@@ -409,12 +409,14 @@ export def is-safe-git [cmd: string] {
 # applying include and exclude patterns on GitHub's Windows runners.
 def install-gawk-for-actions [] {
   # Install scoop using PowerShell
-  pwsh -c "Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')"
-    | complete | get stdout | print
-  # Add scoop to PATH and add main bucket
-  pwsh -c '$env:Path = "$env:USERPROFILE\scoop\shims;" + $env:Path; scoop update; scoop install gawk'
-  gawk --version | lines | first | print
-  'gawk'
+  pwsh -c r#'
+    Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://get.scoop.sh")
+    $env:Path = "$env:USERPROFILE\scoop\shims;" + $env:Path; scoop update; scoop install gawk'#
+      | complete | get stdout | print
+  hr-line
+  ^$'($nu.home-path)/scoop/shims/gawk.exe' --version | lines | first | print
+  hr-line
+  $'($nu.home-path)/scoop/shims/gawk.exe'
 }
 
 alias main = deepseek-review
