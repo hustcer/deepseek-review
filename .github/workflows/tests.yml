@@ -70,3 +70,29 @@ jobs:
               --report { type: junit, path: test-report.xml }
               --returns summary | to json | save --force test-summary.json
           )
+
+      - name: Publish Test Summary
+        if: runner.os == 'Linux' && matrix.version == '*' && github.ref == 'refs/heads/main'
+        shell: nu {0}
+        run: |
+          let gist_id = '9cbdca67f966d7ea2e6e1eaf7c9083a3'
+          let filename = 'test-summary.json'
+
+          let data = {
+            files: {
+              "test-summary.json": {
+                content: (open --raw $filename)
+              }
+            }
+          }
+          (
+            $data | http patch
+              --redirect-mode 'follow'
+              --content-type 'application/json'
+              --headers {
+                'Authorization': $'Bearer ${{ secrets.GIST_TOKEN }}'
+                'Accept': 'application/vnd.github+json'
+                'X-GitHub-Api-Version': '2022-11-28'
+              }
+              $'https://api.github.com/gists/($gist_id)'
+          ) | ignore
