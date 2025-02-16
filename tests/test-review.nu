@@ -1,7 +1,7 @@
 
 use std/assert
 
-use ../nu/review.nu [is-safe-git, generate-include-regex, generate-exclude-regex, prepare-awk]
+use ../nu/review.nu [is-safe-git, generate-include-regex, generate-exclude-regex, prepare-awk, get-diff]
 
 #[before-all]
 def setup [] {
@@ -15,6 +15,8 @@ def setup [] {
 def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git diff') true
   assert equal (is-safe-git 'git show') true
+  assert equal (is-safe-git 'git log') false
+  assert equal (is-safe-git 'git checkout') false
   assert equal (is-safe-git 'git show 0dd0eb5') true
   assert equal (is-safe-git 'git show HEAD') true
   assert equal (is-safe-git 'git diff HEAD~2') true
@@ -74,4 +76,32 @@ def 'both exclude and include should work as expected' [] {
     | ^$awk_bin (generate-exclude-regex [**/*.yaml])
     | ^$awk_bin (generate-include-regex [nu/*])
     | length) 2577
+}
+
+#[test]
+def 'get-diff：get patch from remote PR should work' [] {
+  $env.GH_TOKEN = $env.GITHUB_TOKEN?
+  const repo = 'hustcer/deepseek-review'
+  if ($env.GH_TOKEN | is-empty) { print '$env.GH_TOKEN is empty'; return }
+  let patch = get-diff --pr-number 93 --repo $repo
+  assert equal ($patch | lines | skip 1
+                  | str join "\n" | str stats | get unicode-width) 7923
+}
+
+#[test]
+def 'get-diff：get patch from remote PR with include should work' [] {
+  $env.GH_TOKEN = $env.GITHUB_TOKEN?
+  const repo = 'hustcer/deepseek-review'
+  if ($env.GH_TOKEN | is-empty) { print '$env.GH_TOKEN is empty'; return }
+  let patch = get-diff --pr-number 93 --repo $repo --include nu/*
+  assert equal ($patch | str join "\n" | str stats | get unicode-width) 2576
+}
+
+#[test]
+def 'get-diff：get patch from remote PR with exclude should work' [] {
+  $env.GH_TOKEN = $env.GITHUB_TOKEN?
+  const repo = 'hustcer/deepseek-review'
+  if ($env.GH_TOKEN | is-empty) { print '$env.GH_TOKEN is empty'; return }
+  let patch = get-diff --pr-number 93 --repo $repo --exclude **/*.yaml,**/*.nu,*.md
+  assert equal ($patch | str join "\n" | str stats | get unicode-width) 555
 }

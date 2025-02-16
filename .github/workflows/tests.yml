@@ -13,6 +13,7 @@ on:
   push:
     branches:
       - main
+      - develop
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -56,6 +57,8 @@ jobs:
 
       - name: Test Deepseek Review
         shell: nu {0}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           use ${{ github.workspace }}/nutest/nutest
           use ${{ github.workspace }}/nu/review.nu [prepare-awk]
