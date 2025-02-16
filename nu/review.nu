@@ -306,7 +306,9 @@ export def prepare-awk [] {
       print $'Current gawk version: ($gawk_version)'
       return 'gawk'
     } else if (windows?) and ($env.GITHUB_ACTIONS? == 'true') {
-      return (install-gawk-for-actions)
+      let awk_info = (install-gawk-for-actions)
+      print $'Current gawk version: ($awk_info.version)'
+      return $awk_info.awk_bin
     }
   }
   if (mac?) and (is-installed brew) {
@@ -420,10 +422,9 @@ def install-gawk-for-actions [] {
     Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://get.scoop.sh")
     $env:Path = "$env:USERPROFILE\scoop\shims;" + $env:Path; scoop update; scoop install gawk'#
       | complete | get stdout | print
-  hr-line
-  ^$'($nu.home-path)/scoop/shims/gawk.exe' --version | lines | first | print
-  hr-line
-  $'($nu.home-path)/scoop/shims/gawk.exe'
+  let awk_bin = $'($nu.home-path)/scoop/shims/gawk.exe'
+  let version = get-awk-ver $awk_bin
+  { awk_bi: $awk_bin, version: $version }
 }
 
 alias main = deepseek-review
