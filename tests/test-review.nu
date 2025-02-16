@@ -3,6 +3,9 @@ use std/assert
 
 use ../nu/review.nu [is-safe-git, generate-include-regex, generate-exclude-regex, prepare-awk, get-diff]
 
+# Get the unicode width of the input string
+def get-uw [] { $in | str stats | get unicode-width }
+
 #[before-all]
 def setup [] {
   let awk_bin = (prepare-awk)
@@ -34,10 +37,6 @@ def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/* >> out.txt') false
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/* < in.txt') false
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/* << in.txt') false
-}
-
-def get-uw [] {
-  $in | str stats | get unicode-width
 }
 
 #[test]
