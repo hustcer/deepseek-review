@@ -405,13 +405,15 @@ export def is-safe-git [cmd: string] {
 }
 
 # Setup scoop and install gawk for GitHub Windows runners
+# This command is essential for resolving the issue of simultaneously
+# applying include and exclude patterns on GitHub's Windows runners.
 def install-gawk-for-actions [] {
   # Install scoop using PowerShell
   pwsh -c "Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')"
     | complete | get stdout | print
   # Add scoop to PATH and add main bucket
   pwsh -c '$env:Path = "$env:USERPROFILE\scoop\shims;" + $env:Path; scoop update; scoop install gawk'
-  gawk --version | lines | first
+  gawk --version | lines | first | print
   'gawk'
 }
 
