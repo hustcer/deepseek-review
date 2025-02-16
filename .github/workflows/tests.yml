@@ -55,7 +55,7 @@ jobs:
         with:
           version: ${{ matrix.version }}
 
-      - name: Test Deepseek Review
+      - name: Test DeepSeek Review
         shell: nu {0}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
