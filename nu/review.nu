@@ -26,7 +26,10 @@
 #  - Local PR Review: just cr -r hustcer/deepseek-review -n 32
 
 use kv.nu *
-use common.nu [ECODE, hr-line, is-installed, git-check, has-ref, compare-ver, compact-record, windows?, mac?]
+use common.nu [
+  ECODE, hr-line, is-installed, windows?, mac?,
+  compare-ver, compact-record, git-check, has-ref,
+]
 
 const RESPONSE_END = 'data: [DONE]'
 
