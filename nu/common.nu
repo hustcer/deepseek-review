@@ -22,7 +22,7 @@ export def windows? [] {
   (sys host | get name) == 'Windows'
 }
 
-# If current host is Windows
+# If current host is macOS
 export def mac? [] {
   # Windows / Darwin
   (sys host | get name) == 'Darwin'
