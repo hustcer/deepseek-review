@@ -424,7 +424,7 @@ def install-gawk-for-actions [] {
       | complete | get stdout | print
   let awk_bin = $'($nu.home-path)/scoop/shims/gawk.exe'
   let version = get-awk-ver $awk_bin
-  { awk_bi: $awk_bin, version: $version }
+  { awk_bin: $awk_bin, version: $version }
 }
 
 alias main = deepseek-review
