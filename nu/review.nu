@@ -410,10 +410,7 @@ def install-gawk-for-actions [] {
   pwsh -c "Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')"
     | complete | get stdout | print
   # Add scoop to PATH and add main bucket
-  pwsh -c r#'
-            $env:Path += ";$env:USERPROFILE\scoop\shims"
-            scoop update; scoop install gawk
-          '#
+  pwsh -c '$env:Path += ";$env:USERPROFILE\scoop\shims"; scoop update; scoop install gawk'
   ^$'($nu.home-path)\scoop\shims\gawk.exe' --version | lines | first
   $'($nu.home-path)\scoop\shims\gawk.exe'
 }
