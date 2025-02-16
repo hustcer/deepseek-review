@@ -279,6 +279,13 @@ export def get-diff [
   $content
 }
 
+# AWK family version check for both awk and gawk
+#  awk: awk version 20250116 -> 20250116
+# gawk: GNU Awk 5.3.1, API 4.0, (GNU MPFR 4.2.1, GNU MP 6.3.0) -> 5.3.1
+def get-awk-ver [awk_bin: string] {
+  ^$awk_bin --version | lines | first | split row , | first | split row ' ' | last
+}
+
 # Prepare gawk for macOS
 export def prepare-awk [] {
   const MIN_GAWK_VERSION = '5.3.1'
@@ -287,17 +294,16 @@ export def prepare-awk [] {
   let gawk_installed = is-installed gawk
 
   if $awk_installed {
-    # AWK family version check for both awk and gawk
-    #  awk: awk version 20250116 -> 20250116
-    # gawk: GNU Awk 5.3.1, API 4.0, (GNU MPFR 4.2.1, GNU MP 6.3.0) -> 5.3.1
-    let awk_version = awk --version | lines | first | split row , | first | split row ' ' | last
-    print $'Current awk version: ($awk_version)'
-    if (compare-ver $awk_version $MIN_AWK_VERSION) >= 0 { return 'awk' }
+    let awk_version = get-awk-ver awk
+    if (compare-ver $awk_version $MIN_AWK_VERSION) >= 0 {
+      print $'Current awk version: ($awk_version)'
+      return 'awk'
+    }
   }
   if $gawk_installed {
-    let gawk_version = gawk --version | lines | first | split row , | first | split row ' ' | last
-    print $'Current gawk version: ($gawk_version)'
+    let gawk_version = get-awk-ver gawk
     if (compare-ver $gawk_version $MIN_GAWK_VERSION) >= 0 {
+      print $'Current gawk version: ($gawk_version)'
       return 'gawk'
     } else if (windows?) and ($env.GITHUB_ACTIONS? == 'true') {
       return (install-gawk-for-actions)
@@ -305,13 +311,14 @@ export def prepare-awk [] {
   }
   if (mac?) and (is-installed brew) {
     brew install gawk
-    print $'Current gawk version: (gawk --version | lines | first)'
+    print $'Current gawk version: (get-awk-ver gawk)'
     return 'gawk'
   }
   if (not $awk_installed) and (not $gawk_installed) {
     print $'(ansi r)Neither `awk` nor `gawk` is installed, please install the latest version of `gawk`.(ansi reset)'
     exit $ECODE.MISSING_BINARY
   }
+  print $'Current awk version: (get-awk-ver awk)'
   'awk'
 }
 
