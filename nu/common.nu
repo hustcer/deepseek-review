@@ -16,6 +16,18 @@ export const ECODE = {
   CONDITION_NOT_SATISFIED: 8,
 }
 
+# If current host is Windows
+export def windows? [] {
+  # Windows / Darwin
+  (sys host | get name) == 'Windows'
+}
+
+# If current host is Windows
+export def mac? [] {
+  # Windows / Darwin
+  (sys host | get name) == 'Darwin'
+}
+
 # Compare two version number, return `1` if first one is higher than second one,
 # Return `0` if they are equal, otherwise return `-1`
 # Format: Expects semantic version strings (major.minor.patch)

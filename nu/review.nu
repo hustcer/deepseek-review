@@ -26,7 +26,7 @@
 #  - Local PR Review: just cr -r hustcer/deepseek-review -n 32
 
 use kv.nu *
-use common.nu [ECODE, hr-line, is-installed, git-check, has-ref, compare-ver, compact-record]
+use common.nu [ECODE, hr-line, is-installed, git-check, has-ref, compare-ver, compact-record, windows?, mac?]
 
 const RESPONSE_END = 'data: [DONE]'
 
@@ -297,9 +297,13 @@ export def prepare-awk [] {
   if $gawk_installed {
     let gawk_version = gawk --version | lines | first | split row , | first | split row ' ' | last
     print $'Current gawk version: ($gawk_version)'
-    if (compare-ver $gawk_version $MIN_GAWK_VERSION) >= 0 { return 'gawk' }
+    if (compare-ver $gawk_version $MIN_GAWK_VERSION) >= 0 {
+      return 'gawk'
+    } else if (windows?) and ($env.GITHUB_ACTIONS? == 'true') {
+      return (install-gawk-for-actions)
+    }
   }
-  if (sys host | get name) == 'Darwin' and (is-installed brew) {
+  if (mac?) and (is-installed brew) {
     brew install gawk
     print $'Current gawk version: (gawk --version | lines | first)'
     return 'gawk'
@@ -398,6 +402,22 @@ export def is-safe-git [cmd: string] {
   }
 
   true
+}
+
+# Setup scoop and install gawk for GitHub Windows runners
+def install-gawk-for-actions [] {
+  # Install scoop using PowerShell
+  pwsh -c "Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')"
+    | complete | get stdout | print
+  # Add scoop to PATH and add main bucket
+  pwsh -c r#'
+    $env:Path += ";$env:USERPROFILE\scoop\shims"
+    scoop bucket add main
+    scoop update
+    scoop install gawk
+  '#
+  ^$'($nu.home-path)\scoop\shims\gawk.exe' --version | lines | first
+  $'($nu.home-path)\scoop\shims\gawk.exe'
 }
 
 alias main = deepseek-review
