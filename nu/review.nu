@@ -410,9 +410,9 @@ def install-gawk-for-actions [] {
   pwsh -c "Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')"
     | complete | get stdout | print
   # Add scoop to PATH and add main bucket
-  pwsh -c '$env:Path += ";$env:USERPROFILE\scoop\shims"; scoop update; scoop install gawk'
-  ^$'($nu.home-path)\scoop\shims\gawk.exe' --version | lines | first
-  $'($nu.home-path)\scoop\shims\gawk.exe'
+  pwsh -c '$env:Path = "$env:USERPROFILE\scoop\shims;" + $env:Path; scoop update; scoop install gawk'
+  gawk --version | lines | first
+  'gawk'
 }
 
 alias main = deepseek-review
