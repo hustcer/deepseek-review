@@ -411,11 +411,9 @@ def install-gawk-for-actions [] {
     | complete | get stdout | print
   # Add scoop to PATH and add main bucket
   pwsh -c r#'
-    $env:Path += ";$env:USERPROFILE\scoop\shims"
-    scoop bucket add main
-    scoop update
-    scoop install gawk
-  '#
+            $env:Path += ";$env:USERPROFILE\scoop\shims"
+            scoop update; scoop install gawk
+          '#
   ^$'($nu.home-path)\scoop\shims\gawk.exe' --version | lines | first
   $'($nu.home-path)\scoop\shims\gawk.exe'
 }
