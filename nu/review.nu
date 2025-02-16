@@ -408,6 +408,7 @@ export def is-safe-git [cmd: string] {
 def install-gawk-for-actions [] {
   # Install scoop using PowerShell
   pwsh -c "Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')"
+    | complete | get stdout | print
   # Add scoop to PATH and add main bucket
   pwsh -c r#'
             $env:Path += ";$env:USERPROFILE\scoop\shims"
