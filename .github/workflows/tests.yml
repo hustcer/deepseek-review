@@ -1,6 +1,7 @@
 # Description: This workflow runs tests for hustcer/deepseek-review.
 # REF:
 #   - https://github.com/vyadh/nutest/blob/main/.github/workflows/tests.yaml
+#   - https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#default-environment-variables
 
 name: Run Tests
 
