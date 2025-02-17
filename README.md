@@ -22,6 +22,7 @@
 - Streaming Output Support for Local Code Review
 - Review Remote GitHub PRs Directly from Your Local CLI
 - Review Commit Changes with DeepSeek for Any Local Repository by CLI
+- Support On-demand Changes Generation via `git show`/`git diff` Command for Further Code Review
 - Cross-platform Compatibility: Designed to function seamlessly across all platforms capable of running [Nushell](https://github.com/nushell/nushell)
 
 ### Both GH Action & Local

@@ -19,7 +19,8 @@
 
 - 本地代码审查的时候支持流式输出
 - 通过本地 CLI 直接审查远程 GitHub PR
-- 通过本地 CLI 使用 DeepSeek 分析任何本地仓库的提交变更
+- 通过本地 CLI 使用 DeepSeek 审查任何本地仓库的提交变更
+- 允许通过自定义 `git show`/`git diff` 命令生成变更记录并进行审查
 - 跨平台：理论上只要能运行 [Nushell](https://github.com/nushell/nushell) 即可使用本工具
 
 ### 本地或 GH Action
