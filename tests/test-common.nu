@@ -74,14 +74,18 @@ def 'compact-record：should work as expected' [] {
 #[test]
 def 'OS check should work as expected' [] {
   # `$env.RUNNER_OS` Possible values are Linux, Windows, or macOS in GitHub Actions
-  if $nu.os-info.name == 'windows' {
-    assert equal (mac?) false
-    assert equal (windows?) true
-  } else if $nu.os-info.name == 'macos' {
-    assert equal (mac?) true
-    assert equal (windows?) false
-  } else {
-    assert equal (mac?) false
-    assert equal (windows?) false
+  match $nu.os-info.name {
+    'windows' => {
+      assert equal (mac?) false
+      assert equal (windows?) true
+    }
+    'macos' => {
+      assert equal (mac?) true
+      assert equal (windows?) false
+    }
+    _ => {
+      assert equal (mac?) false
+      assert equal (windows?) false
+    }
   }
 }
