@@ -8,6 +8,8 @@ words:
 - MPFR
 - nuon
 - pwsh
+- JDBC
+- mpsc
 - nuons
 - ECODE
 - vyadh
@@ -26,4 +28,8 @@ words:
 - Infinigence
 - SILICONFLOW
 - USERPROFILE
+- noreferrer
+- Unsanitized
+- Unvalidated
+- monomorphization
 ignorePaths:
