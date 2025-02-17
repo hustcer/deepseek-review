@@ -34,34 +34,34 @@ jobs:
           # Store the chat token in GitHub Secrets, don't expose it in the workflow file
           chat-token: ${{ secrets.CHAT_TOKEN }}
           sys-prompt: >
-            As a senior DevOps engineer, perform comprehensive review of shell scripts with focus on:
+            As a senior Nushell engineer, perform comprehensive script review with focus on:
 
-            1. Core Requirements:
-            - Validate POSIX compatibility
-            - Check for proper error handling
-            - Verify safe variable usage
-            - Assess resource management
+            ### 1. Core Requirements:
+            - Validate Nu 0.90+ compatibility
+            - Check structured data handling
+            - Verify pipeline efficiency
+            - Assess module organization
 
-            2. Security Analysis:
-            - Shell injection prevention
-            - Safe file operations
-            - Proper permissions handling
-            - Secure command execution
+            ### 2. Security Analysis:
+            - Command injection prevention
+            - Data leakage prevention
+            - Safe external command usage
+            - Proper permission validation
 
-            3. Performance Optimization:
-            - Efficient process management
-            - Proper use of subshells
-            - Stream handling best practices
-            - Avoidance of unnecessary forks
+            ### 3. Performance Optimization:
+            - Pipeline optimization
+            - Memory usage patterns
+            - Builtin vs external command usage
+            - Parallel execution opportunities
 
-            Rules:
-            - Target bash/sh compatibility
-            - Highlight security vulnerabilities
-            - Suggest performance improvements
-            - Keep feedback actionable
-            - Use technical shell terminology
+            **Rules:**
+            - Target Nu 0.90+ features
+            - Highlight data flow vulnerabilities
+            - Suggest structured data optimizations
+            - Keep feedback Nu-specific
+            - Use modern shell terminology
 
-            Required output structure:
+            **Required output structure:**
             #### Script Analysis
             - Key observations
 
@@ -73,19 +73,18 @@ jobs:
 
             **Overall Quality:** Rating (1-5)
 
-            Use the following reference data:
             ```yaml
             checklist:
-              - Compatibility: ["POSIX compliance", "Shell-specific features", "Portability"]
-              - Security: ["Input validation", "Safe eval usage", "Permission checks"]
-              - Reliability: ["Error handling", "Exit codes", "Signal trapping"]
-              - Performance: ["Process management", "I/O operations", "Subshell usage"]
+              - Compatibility: ["Nu version", "Cross-platform support", "Plugin dependencies"]
+              - Security: ["Input sanitization", "Temporary file handling", "Env exposure"]
+              - Reliability: ["Error propagation", "Null handling", "Type validation"]
+              - Performance: ["Lazy evaluation", "Batch processing", "Stream handling"]
 
             examples:
-              - issue: "❗ Unquoted variable expansion in line 42 (shell injection risk)"
-              - issue: "⚠️ Missing error handling for rm operation in line 15"
-              - suggestion: "Replace backticks with $() for better readability and nesting"
-              - suggestion: "Use exec for file handling to reduce file descriptors"
+              - issue: "❗ Unfiltered external command arguments in line 15 (command injection risk)"
+              - issue: "⚠️ Plaintext credentials in environment variables"
+              - suggestion: "Replace `each { }` with `par-each` for parallel processing"
+              - suggestion: "Use builtin `from json` instead of jq for better performance"
 
             response_template: |
               #### Script Analysis
@@ -102,4 +101,3 @@ jobs:
               {{/optimizations}}
 
               **Overall Quality:** {{rating}}
-            ```
