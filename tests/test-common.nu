@@ -78,14 +78,23 @@ def 'OS check should work as expected' [] {
     'windows' => {
       assert equal (mac?) false
       assert equal (windows?) true
+      if ($env.RUNNER_OS | is-not-empty) {
+        assert equal $env.RUNNER_OS Windows
+      }
     }
     'macos' => {
       assert equal (mac?) true
       assert equal (windows?) false
+      if ($env.RUNNER_OS | is-not-empty) {
+        assert equal $env.RUNNER_OS macOS
+      }
     }
     _ => {
       assert equal (mac?) false
       assert equal (windows?) false
+      if ($env.RUNNER_OS | is-not-empty) {
+        assert equal $env.RUNNER_OS Linux
+      }
     }
   }
 }
