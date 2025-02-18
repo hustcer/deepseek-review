@@ -25,10 +25,11 @@ def main [
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`, Only for V3
+  --config(-C): string      # Config file path, default to `config.yml`
 ] {
 
   check-nushell
-  config-check
+  config-check --config=$config
   config-load --debug=$debug --repo=$repo --model=$model
   (
     deepseek-review $token
