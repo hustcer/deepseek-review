@@ -143,3 +143,9 @@ export def has-ref [
   let parse = (do -i { git rev-parse --verify -q $ref } | complete)
   if ($parse.stdout | is-empty) { false } else { true }
 }
+
+# Notify the user that the `CHAT_TOKEN` hasn't been configured
+export const NO_TOKEN_TIP = (
+  "**Notice:** It looks like you're using [`hustcer/deepseek-review`](https://github.com/hustcer/deepseek-review), but the `CHAT_TOKEN` hasn't" +
+  "been configured in your repo's Variables/Secrets. Please ensure this token is set for proper functionality. For step-by-step guidance, refer" +
+  "to the **CHAT_TOKEN Config** section of [README](https://github.com/hustcer/deepseek-review/blob/main/README.md#code-review-with-github-action).")

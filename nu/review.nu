@@ -27,7 +27,7 @@
 
 use kv.nu *
 use common.nu [
-  ECODE, hr-line, is-installed, windows?, mac?,
+  ECODE, NO_TOKEN_TIP, hr-line, is-installed, windows?, mac?,
   compare-ver, compact-record, git-check, has-ref,
 ]
 
@@ -104,6 +104,7 @@ export def --env deepseek-review [
 
   if ($token | is-empty) {
     print $'(ansi r)Please provide your DeepSeek API token by setting `CHAT_TOKEN` or passing it as an argument.(ansi reset)'
+    if ($pr_number | is-not-empty) { post-comments-to-pr $repo $pr_number $NO_TOKEN_TIP }
     exit $ECODE.INVALID_PARAMETER
   }
   let hint = if not $is_action and ($pr_number | is-empty) {
@@ -162,12 +163,28 @@ export def --env deepseek-review [
   if not $is_action {
     print $'Code Review Result:'; hr-line; print $result
   } else {
-    let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json ...$HTTP_HEADERS]
-    http post -t application/json -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments' { body: $result }
+    post-comments-to-pr $repo $pr_number $result
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
   }
   print $'(char nl)Token Usage:'; hr-line
   $response.usage | table -e | print
+}
+
+# Post review comments to GitHub PR
+def post-comments-to-pr [
+  repo: string,        # GitHub repository name, e.g. hustcer/deepseek-review
+  pr_number: string,   # GitHub PR number
+  comments: string,    # Comments content to post
+] {
+  let comment_url = $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments'
+  let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json ...$HTTP_HEADERS]
+  try {
+    http post -t application/json -H $BASE_HEADER $comment_url { body: $comments }
+  } catch {|err|
+    print $'(ansi r)Failed to post comments to PR: (ansi reset)'
+    $err | table -e | print
+    exit $ECODE.SERVER_ERROR
+  }
 }
 
 # Output the streaming response of review result from DeepSeek API
