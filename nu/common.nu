@@ -60,16 +60,16 @@ export def compare-ver [v1: string, v2: string] {
 # Check nushell version and notify user to upgrade it if outdated
 # Check version once daily and cache the result
 export def check-nushell [--debug] {
-  const _DATE_FMT  = '%Y.%m.%d'
+  const _DATE_FMT = '%Y.%m.%d'
   const V_KEY = 'NU-VERSION-CHECK@DEEPSEEK-REVIEW'
-  let version_cache = kv get -u $V_KEY
+  let version_cached = kv get -u $V_KEY
   let today = date now | format date $_DATE_FMT
-  let check = if ($version_cache | is-empty) or $version_cache.date != $today {
-    let $check = { ...(version check), date: $today }
+  let check = if ($version_cached | is-empty) or $version_cached.date? != $today {
+    let $check = try { ({ ...(version check), date: $today }) } catch { ({ current: true }) }
     if $debug { print 'Checking for the latest Nushell version...'; $check | print }
     kv set -u $V_KEY $check --return value
   } else {
-    $version_cache
+    $version_cached
   }
   if $check.current { return }
   print $'(char nl)                      (ansi yr) WARNING: (ansi reset) Your Nushell is (ansi r)OUTDATED(ansi reset)'
