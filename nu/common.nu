@@ -4,6 +4,8 @@
 # Description: Common helpers for DeepSeek-Review
 #
 
+use kv.nu ['kv set', 'kv get']
+
 # Commonly used exit codes
 export const ECODE = {
   SUCCESS: 0,
@@ -55,10 +57,20 @@ export def compare-ver [v1: string, v2: string] {
   0
 }
 
-# TODO: Check version once daily and cache the result
-# Check nushell version and notify user to upgrade it
-export def check-nushell [] {
-  let check = (version check)
+# Check nushell version and notify user to upgrade it if outdated
+# Check version once daily and cache the result
+export def check-nushell [--debug] {
+  const _DATE_FMT  = '%Y.%m.%d'
+  const V_KEY = 'NU-VERSION-CHECK@DEEPSEEK-REVIEW'
+  let version_cache = kv get -u $V_KEY
+  let today = date now | format date $_DATE_FMT
+  let check = if ($version_cache | is-empty) or $version_cache.date != $today {
+    let $check = { ...(version check), date: $today }
+    if $debug { print 'Checking for the latest Nushell version...'; $check | print }
+    kv set -u $V_KEY $check --return value
+  } else {
+    $version_cache
+  }
   if $check.current { return }
   print $'(char nl)                      (ansi yr) WARNING: (ansi reset) Your Nushell is (ansi r)OUTDATED(ansi reset)'
   print $' ------------> Please upgrade Nushell to the latest version: (ansi g)($check.latest)(ansi reset) <------------'
