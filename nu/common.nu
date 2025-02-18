@@ -55,6 +55,16 @@ export def compare-ver [v1: string, v2: string] {
   0
 }
 
+# TODO: Check version once daily and cache the result
+# Check nushell version and notify user to upgrade it
+export def check-nushell [] {
+  let check = (version check)
+  if $check.current { return }
+  print $'(char nl)                      (ansi yr) WARNING: (ansi reset) Your Nushell is (ansi r)OUTDATED(ansi reset)'
+  print $' ------------> Please upgrade Nushell to the latest version: (ansi g)($check.latest)(ansi reset) <------------'
+  print -n (char nl)
+}
+
 # Converts a .env file into a record
 # may be used like this: open .env | load-env
 # works with quoted and unquoted .env files

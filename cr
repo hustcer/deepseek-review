@@ -4,7 +4,7 @@
 # Description: A wrapper for nu/review.nu as the main entry point of the project.
 
 use nu/config.nu *
-use nu/common.nu [hr-line, ECODE]
+use nu/common.nu [hr-line, check-nushell, ECODE]
 use nu/review.nu [deepseek-review]
 
 # Use DeepSeek AI to review code changes locally or in GitHub Actions
@@ -27,6 +27,7 @@ def main [
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`, Only for V3
 ] {
 
+  check-nushell
   config-check
   config-load --debug=$debug --repo=$repo --model=$model
   (
