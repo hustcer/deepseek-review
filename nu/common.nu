@@ -71,7 +71,8 @@ export def check-nushell [--debug] {
   } else {
     $version_cached
   }
-  if $check.current { return }
+  # If the current version is the latest after user upgrade, return
+  if $check.current or (compare-ver $check.latest (version).version) == 0 { return }
   print $'(char nl)                      (ansi yr) WARNING: (ansi reset) Your Nushell is (ansi r)OUTDATED(ansi reset)'
   print $' ------------> Please upgrade Nushell to the latest version: (ansi g)($check.latest)(ansi reset) <------------'
   print -n (char nl)
