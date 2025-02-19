@@ -30,7 +30,7 @@ def main [
 
   check-nushell
   config-check --config=$config
-  config-load --debug=$debug --repo=$repo --model=$model
+  config-load --debug=$debug --config=$config --repo=$repo --model=$model
   (
     deepseek-review $token
       --repo=$repo
