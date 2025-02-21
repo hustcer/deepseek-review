@@ -32,6 +32,7 @@ def main [
   check-nushell
   config-check --config=$config
   config-load --debug=$debug --config=$config --repo=$repo --model=$model
+  let repo = if $env.DEFAULT_LOCAL_REPO == 'pwd' and ($pr_number | is-empty) { pwd } else { $repo }
   (
     deepseek-review $token
       --repo=$repo
