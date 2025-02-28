@@ -375,6 +375,13 @@ def glob-to-regex [patterns: list<string>] {
           | str replace -a "\\+" "\\\\+"
           | str replace -a "\\^" "\\\\^"
           | str replace -a "\\$" "\\\\$"
+          | str replace -a "\\(" "\\\\("
+          | str replace -a "\\)" "\\\\)"
+          | str replace -a "\\[" "\\\\["
+          | str replace -a "\\]" "\\\\]"
+          | str replace -a "\\{" "\\\\{"
+          | str replace -a "\\}" "\\\\}"
+          | str replace -a "\\|" "\\\\|"
           # Then convert glob patterns to regex patterns
           | str replace -a "*" ".*"
           | str replace -a "?" "."
