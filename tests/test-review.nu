@@ -29,6 +29,7 @@ def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git diff HEAD~2') true
   assert equal (is-safe-git 'git diff head~3 main') true
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5') true
+  assert equal (is-safe-git 'git show 2393375 | less') false
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 nu/*') true
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/*') true
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/*; rm -rf abc') false
