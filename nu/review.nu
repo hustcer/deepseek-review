@@ -81,10 +81,7 @@ export def --env deepseek-review [
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
-  if ($temperature < 0) or ($temperature > 2) {
-    print $'(ansi r)Invalid temperature value, should be in the range of 0 to 2.(ansi reset)'
-    exit $ECODE.INVALID_PARAMETER
-  }
+  validate-temperature $temperature
   let url = $'($base_url)/chat/completions'
   let setting = {
     repo: $repo,
@@ -102,11 +99,7 @@ export def --env deepseek-review [
   }
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
 
-  if ($token | is-empty) {
-    print $'(ansi r)Please provide your DeepSeek API token by setting `CHAT_TOKEN` or passing it as an argument.(ansi reset)'
-    if ($pr_number | is-not-empty) { post-comments-to-pr $repo $pr_number $NO_TOKEN_TIP }
-    exit $ECODE.INVALID_PARAMETER
-  }
+  validate-token $token --pr-number $pr_number --repo $repo
   let hint = if not $is_action and ($pr_number | is-empty) {
     $'🚀 Initiate the code review by DeepSeek AI for local changes ...'
   } else {
@@ -168,6 +161,25 @@ export def --env deepseek-review [
   }
   print $'(char nl)Token Usage:'; hr-line
   $response.usage | table -e | print
+}
+
+# Validate the DeepSeek API token
+def validate-token [token?: string, --pr-number: string, --repo: string] {
+  if ($token | is-empty) {
+    print $'(ansi r)Please provide your DeepSeek API token by setting `CHAT_TOKEN` or passing it as an argument.(ansi reset)'
+    if ($pr_number | is-not-empty) { post-comments-to-pr $repo $pr_number $NO_TOKEN_TIP }
+    exit $ECODE.INVALID_PARAMETER
+  }
+  $token
+}
+
+# Validate the temperature value
+def validate-temperature [temp: float] {
+  if ($temp < 0) or ($temp > 2) {
+    print $'(ansi r)Invalid temperature value, should be in the range of 0 to 2.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
+  $temp
 }
 
 # Post review comments to GitHub PR
