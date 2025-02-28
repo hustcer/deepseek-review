@@ -367,27 +367,35 @@ def glob-to-regex [patterns: list<string>] {
   # Handle empty patterns list
   if ($patterns | length) == 0 { return '' }
 
+  # Define a mapping of characters to escape
+  let regex_escapes = {
+    # Escape special regex characters first
+    "\\.": "\\\\.",
+    "\\+": "\\\\+",
+    "\\^": "\\\\^",
+    "\\$": "\\\\$",
+    "\\(": "\\\\(",
+    "\\)": "\\\\)",
+    "\\[": "\\\\[",
+    "\\]": "\\\\]",
+    "\\{": "\\\\{",
+    "\\}": "\\\\}",
+    "\\|": "\\\\|",
+    # Then convert glob patterns to regex patterns
+    "*": ".*",
+    "?": ".",
+    "/": "\\/",
+  }
+
   $patterns
     | each { |pat|
-        # Escape special regex characters first
-        $pat
-          | str replace -a "\\." "\\\\."
-          | str replace -a "\\+" "\\\\+"
-          | str replace -a "\\^" "\\\\^"
-          | str replace -a "\\$" "\\\\$"
-          | str replace -a "\\(" "\\\\("
-          | str replace -a "\\)" "\\\\)"
-          | str replace -a "\\[" "\\\\["
-          | str replace -a "\\]" "\\\\]"
-          | str replace -a "\\{" "\\\\{"
-          | str replace -a "\\}" "\\\\}"
-          | str replace -a "\\|" "\\\\|"
-          # Then convert glob patterns to regex patterns
-          | str replace -a "*" ".*"
-          | str replace -a "?" "."
-          | str replace -a "/" "\\/"
+        mut escaped = $pat
+        for k in ($regex_escapes | columns) {
+          $escaped = $escaped | str replace -a $k ($regex_escapes | get $k)
+        }
+        $escaped
       }
-    | str join "|"
+    | str join '|'
 }
 
 # Generate the awk include regex pattern string for the specified patterns
