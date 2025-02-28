@@ -389,11 +389,9 @@ def glob-to-regex [patterns: list<string>] {
 
   $patterns
     | each { |pat|
-        mut escaped = $pat
-        for k in ($regex_escapes | columns) {
-          $escaped = $escaped | str replace -a $k ($regex_escapes | get $k)
+        $regex_escapes | columns | reduce -f $pat { |k, acc|
+          $acc | str replace -a $k ($regex_escapes | get $k)
         }
-        $escaped
       }
     | str join '|'
 }
