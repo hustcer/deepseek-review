@@ -25,6 +25,7 @@ def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git checkout') false
   assert equal (is-safe-git 'git show 0dd0eb5') true
   assert equal (is-safe-git 'git show HEAD') true
+  assert equal (is-safe-git 'git show head~1') true
   assert equal (is-safe-git 'git diff HEAD~2') true
   assert equal (is-safe-git 'git diff head~3 main') true
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5') true

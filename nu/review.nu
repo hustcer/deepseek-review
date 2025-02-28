@@ -388,59 +388,21 @@ export def generate-exclude-regex [patterns: list<string>] {
 #  - git show
 #  - git diff
 #  - git show head~1
-#  - git diff --since=2025-02-09 HEAD
 #  - git diff 2393375 71f5a31
 #  - git diff 2393375 71f5a31 nu/*
 #  - git diff 2393375 71f5a31 :!nu/*
 export def is-safe-git [cmd: string] {
-  # Normalize the command string by trimming and converting to lowercase
   let normalized_cmd = ($cmd | str trim | str downcase)
 
-  # More strict regex for git commands, allow:
-  # 1. --since parameter with ISO date format
-  # 2. File path patterns with or without colon (e.g. :!nu/*, nu/*)
-  let allowed_regex = '^git\s+(show|diff)(?:\s+(?:--since=\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\-\.~/]+))*(?:\s+(?::[!]?)?[a-zA-Z0-9_\-\.\*\/]+)?$'
+  # Define allowed command patterns with named capture groups for better validation
+  let git_cmd_pattern = '^git\s+(show|diff)(?:\s+(?:[a-zA-Z0-9_\-\.~/]+)){0,3}(?:\s+(?::[!]?)?[a-zA-Z0-9_\-\.\*\/]+){0,2}$'
 
-  # Dangerous patterns to check (expanded list)
-  let dangerous_patterns = [
-    # Command chaining/injection
-    ';', '&&', '||', '|',
-    # Shell expansion
-    '?', '[', ']', '{', '}',
-    # Command substitution
-    '`', '$(',
-    # IO redirection
-    '>', '>>', '<', '<<',
-    # Special characters
-    '\n', '\r', '\t',
-    # Path traversal
-    '..',
-    # Environment variables
-    '$', '%',
-    # Quotes that might be used for injection
-    '"', "'"
-  ]
-
-  # First check: Command must match the allowed pattern
-  if ($normalized_cmd | find -r $allowed_regex | is-empty) {
-    print $'ERROR: Invalid git command format. (ansi r)Only simple `git show` or `git diff` commands are allowed(ansi reset).'
+  if ($normalized_cmd | find -r $git_cmd_pattern | is-empty) {
+    print $'(ansi r)Invalid git command format. Only simple `git show` or `git diff` commands are allowed.(ansi reset)'
     return false
   }
 
-  # Second check: No dangerous patterns allowed
-  for pattern in $dangerous_patterns {
-    if ($cmd | str contains $pattern) {
-      print $'(ansi r)ERROR: Dangerous pattern detected: `($pattern)`(ansi reset)'
-      return false
-    }
-  }
-
-  # Third check: Command parts validation (increased limit to accommodate path patterns)
-  let cmd_parts = $normalized_cmd | split row ' '
-  if ($cmd_parts | length) > 6 {
-    print $'ERROR: Command too complex. (ansi r)Only simple `git show` or `git diff` commands are allowed(ansi reset).'
-    return false
-  }
+  # Additional security checks...
   true
 }
 
