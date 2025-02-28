@@ -364,9 +364,21 @@ export def prepare-awk [] {
 # 2. Convert ? to . (optional, as needed)
 # 3. Convert / to \/
 def glob-to-regex [patterns: list<string>] {
+  # Handle empty patterns list
+  if ($patterns | length) == 0 { return '' }
+
   $patterns
     | each { |pat|
-        $pat | str replace "*" ".*" | str replace "?" "." | str replace "/" "\\/"
+        # Escape special regex characters first
+        $pat
+          | str replace -a "\\." "\\\\."
+          | str replace -a "\\+" "\\\\+"
+          | str replace -a "\\^" "\\\\^"
+          | str replace -a "\\$" "\\\\$"
+          # Then convert glob patterns to regex patterns
+          | str replace -a "*" ".*"
+          | str replace -a "?" "."
+          | str replace -a "/" "\\/"
       }
     | str join "|"
 }
