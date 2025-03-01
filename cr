@@ -20,12 +20,12 @@ def main [
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
-  --chat-url: string,       # DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
+  --chat-url(-U): string,   # DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
   --sys-prompt(-s): string  # Default to $DEFAULT_OPTIONS.SYS_PROMPT,
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
-  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`, Only for V3
+  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`
   --config(-C): string      # Config file path, default to `config.yml`
 ] {
 
