@@ -39,6 +39,14 @@ settings:
 # Multiple providers could be defined, select the one by name in 'settings.provider'
 # This way you could switch between different predefined providers easily
 providers:
+  - name: ollama-local
+    token: 'empty'
+    chat-url: http://localhost:11555/api/chat
+    models:
+      - name: deepseek-r1
+        alias: r1
+        enabled: true
+        description: 'DeepSeek R1 model running on Ollama'
   - name: 'DeepSeek'
     token: 'YOUR_DEEPSEEK_TOKEN'    # Required, The API token for the provider
     base-url: 'https://api.deepseek.com'

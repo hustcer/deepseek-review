@@ -117,7 +117,7 @@ def get-model-envs [settings: record, model?: string = ''] {
     | get -i 0.name
     | default $model
 
-  { CHAT_TOKEN: $provider.token?, BASE_URL: $provider.base-url?, CHAT_MODEL: $model_name }
+  { CHAT_TOKEN: $provider.token?, BASE_URL: $provider.base-url?, CHAT_URL: $provider.chat-url?, CHAT_MODEL: $model_name }
 }
 
 # Load the config.yml file to the environment

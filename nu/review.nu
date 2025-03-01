@@ -63,6 +63,7 @@ export def --env deepseek-review [
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
+  --chat-url: string,       # DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
   --sys-prompt(-s): string  # Default to $DEFAULT_OPTIONS.SYS_PROMPT,
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
@@ -79,10 +80,10 @@ export def --env deepseek-review [
   let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
   let model = $model | default $env.CHAT_MODEL? | default $DEFAULT_OPTIONS.MODEL
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
+  let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
   validate-temperature $temperature
-  let url = $'($base_url)/chat/completions'
   let setting = {
     repo: $repo,
     model: $model,
@@ -132,12 +133,12 @@ export def --env deepseek-review [
     ]
   }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
-  print $'(char nl)Waiting for response from (ansi g)($base_url)(ansi reset) ...'
+  print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
   if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
 
   let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
   if ($response | is-empty) {
-    print $'(ansi r)Oops, No response returned from ($base_url) ...(ansi reset)'
+    print $'(ansi r)Oops, No response returned from ($url) ...(ansi reset)'
     exit $ECODE.SERVER_ERROR
   }
   if $debug { print $'DeepSeek Model Response:'; hr-line; $response | table -e | print }
@@ -146,7 +147,7 @@ export def --env deepseek-review [
     exit $ECODE.SERVER_ERROR
   }
   let reason = $response | get -i choices.0.message.reasoning_content
-  let review = $response | get -i choices.0.message.content
+  let review = $response | get -i choices.0.message.content | default ($response | get -i message.content)
   let result = ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
   if ($review | is-empty) {
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
@@ -159,8 +160,10 @@ export def --env deepseek-review [
     post-comments-to-pr $repo $pr_number $result
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
   }
-  print $'(char nl)Token Usage:'; hr-line
-  $response.usage | table -e | print
+  if ($response.usage? | is-not-empty) {
+    print $'(char nl)Token Usage:'; hr-line
+    $response.usage? | table -e | print
+  }
 }
 
 # Validate the DeepSeek API token
@@ -214,7 +217,7 @@ def streaming-output [
         let res = $in
         let type = $res | describe
         let record_error = $type =~ '^record'
-        let other_error  = $type =~ '^string' and $res !~ 'data: '
+        let other_error  = $type =~ '^string' and $res !~ 'data: ' and $res !~ 'done'
         if $record_error or $other_error {
           $res | table -e | print
           exit $ECODE.SERVER_ERROR
@@ -224,10 +227,11 @@ def streaming-output [
     | each {|line|
         if $line == $RESPONSE_END { return }
         if ($line | is-empty) { return }
-        let $last = $line | str substring 6.. | from json
+        # Ollama Response vs DeepSeek Response
+        let $last = try { $line | from json } catch { $line | str substring 6.. | from json }
         if $last == '-alive' { print $last; return }
         if $debug { $last | to json | kv set last-reply }
-        $last | get -i choices.0.delta | if ($in | is-not-empty) {
+        $last | get -i choices.0.delta | default ($last | get -i message) | if ($in | is-not-empty) {
           let delta = $in
           if ($delta.reasoning_content? | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
           if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }

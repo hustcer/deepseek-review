@@ -16,6 +16,7 @@ words:
 - nutest
 - endfor
 - dotenv
+- Ollama
 - hustcer
 - Nushell
 - creatio
