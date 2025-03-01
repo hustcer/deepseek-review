@@ -227,8 +227,8 @@ def streaming-output [
     | each {|line|
         if $line == $RESPONSE_END { return }
         if ($line | is-empty) { return }
-        # Ollama Response vs DeepSeek Response
-        let $last = try { $line | from json } catch { $line | str substring 6.. | from json }
+        # DeepSeek Response vs Local Ollama Response
+        let $last = if $line =~ '^data: ' { $line | str substring 6.. | from json } else { $line | from json }
         if $last == '-alive' { print $last; return }
         if $debug { $last | to json | kv set last-reply }
         $last | get -i choices.0.delta | default ($last | get -i message) | if ($in | is-not-empty) {
