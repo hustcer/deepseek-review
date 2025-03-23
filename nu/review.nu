@@ -72,7 +72,7 @@ export def --env deepseek-review [
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
-  let local_repo = (pwd)
+  let local_repo = $env.PWD
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
   let stream = if $is_action { false } else { true }
   let token = $token | default $env.CHAT_TOKEN?
@@ -257,7 +257,7 @@ export def get-diff [
   --exclude: string,    # Comma separated file patterns to exclude in the code review
   --patch-cmd: string,  # The `git show` or `git diff` command to get the diff content
 ] {
-  let local_repo = (pwd)
+  let local_repo = $env.PWD
   let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json]
   let DIFF_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3.diff]
   mut content = if ($pr_number | is-not-empty) {
