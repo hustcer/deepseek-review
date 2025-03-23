@@ -203,6 +203,25 @@ Parameters:
 >
 > `config.yml` 配置文件仅在本地使用，在 GitHub Workflow 里面不会使用，里面的敏感信息请
 > 妥善保存，不要提交到代码仓库里面
+>
+
+**创建命令别名**
+
+为了方便您可以在任意本地仓库进行代码审查需要创建一个别名，比如：
+
+```sh
+# Nushell: 修改其 config.nu 配置文件，添加：
+alias cr = nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/deepseek-review/config.yml
+# 对于 zsh 或 bash分别修改 ~/.zshrc or ~/.bashrc and add:
+alias cr="nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/deepseek-review/config.yml"
+ # After sourcing the profile you have edit, you can use `cr` now
+```
+
+之后就可以通过 `cr` 命令来进行代码审查了。
+
+### 审查本地仓库
+
+### 本地审查远程 GitHub PR
 
 ### 使用举例
 
