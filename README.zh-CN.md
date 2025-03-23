@@ -221,28 +221,35 @@ alias cr="nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/dee
 
 ### 审查本地仓库
 
-### 本地审查远程 GitHub PR
+对本地仓库进行代码审查时需要先切换到 Git 仓库所在目录，然后通过 `cr` 命令即可对当前目录的当前修改进行代码审查，前提是您已经对 `config.yml` 进行了正确的配置。
 
-### 使用举例
+**使用举例**
 
 ```sh
 # 对本地当前目录所在仓库 `git diff` 修改内容进行代码审查
-nu cr
+cr
 # 对本地当前目录所在仓库 `git diff f536acc` 修改内容进行代码审查
-nu cr --diff-from f536acc
+cr --diff-from f536acc
 # 对本地当前目录所在仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审查
-nu cr --diff-from f536acc --diff-to 0dd0eb5
+cr --diff-from f536acc --diff-to 0dd0eb5
 # 通过 --patch-cmd 参数对本地当前目录所在仓库变更内容进行审查
-nu cr --patch-cmd 'git diff head~3'
-nu cr -c 'git show head~3'
-nu cr -c 'git diff 2393375 71f5a31'
-nu cr -c 'git diff 2393375 71f5a31 nu/*'
-nu cr -c 'git diff 2393375 71f5a31 :!nu/*'
-# 像 `nu cr -c 'git show head~3; rm ./*'` 这样危险的命令将会被禁止
+cr --patch-cmd 'git diff head~3'
+cr -c 'git show head~3'
+cr -c 'git diff 2393375 71f5a31'
+cr -c 'git diff 2393375 71f5a31 nu/*'
+cr -c 'git diff 2393375 71f5a31 :!nu/*'
+# 像 `cr -c 'git show head~3; rm ./*'` 这样危险的命令将会被禁止
+```
+
+### 本地审查远程 GitHub PR
+
+**使用举例**
+
+```sh
 # 对远程 DEFAULT_GITHUB_REPO 仓库编号为 31 的 PR 进行代码审查
-nu cr --pr-number 31
+cr --pr-number 31
 # 对远程 hustcer/deepseek-review 仓库编号为 31 的 PR 进行代码审查
-nu cr --pr-number 31 --repo hustcer/deepseek-review
+cr --pr-number 31 --repo hustcer/deepseek-review
 ```
 
 ## 许可
