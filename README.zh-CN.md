@@ -197,7 +197,7 @@ Parameters:
 
 ### 环境配置
 
-在本地进行代码审查需要先修改配置文件，仓库里已经有了 [`config.example.yml`](https://github.com/hustcer/deepseek-review/blob/main/config.example.yml) 配置文件示例，将其拷贝到 `config.yml` 然后根据自己的实际情况进行修改即可。
+在本地进行代码审查需要先修改配置文件，仓库里已经有了 [`config.example.yml`](https://github.com/hustcer/deepseek-review/blob/main/config.example.yml) 配置文件示例，将其拷贝到 `config.yml` 然后根据自己的实际情况进行修改即可，在修改配置文件的过程中请仔细阅读其中的注释，注释会说明每个配置项的作用。
 
 > [!WARNING]
 >
@@ -243,6 +243,8 @@ cr -c 'git diff 2393375 71f5a31 :!nu/*'
 
 ### 本地审查远程 GitHub PR
 
+在本地对远程 GitHub 仓库的 PR 进行审查的时候一定要通过 `--pr-number` 传入待审查的 PR 编号，以及 `--repo` 指明待审查的仓库，比如 `hustcer/deepseek-review`, 如果没有指定 `--repo` 参数则从 config.yml 里面的 `settings.default-github-repo` 配置项读取待审查的仓库。
+
 **使用举例**
 
 ```sh
@@ -250,6 +252,8 @@ cr -c 'git diff 2393375 71f5a31 :!nu/*'
 cr --pr-number 31
 # 对远程 hustcer/deepseek-review 仓库编号为 31 的 PR 进行代码审查
 cr --pr-number 31 --repo hustcer/deepseek-review
+# 对 PR 进行审查的时候排除 pnpm-lock.yaml 文件的变更
+cr --pr-number 31 --exclude pnpm-lock.yaml
 ```
 
 ## 许可
