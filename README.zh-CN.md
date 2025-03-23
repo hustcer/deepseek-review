@@ -172,7 +172,7 @@ Usage:
 
 Flags:
   -d, --debug: Debug mode
-  -r, --repo <string>: GitHub repo name, e.g. hustcer/deepseek-review, or local repo path / alias
+  -r, --repo <string>: GitHub repo name, e.g. hustcer/deepseek-review
   -n, --pr-number <string>: GitHub PR number
   -k, --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
@@ -207,13 +207,13 @@ Parameters:
 ### 使用举例
 
 ```sh
-# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff` 修改内容进行代码审查
+# 对本地当前目录所在仓库 `git diff` 修改内容进行代码审查
 nu cr
-# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc` 修改内容进行代码审查
+# 对本地当前目录所在仓库 `git diff f536acc` 修改内容进行代码审查
 nu cr --diff-from f536acc
-# 对本地 DEFAULT_LOCAL_REPO 仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审查
+# 对本地当前目录所在仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审查
 nu cr --diff-from f536acc --diff-to 0dd0eb5
-# 通过 --patch-cmd 参数对本地 DEFAULT_LOCAL_REPO 仓库变更内容进行审查
+# 通过 --patch-cmd 参数对本地当前目录所在仓库变更内容进行审查
 nu cr --patch-cmd 'git diff head~3'
 nu cr -c 'git show head~3'
 nu cr -c 'git diff 2393375 71f5a31'

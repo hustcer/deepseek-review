@@ -72,12 +72,12 @@ export def --env deepseek-review [
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
+  let local_repo = (pwd)
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
   let stream = if $is_action { false } else { true }
   let token = $token | default $env.CHAT_TOKEN?
   let repo = $repo | default $env.DEFAULT_GITHUB_REPO?
   let CHAT_HEADER = [Authorization $'Bearer ($token)']
-  let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
   let model = $model | default $env.CHAT_MODEL? | default $DEFAULT_OPTIONS.MODEL
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
@@ -257,16 +257,9 @@ export def get-diff [
   --exclude: string,    # Comma separated file patterns to exclude in the code review
   --patch-cmd: string,  # The `git show` or `git diff` command to get the diff content
 ] {
+  let local_repo = (pwd)
   let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json]
   let DIFF_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3.diff]
-  let local_repo = $env.DEFAULT_LOCAL_REPO? | default (pwd)
-  if ($pr_number | is-empty) {
-    if not ($local_repo | path exists) {
-      print $'(ansi r)The directory ($local_repo) does not exist.(ansi reset)'
-      exit $ECODE.CONDITION_NOT_SATISFIED
-    }
-    cd $local_repo
-  }
   mut content = if ($pr_number | is-not-empty) {
     if ($repo | is-empty) {
       print $'(ansi r)Please provide the GitHub repository name by `--repo` option.(ansi reset)'

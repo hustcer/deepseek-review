@@ -27,8 +27,6 @@ settings:
   # This token is used to fetch the PR changes from GitHub API
   # Default value will be ${{ github.token }} if used in GitHub Actions
   github-token: 'YOUR_GITHUB_TOKEN'
-  # Default local repository to review, could be overrode by '-r' or '--repo'
-  default-local-repo: 'review'
   # Default GitHub repository to review, could be overrode by '-r' or '--repo' if used with `-n` or `--pr-number`
   default-github-repo: 'hustcer/deepseek-review'
   # Include changes in the following file patterns
@@ -71,17 +69,6 @@ providers:
       - name: 'deepseek-ai/DeepSeek-R1'
         alias: r1
         description: 'SiliconFlow DeepSeek R1 model'
-
-
-# Multiple local repositories could be defined, select the one by name in 'settings.default-local-repo'
-# You can also use `-r` or `--repo` to specify the local repository to review by name to override the default
-local-repos:
-  - name: 'review'
-    path: '/Users/hustcer/deepseek-review'
-  - name: 'milestone'
-    path: '/Users/hustcer/milestone-action'
-  - name: 'setup-nu'
-    path: '/Users/hustcer/setup-nu'
 
 # Multiple Prompts could be defined, select the one by name in 'settings.user-prompt' or 'settings.system-prompt'
 prompts:

@@ -175,7 +175,7 @@ Usage:
 
 Flags:
   -d, --debug: Debug mode
-  -r, --repo <string>: GitHub repo name, e.g. hustcer/deepseek-review, or local repo path / alias
+  -r, --repo <string>: GitHub repo name, e.g. hustcer/deepseek-review
   -n, --pr-number <string>: GitHub PR number
   -k, --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
   -t, --diff-to <string>: Diff to git REF
@@ -211,13 +211,13 @@ To perform code reviews locally, you need to modify the configuration file. A sa
 ### Usage Examples
 
 ```sh
-# Perform code review on the `git diff` changes in the local DEFAULT_LOCAL_REPO repo
+# Perform code review on the `git diff` changes in current directory
 nu cr
-# Perform code review on the `git diff f536acc` changes in the local DEFAULT_LOCAL_REPO repo
+# Perform code review on the `git diff f536acc` changes in current directory
 nu cr --diff-from f536acc
-# Perform code review on the `git diff f536acc 0dd0eb5` changes in the local DEFAULT_LOCAL_REPO repo
+# Perform code review on the `git diff f536acc 0dd0eb5` changes in current directory
 nu cr --diff-from f536acc --diff-to 0dd0eb5
-# Review the changes in the local `DEFAULT_LOCAL_REPO` repo using the `--patch-cmd` flag
+# Review the changes in current directory using the `--patch-cmd` flag
 nu cr --patch-cmd 'git diff head~3'
 nu cr -c 'git show head~3'
 nu cr -c 'git diff 2393375 71f5a31'

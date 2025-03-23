@@ -11,7 +11,7 @@ use nu/review.nu [deepseek-review]
 def main [
   token?: string,           # Your DeepSeek API token, fallback to CHAT_TOKEN env var
   --debug(-d),              # Debug mode
-  --repo(-r): string,       # GitHub repo name, e.g. hustcer/deepseek-review, or local repo path / alias
+  --repo(-r): string,       # GitHub repo name, e.g. hustcer/deepseek-review
   --pr-number(-n): string,  # GitHub PR number
   --gh-token(-k): string,   # Your GitHub token, fallback to GITHUB_TOKEN env var
   --diff-to(-t): string,    # Diff to git REF
@@ -31,7 +31,7 @@ def main [
 
   check-nushell
   config-check --config=$config
-  config-load --debug=$debug --config=$config --repo=$repo --model=$model
+  config-load --debug=$debug --config=$config --model=$model
   (
     deepseek-review $token
       --repo=$repo

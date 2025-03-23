@@ -124,16 +124,10 @@ def get-model-envs [settings: record, model?: string = ''] {
 export def --env config-load [
   --debug(-d),                # Print the loaded environment variables
   --config(-C): string,       # The config file path, default to `config.yml`
-  --repo(-r): string,         # Load the specified local repository by name
   --model(-m): string,        # Load the specified model by name
 ] {
   let all_settings = open ($config | default $SETTING_FILE)
   let settings = $all_settings | get settings? | default {}
-  let local_repo = $all_settings.local-repos
-    | default []
-    | where name == ($repo | default $settings.default-local-repo? | default '')
-    | get -i 0.path
-    | default $repo
 
   let user_prompt = $all_settings.prompts?.user?
     | default []
@@ -156,7 +150,6 @@ export def --env config-load [
     GITHUB_TOKEN: $settings.github-token,
     EXCLUDE_PATTERNS: $settings.exclude-patterns,
     INCLUDE_PATTERNS: $settings.include-patterns,
-    DEFAULT_LOCAL_REPO: $local_repo,
     DEFAULT_GITHUB_REPO: $settings.default-github-repo,
   }
   load-env $env_vars
