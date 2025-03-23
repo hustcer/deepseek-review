@@ -200,34 +200,68 @@ Parameters:
 
 ### Environment Configuration
 
-To perform code reviews locally, you need to modify the configuration file. A sample configuration file [`config.example.yml`](https://github.com/hustcer/deepseek-review/blob/main/config.example.yml) is already provided in the repository. Copy it to `config.yml` and adjust it according to your actual setup.
+To perform code review locally, you need to modify the configuration file. The repository already provides a configuration example [`config.example.yml`](https://github.com/hustcer/deepseek-review/blob/main/config.example.yml). Copy it to `config.yml` and modify it according to your actual needs. ​**Read the comments in the configuration file carefully**, as they explain the purpose of each configuration item.
 
 > [!WARNING]
 >
-> The `config.yml` configuration file is only used locally and will not be utilized in GitHub
-> Workflow. Please securely store any sensitive information in it and avoid committing it
-> to the code repository.
+> The `config.yml` configuration file is ​**only used locally** and will not be utilized in GitHub Workflow. ​**Sensitive information** in this file should be properly secured and ​**never committed** to the code repository.
+>
 
-### Usage Examples
+**Create Command Alias**
+
+For convenience in performing code review across any local repository, create a command alias. For example:
+
+```sh
+# For Nushell: Modify config.nu and add:
+alias cr = nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/deepseek-review/config.yml
+
+# For zsh/bash: Modify ~/.zshrc or ~/.bashrc and add:
+alias cr="nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/deepseek-review/config.yml"
+
+# After sourcing the modified profile, use `cr` for code review
+```
+
+### Review Local Repository
+
+To review a local repository:
+
+- Navigate to the Git repository directory.
+- Use the `cr` command to review current modifications, ​provided that `config.yml` is correctly configured.
+
+**Usage Examples**
 
 ```sh
 # Perform code review on the `git diff` changes in current directory
-nu cr
+cr
 # Perform code review on the `git diff f536acc` changes in current directory
-nu cr --diff-from f536acc
+cr --diff-from f536acc
 # Perform code review on the `git diff f536acc 0dd0eb5` changes in current directory
-nu cr --diff-from f536acc --diff-to 0dd0eb5
+cr --diff-from f536acc --diff-to 0dd0eb5
 # Review the changes in current directory using the `--patch-cmd` flag
-nu cr --patch-cmd 'git diff head~3'
-nu cr -c 'git show head~3'
-nu cr -c 'git diff 2393375 71f5a31'
-nu cr -c 'git diff 2393375 71f5a31 nu/*'
-nu cr -c 'git diff 2393375 71f5a31 :!nu/*'
-# Dangerous commands like `nu cr -c 'git show head~3; rm ./*'` will not be allowed
+cr --patch-cmd 'git diff head~3'
+cr -c 'git show head~3'
+cr -c 'git diff 2393375 71f5a31'
+cr -c 'git diff 2393375 71f5a31 nu/*'
+cr -c 'git diff 2393375 71f5a31 :!nu/*'
+# Dangerous commands like `cr -c 'git show head~3; rm ./*'` will not be allowed
+```
+
+### Review Remote GitHub PR Locally
+
+When reviewing a remote GitHub PR locally:
+
+- Always specify the PR number via `--pr-number`
+- Use `--repo` to indicate the target repository (e.g., `hustcer/deepseek-review`). If `--repo` is omitted, the tool reads `settings.default-github-repo` from `config.yml`.
+
+**Usage Examples**
+
+```sh
 # Perform code review on PR #31 in the remote DEFAULT_GITHUB_REPO repo
-nu cr --pr-number 31
+cr --pr-number 31
 # Perform code review on PR #31 in the remote hustcer/deepseek-review repo
-nu cr --pr-number 31 --repo hustcer/deepseek-review
+cr --pr-number 31 --repo hustcer/deepseek-review
+# Perform code review on PR #31 and exclude changes of pnpm-lock.yaml
+cr --pr-number 31 --exclude pnpm-lock.yaml
 ```
 
 ## License
