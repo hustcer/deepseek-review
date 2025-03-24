@@ -215,7 +215,14 @@ alias cr = nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/de
 
 # Modify ~/.zshrc for zsh or ~/.bashrc for bash or ~/.config/fish/config.fish for fish and add:
 alias cr="nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/deepseek-review/config.yml"
- # After sourcing the profile you have edit, you can use `cr` now
+# After sourcing the profile you have edit, you can use `cr` now
+
+# For Windows powershell users please set cr alias by editing $PROFILE and add:
+function cr {
+  nu D:\absolute\path\to\deepseek-review\cr --config D:\absolute\path\to\deepseek-review\config.yml @args
+}
+
+# Then restart the terminal or run `. $PROFILE` in pwsh to make `cr` work
 ```
 
 之后就可以通过 `cr` 命令来进行代码审查了。

@@ -219,6 +219,13 @@ alias cr = nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/de
 alias cr="nu /absolute/path/to/deepseek-review/cr --config /absolute/path/to/deepseek-review/config.yml"
 
 # After sourcing the modified profile, use `cr` for code review
+
+# For Windows powershell users please set cr alias by editing $PROFILE and add:
+function cr {
+  nu D:\absolute\path\to\deepseek-review\cr --config D:\absolute\path\to\deepseek-review\config.yml @args
+}
+
+# Then restart the terminal or run `. $PROFILE` in pwsh to make `cr` work
 ```
 
 ### Review Local Repository
