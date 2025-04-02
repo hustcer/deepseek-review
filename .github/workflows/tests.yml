@@ -62,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           use ${{ github.workspace }}/nutest/nutest
-          use ${{ github.workspace }}/nu/review.nu [prepare-awk]
+          use ${{ github.workspace }}/nu/util.nu [prepare-awk]
           prepare-awk
           (
             nutest run-tests
