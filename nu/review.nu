@@ -25,7 +25,7 @@
 #  - Local Repo Review: just cr -f HEAD~1 --debug
 #  - Local PR Review: just cr -r hustcer/deepseek-review -n 32
 
-use kv.nu *
+use std-rfc/kv *
 use diff.nu [get-diff]
 use common.nu [
   ECODE, NO_TOKEN_TIP, hr-line, is-installed, windows?, mac?,

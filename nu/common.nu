@@ -4,7 +4,7 @@
 # Description: Common helpers for DeepSeek-Review
 #
 
-use kv.nu ['kv set', 'kv get']
+use std-rfc/kv ['kv set', 'kv get']
 
 # Commonly used exit codes
 export const ECODE = {
