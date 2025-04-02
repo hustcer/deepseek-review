@@ -1,7 +1,7 @@
 
 use std/assert
 use ../nu/diff.nu [get-diff]
-use ../nu/review.nu [is-safe-git, prepare-awk, generate-include-regex, generate-exclude-regex]
+use ../nu/util.nu [is-safe-git, prepare-awk, generate-include-regex, generate-exclude-regex]
 
 # Get the unicode width of the input string
 def get-uw [] { $in | str stats | get unicode-width }
