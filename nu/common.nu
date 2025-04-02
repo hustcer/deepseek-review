@@ -18,6 +18,8 @@ export const ECODE = {
   CONDITION_NOT_SATISFIED: 8,
 }
 
+export const GITHUB_API_BASE = 'https://api.github.com'
+
 # If current host is Windows
 export def windows? [] {
   # Windows / Darwin
