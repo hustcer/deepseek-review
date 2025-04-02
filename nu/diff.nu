@@ -1,3 +1,8 @@
+#!/usr/bin/env nu
+# Author: hustcer
+# Created: 2025/04/02 20:02:15
+# Description: Diff command for DeepSeek-Review
+
 use common.nu [GITHUB_API_BASE, ECODE, git-check, has-ref]
 use util.nu [generate-include-regex, generate-exclude-regex, prepare-awk]
 

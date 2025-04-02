@@ -1,3 +1,8 @@
+#!/usr/bin/env nu
+# Author: hustcer
+# Created: 2025/04/02 20:02:15
+#
+
 use common.nu [ECODE, is-installed, compare-ver, windows?, mac?]
 
 # AWK family version check for both awk and gawk
