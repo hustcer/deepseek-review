@@ -1,4 +1,4 @@
-use common.nu [ECODE, is-installed, compare-ver]
+use common.nu [ECODE, is-installed, compare-ver, windows?, mac?]
 
 # AWK family version check for both awk and gawk
 #  awk: awk version 20250116 -> 20250116
