@@ -26,10 +26,11 @@ words:
 - linewise
 - Subshell
 - subshells
+- noreferrer
+- OPENROUTER
 - Infinigence
 - SILICONFLOW
 - USERPROFILE
-- noreferrer
 - Unsanitized
 - Unvalidated
 - monomorphization
