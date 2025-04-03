@@ -264,7 +264,8 @@ def parse-line [] {
 
 # Coalesce the reasoning content
 def coalesce-reasoning [] {
-  $in.reasoning_content? | default $in.reasoning?
+  let msg = $in
+  $msg.reasoning_content? | default $msg.reasoning?
 }
 
 alias main = deepseek-review
