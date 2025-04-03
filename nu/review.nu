@@ -146,8 +146,9 @@ export def --env deepseek-review [
     print $'✖️ Code review failed！Error: '; hr-line; print $response
     exit $ECODE.SERVER_ERROR
   }
-  let reason = $response | get -i choices.0.message.reasoning_content
-  let review = $response | get -i choices.0.message.content | default ($response | get -i message.content)
+  let message = $response | get -i choices.0.message
+  let reason = $message.reasoning_content? | default $message.reasoning?
+  let review = $message.content? | default ($response | get -i message.content)
   let result = ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
   if ($review | is-empty) {
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
