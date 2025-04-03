@@ -147,7 +147,7 @@ export def --env deepseek-review [
     exit $ECODE.SERVER_ERROR
   }
   let message = $response | get -i choices.0.message
-  let reason = $message.reasoning_content? | default $message.reasoning?
+  let reason = $message | coalesce-reasoning
   let review = $message.content? | default ($response | get -i message.content)
   let result = ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
   if ($review | is-empty) {
@@ -232,11 +232,11 @@ def streaming-output [
         if $debug { $last | to json | kv set last-reply }
         $last | get -i choices.0.delta | default ($last | get -i message) | if ($in | is-not-empty) {
           let delta = $in
-          if ($delta.reasoning_content? | default $delta.reasoning? | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
+          if ($delta | coalesce-reasoning | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
           if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
           if ($delta.content | is-not-empty) { kv set content ((kv get content) + 1) }
           if (kv get content) == 1 { print $'(char nl)Review Details:'; hr-line }
-          print -n ($delta.reasoning_content? | default $delta.reasoning? | default $delta.content)
+          print -n ($delta | coalesce-reasoning | default $delta.content)
         }
       }
 
@@ -260,6 +260,11 @@ def parse-line [] {
     print -e $'(ansi r)Unrecognized content:(ansi reset) ($line)'
     exit $ECODE.SERVER_ERROR
   }
+}
+
+# Coalesce the reasoning content
+def coalesce-reasoning [] {
+  $in.reasoning_content? | default $in.reasoning?
 }
 
 alias main = deepseek-review
