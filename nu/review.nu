@@ -55,6 +55,7 @@ export def --env deepseek-review [
   token?: string,           # Your DeepSeek API token, fallback to CHAT_TOKEN env var
   --debug(-d),              # Debug mode
   --repo(-r): string,       # GitHub repo name, e.g. hustcer/deepseek-review, or local repo path / alias
+  --output(-o): string,     # Output file path
   --pr-number(-n): string,  # GitHub PR number
   --gh-token(-k): string,   # Your GitHub token, fallback to GITHUB_TOKEN env var
   --diff-to(-t): string,    # Diff to git REF
@@ -71,13 +72,15 @@ export def --env deepseek-review [
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`
 ]: nothing -> nothing {
 
+  mut review_result = ['# DeepSeek Code Review Result' '']
   $env.config.table.mode = 'psql'
   let local_repo = $env.PWD
+  let write_file = ($output | is-not-empty)
   let is_action = ($env.GITHUB_ACTIONS? == 'true')
-  let stream = if $is_action { false } else { true }
   let token = $token | default $env.CHAT_TOKEN?
   let repo = $repo | default $env.DEFAULT_GITHUB_REPO?
   let CHAT_HEADER = [Authorization $'Bearer ($token)']
+  let stream = if $is_action or $write_file { false } else { true }
   let model = $model | default $env.CHAT_MODEL? | default $DEFAULT_OPTIONS.MODEL
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
@@ -109,7 +112,11 @@ export def --env deepseek-review [
   print $hint; print -n (char nl)
   if ($pr_number | is-empty) {
     print 'Current Settings:'; hr-line
-    $setting | compact-record | reject -i repo | print; print -n (char nl)
+    let option = $setting | compact-record | reject -i repo
+    if $write_file {
+      $review_result ++= ['## Code Review Settings', '', ($option | transpose key val | to md --pretty), '']
+    }
+    $option | print; print -n (char nl)
   }
 
   let content = (
@@ -155,15 +162,23 @@ export def --env deepseek-review [
     exit $ECODE.SERVER_ERROR
   }
   let result = if ($reason | is-empty) { $review } else { $result }
-  if not $is_action {
+  if not $is_action and not $write_file {
     print $'Code Review Result:'; hr-line; print $result
+  } else if $write_file {
+    $review_result ++= ['## Review Detail' '' $result '']
   } else {
     post-comments-to-pr $repo $pr_number $result
     print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
   }
   if ($response.usage? | is-not-empty) {
-    print $'(char nl)Token Usage:'; hr-line
-    $response.usage? | table -e | print
+    if $write_file {
+      $review_result ++= ['## Token Usage', '', ($response.usage? | transpose key val | to md --pretty), '']
+      $review_result | str join "\n" | save -rf $output
+      print $'Code Review Result has been saved to (ansi g)($output)(ansi reset)'
+    } else {
+      print $'(char nl)Token Usage:'; hr-line
+      $response.usage? | table -e | print
+    }
   }
 }
 

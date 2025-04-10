@@ -27,6 +27,7 @@ def main [
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`
   --config(-C): string      # Config file path, default to `config.yml`
+  --output(-o): string,     # Output file path
 ] {
 
   check-nushell
@@ -36,6 +37,7 @@ def main [
     deepseek-review $token
       --repo=$repo
       --debug=$debug
+      --output=$output
       --model=$env.CHAT_MODEL
       --base-url=$base_url
       --chat-url=$chat_url
