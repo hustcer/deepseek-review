@@ -114,7 +114,7 @@ export def is-safe-git [cmd: string] {
   let normalized_cmd = ($cmd | str trim | str downcase)
 
   # Define allowed command patterns with named capture groups for better validation
-  let git_cmd_pattern = '^git\s+(show|diff)(?:\s+(?:[a-zA-Z0-9_\-\.~/]+)){0,3}(?:\s+(?::[!]?)?[a-zA-Z0-9_\-\.\*\/]+){0,2}$'
+  let git_cmd_pattern = '^git\s+(show|diff)(?:\s+(?:[a-zA-Z0-9_\-\.~/]+(?::[a-zA-Z0-9_\-\.\*\/]+)?)){0,3}(?:\s+(?::[!]?)?[a-zA-Z0-9_\-\.\*\/]+){0,2}$'
 
   if ($normalized_cmd | find -r $git_cmd_pattern | is-empty) {
     print $'(ansi r)Invalid git command format. (ansi g)Only simple `git show` or `git diff` commands are allowed.(ansi reset)'

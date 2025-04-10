@@ -4,8 +4,8 @@
 # Description: A wrapper for nu/review.nu as the main entry point of the project.
 
 use nu/config.nu *
-use nu/common.nu [hr-line, check-nushell, ECODE]
 use nu/review.nu [deepseek-review]
+use nu/common.nu [hr-line, check-nushell, ECODE]
 
 # Use DeepSeek AI to review code changes locally or in GitHub Actions
 def main [
