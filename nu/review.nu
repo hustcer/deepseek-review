@@ -186,16 +186,16 @@ def write-review-to-file [
   let file = (if not ($file | str ends-with '.md') { $'($file).md' } else { $file })
   # Generate content sections
   let content_sections = [
-    "# DeepSeek Code Review Result", ""
-    $"Generated at: (date now | format date '%Y-%m-%d %H:%M:%S')", ""
-    "## Code Review Settings", ""
+    '# DeepSeek Code Review Result', ''
+    $"Generated at: (date now | format date '%Y/%m/%d %H:%M:%S')", ''
+    '## Code Review Settings', ''
     ($setting | compact-record | reject -i repo | transpose key val | to md --pretty)
-    "", "## Review Detail", "", $result, "", "## Token Usage", ""
+    '', '## Review Detail', '', $result, '', '## Token Usage', ''
     ($response.usage? | transpose key val | to md --pretty)
   ]
   try {
     $content_sections | str join (char nl) | save -rf $file
-    print $'✅ Code Review Result saved to (ansi g)($file)(ansi reset)'
+    print $'Code Review Result saved to (ansi g)($file)(ansi reset)'
   } catch {|err|
     print $'(ansi r)Failed to save review result: (ansi reset)'
     $err | table -e | print
