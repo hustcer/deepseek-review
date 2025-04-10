@@ -36,8 +36,6 @@ def main [
     deepseek-review $token
       --repo=$repo
       --debug=$debug
-      --include=$include
-      --exclude=$exclude
       --model=$env.CHAT_MODEL
       --base-url=$base_url
       --chat-url=$chat_url
@@ -50,5 +48,7 @@ def main [
       --sys-prompt=$sys_prompt
       --user-prompt=$user_prompt
       --temperature=$temperature
+      --include=($include | default $env.INCLUDE_PATTERNS?)
+      --exclude=($exclude | default $env.EXCLUDE_PATTERNS?)
   )
 }
