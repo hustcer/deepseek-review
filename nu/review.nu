@@ -72,7 +72,6 @@ export def --env deepseek-review [
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`
 ]: nothing -> nothing {
 
-  mut review_result = ['# DeepSeek Code Review Result' '']
   $env.config.table.mode = 'psql'
   let local_repo = $env.PWD
   let write_file = ($output | is-not-empty)
@@ -86,6 +85,9 @@ export def --env deepseek-review [
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
+  # Determine output mode
+  let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }
+
   validate-temperature $temperature
   let setting = {
     repo: $repo,
@@ -112,11 +114,7 @@ export def --env deepseek-review [
   print $hint; print -n (char nl)
   if ($pr_number | is-empty) {
     print 'Current Settings:'; hr-line
-    let option = $setting | compact-record | reject -i repo
-    if $write_file {
-      $review_result ++= ['## Code Review Settings', '', ($option | transpose key val | to md --pretty), '']
-    }
-    $option | print; print -n (char nl)
+    $setting | compact-record | reject -i repo | print; print -n (char nl)
   }
 
   let content = (
@@ -162,23 +160,45 @@ export def --env deepseek-review [
     exit $ECODE.SERVER_ERROR
   }
   let result = if ($reason | is-empty) { $review } else { $result }
-  if not $is_action and not $write_file {
-    print $'Code Review Result:'; hr-line; print $result
-  } else if $write_file {
-    $review_result ++= ['## Review Detail' '' $result '']
-  } else {
-    post-comments-to-pr $repo $pr_number $result
-    print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
-  }
-  if ($response.usage? | is-not-empty) {
-    if $write_file {
-      $review_result ++= ['## Token Usage', '', ($response.usage? | transpose key val | to md --pretty), '']
-      $review_result | str join "\n" | save -rf $output
-      print $'Code Review Result has been saved to (ansi g)($output)(ansi reset)'
-    } else {
-      print $'(char nl)Token Usage:'; hr-line
-      $response.usage? | table -e | print
+
+  match $output_mode {
+    'action' => {
+      post-comments-to-pr $repo $pr_number $result
+      print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
     }
+    'file' => { write-review-to-file $output $setting $result $response }
+    _ => { print $'Code Review Result:'; hr-line; print $result }
+  }
+
+  if ($response.usage? | is-not-empty) {
+    print $'(char nl)Token Usage:'; hr-line
+    $response.usage? | table -e | print
+  }
+}
+
+# Write the code review result to a file
+def write-review-to-file [
+  file: string,           # Output file path
+  setting: record,        # Review settings
+  result: string,         # Review result
+  response: record,       # DeepSeek API response
+] {
+  let file = (if not ($file | str ends-with '.md') { $'($file).md' } else { $file })
+  # Generate content sections
+  let content_sections = [
+    "# DeepSeek Code Review Result", ""
+    $"Generated at: (date now | format date '%Y-%m-%d %H:%M:%S')", ""
+    "## Code Review Settings", ""
+    ($setting | compact-record | reject -i repo | transpose key val | to md --pretty)
+    "", "## Review Detail", "", $result, "", "## Token Usage", ""
+    ($response.usage? | transpose key val | to md --pretty)
+  ]
+  try {
+    $content_sections | str join (char nl) | save -rf $file
+    print $'✅ Code Review Result saved to (ansi g)($file)(ansi reset)'
+  } catch {|err|
+    print $'(ansi r)Failed to save review result: (ansi reset)'
+    $err | table -e | print
   }
 }
 
