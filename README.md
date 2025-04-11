@@ -23,6 +23,7 @@
 - Review Remote GitHub PRs Directly from Your Local CLI
 - Review Commit Changes with DeepSeek for Any Local Repository by CLI
 - Support On-demand Changes Generation via `git show`/`git diff` Command for Further Code Review
+- Output Code Review Result to Specified File in Markdown Format
 - Cross-platform Compatibility: Designed to function seamlessly across all platforms capable of running [Nushell](https://github.com/nushell/nushell)
 
 ### Both GH Action & Local
@@ -191,6 +192,7 @@ Flags:
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
   -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `1.0`
   -C, --config <string>: Config file path, default to `config.yml`
+  -o, --output <string>: Output file path
   -h, --help: Display the help message for this command
 
 Parameters:
@@ -242,6 +244,8 @@ To review a local repository:
 cr
 # Perform code review on the `git diff f536acc` changes in current directory
 cr --diff-from f536acc
+# Perform code review on the `git diff f536acc` changes and output result to review.md
+cr --diff-from f536acc --output review.md
 # Perform code review on the `git diff f536acc 0dd0eb5` changes in current directory
 cr --diff-from f536acc --diff-to 0dd0eb5
 # Review the changes in current directory using the `--patch-cmd` flag

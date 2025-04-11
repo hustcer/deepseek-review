@@ -21,6 +21,7 @@
 - 通过本地 CLI 直接审查远程 GitHub PR
 - 通过本地 CLI 使用 DeepSeek 审查任何本地仓库的提交变更
 - 允许通过自定义 `git show`/`git diff` 命令生成变更记录并进行审查
+- 允许将代码审查结果以 Markdown 格式输出到指定文件
 - 跨平台：理论上只要能运行 [Nushell](https://github.com/nushell/nushell) 即可使用本工具
 
 ### 本地或 GH Action
@@ -188,6 +189,7 @@ Flags:
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
   -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `1.0`
   -C, --config <string>: Config file path, default to `config.yml`
+  -o, --output <string>: Output file path
   -h, --help: Display the help message for this command
 
 Parameters:
@@ -238,6 +240,8 @@ function cr {
 cr
 # 对本地当前目录所在仓库 `git diff f536acc` 修改内容进行代码审查
 cr --diff-from f536acc
+# 对本地当前目录所在仓库 `git diff f536acc` 修改内容进行代码审查并将审查结果输出到 review.md
+cr --diff-from f536acc --output review.md
 # 对本地当前目录所在仓库 `git diff f536acc 0dd0eb5` 修改内容进行代码审查
 cr --diff-from f536acc --diff-to 0dd0eb5
 # 通过 --patch-cmd 参数对本地当前目录所在仓库变更内容进行审查
