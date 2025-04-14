@@ -23,7 +23,8 @@ def file-exists [file: string] {
 # Check if the prompt keys exist in the config.yml file
 def check-prompts [options: record] {
   check-prompt $options user
-  check-prompt $options system
+  # System prompt is optional, so we don't exit if it's missing
+  # check-prompt $options system
 }
 
 # Check if the specified type of prompt key exists in the config.yml file

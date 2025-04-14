@@ -46,8 +46,7 @@ const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-chat',
   TEMPERATURE: 1.0,
   BASE_URL: 'https://api.deepseek.com',
-  USER_PROMPT: 'Please review the following code changes:',
-  SYS_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.',
+  USER_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner. Please review the following code changes:',
 }
 
 # Use DeepSeek AI to review code changes locally or in GitHub Actions
@@ -65,8 +64,8 @@ export def --env deepseek-review [
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
   --chat-url(-U): string,   # DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
-  --sys-prompt(-s): string  # Default to $DEFAULT_OPTIONS.SYS_PROMPT,
-  --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
+  --sys-prompt(-s): string  # Optional, System prompt message, fallback to SYSTEM_PROMPT env var
+  --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`
@@ -126,16 +125,15 @@ export def --env deepseek-review [
     exit $ECODE.SUCCESS
   }
   print $'Review content length: (ansi g)($length)(ansi reset), current max length: (ansi g)($max_length)(ansi reset)'
-  let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
+  let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT?
   let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
+  mut messages = if ($sys_prompt | is-empty) { [] } else { [{ role: 'system', content: $sys_prompt }] }
+  $messages = $messages | append { role: 'user', content: $"($user_prompt)\n($content)" }
   let payload = {
     model: $model,
     stream: $stream,
+    messages: $messages
     temperature: $temperature,
-    messages: [
-      { role: 'system', content: $sys_prompt },
-      { role: 'user', content: $"($user_prompt):\n($content)" }
-    ]
   }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
