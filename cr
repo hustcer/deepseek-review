@@ -14,8 +14,8 @@ def main [
   --repo(-r): string,       # GitHub repo name, e.g. hustcer/deepseek-review
   --pr-number(-n): string,  # GitHub PR number
   --gh-token(-k): string,   # Your GitHub token, fallback to GITHUB_TOKEN env var
-  --diff-to(-t): string,    # Diff to git REF
-  --diff-from(-f): string,  # Diff from git REF
+  --diff-from(-f): string,  # Git diff starting commit SHA
+  --diff-to(-t): string,    # Git diff ending commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default

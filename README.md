@@ -179,8 +179,8 @@ Flags:
   -r, --repo <string>: GitHub repo name, e.g. hustcer/deepseek-review
   -n, --pr-number <string>: GitHub PR number
   -k, --gh-token <string>: Your GitHub token, fallback to GITHUB_TOKEN env var
-  -t, --diff-to <string>: Diff to git REF
-  -f, --diff-from <string>: Diff from git REF
+  -f, --diff-from <string>: Git diff starting commit SHA
+  -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
