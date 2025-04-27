@@ -6,7 +6,7 @@ use ../nu/util.nu [is-safe-git, prepare-awk, generate-include-regex, generate-ex
 # Get the unicode width of the input string
 def get-uw [] { $in | str stats | get unicode-width }
 
-#[before-all]
+@before-all
 def setup [] {
   let awk_bin = (prepare-awk)
   let patch = open -r tests/resources/diff.patch
@@ -14,7 +14,7 @@ def setup [] {
   { patch: $patch, awk: $awk_bin, SHA: 22e7b71 }
 }
 
-#[test]
+@test
 def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git diff') true
   assert equal (is-safe-git 'git show') true
@@ -45,7 +45,7 @@ def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git show HEAD:nu/common.nu') true
 }
 
-#[test]
+@test
 def 'generate-include-regex：should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
@@ -55,7 +55,7 @@ def 'generate-include-regex：should work as expected' [] {
   assert equal ($patch | ^$awk_bin (generate-include-regex [.env*, *.md, nu/*]) | get-uw) 6871
 }
 
-#[test]
+@test
 def 'generate-exclude-regex：should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
@@ -63,7 +63,7 @@ def 'generate-exclude-regex：should work as expected' [] {
   assert equal ($patch | ^$awk_bin (generate-exclude-regex [.env*, *.md, nu/*]) | get-uw) (1350 + 99)
 }
 
-#[test]
+@test
 def 'both include and exclude should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
@@ -73,7 +73,7 @@ def 'both include and exclude should work as expected' [] {
     | get-uw) 2576
 }
 
-#[test]
+@test
 def 'both exclude and include should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
@@ -83,7 +83,7 @@ def 'both exclude and include should work as expected' [] {
     | get-uw) 2576
 }
 
-#[test]
+@test
 def 'get-diff：get patch from remote PR should work' [] {
   $env.GH_TOKEN = $env.GITHUB_TOKEN?
   const repo = 'hustcer/deepseek-review'
@@ -93,7 +93,7 @@ def 'get-diff：get patch from remote PR should work' [] {
                   | str join "\n" | get-uw) 7923
 }
 
-#[test]
+@test
 def 'get-diff：get patch from remote PR with include should work' [] {
   $env.GH_TOKEN = $env.GITHUB_TOKEN?
   const repo = 'hustcer/deepseek-review'
@@ -102,7 +102,7 @@ def 'get-diff：get patch from remote PR with include should work' [] {
   assert equal ($patch | get-uw) 2576
 }
 
-#[test]
+@test
 def 'get-diff：get patch from remote PR with exclude should work' [] {
   $env.GH_TOKEN = $env.GITHUB_TOKEN?
   const repo = 'hustcer/deepseek-review'
@@ -111,7 +111,7 @@ def 'get-diff：get patch from remote PR with exclude should work' [] {
   assert equal ($patch | get-uw) 555
 }
 
-#[test]
+@test
 def 'get-diff：get patch from remote PR with exclude & include should work' [] {
   $env.GH_TOKEN = $env.GITHUB_TOKEN?
   const repo = 'hustcer/deepseek-review'

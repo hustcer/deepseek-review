@@ -15,6 +15,7 @@ on:
     branches:
       - main
       - develop
+      - feature/test
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -46,7 +47,7 @@ jobs:
       - name: Checkout Nutest Repo
         uses: actions/checkout@v4
         with:
-          ref: v1.0.1
+          ref: v1.1.0
           path: nutest
           repository: vyadh/nutest
           sparse-checkout: nutest/
