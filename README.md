@@ -126,7 +126,7 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 | max-length     | Int    | Optional, Maximum length(Unicode width) of the content for review, if the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
 | sys-prompt     | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below |
 | user-prompt    | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below |
-| temperature    | Number | Optional, The temperature for the model to generate the response, between `0` and `2`, default value `1.0` |
+| temperature    | Number | Optional, The temperature for the model to generate the response, between `0` and `2`, default value `0.3` |
 | include-patterns | String | Optional, The comma separated file patterns to include in the code review. No default |
 | exclude-patterns | String | Optional, The comma separated file patterns to exclude in the code review. Default to `pnpm-lock.yaml,package-lock.json,*.lock` |
 | github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`. |
@@ -190,7 +190,7 @@ Flags:
   -u, --user-prompt <string>: Default to $DEFAULT_OPTIONS.USER_PROMPT,
   -i, --include <string>: Comma separated file patterns to include in the code review
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
-  -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `1.0`
+  -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `0.3`
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command

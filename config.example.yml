@@ -17,8 +17,8 @@ settings:
   # If the content length exceeds the non-zero limit, the review will be skipped
   # Note that it's unicode width not LLM token length
   max-length: 0
-  # The temperature of the model, The value should be between 0 and 2, with default value 1.0
-  temperature: 1.0
+  # The temperature of the model, The value should be between 0 and 2, with default value 0.3
+  temperature: 0.3
   # The user prompt name to use for DeepSeek API select from 'prompts.user'
   user-prompt: 'default'
   # The system prompt name to use for DeepSeek API select from 'prompts.system'

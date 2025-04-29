@@ -124,7 +124,7 @@ jobs:
 | max-length     | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查 |
 | sys-prompt     | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释      |
 | user-prompt    | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释     |
-| temperature    | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `1.0`        |
+| temperature    | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `0.3`        |
 | include-patterns | String | 可选，代码审查中要包含的以逗号分隔的文件模式，无默认值 |
 | exclude-patterns | String | 可选，代码审查中要排除的以逗号分隔的文件模式，默认值为 `pnpm-lock.yaml,package-lock.json,*.lock` |
 | github-token   | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}` |
@@ -187,7 +187,7 @@ Flags:
   -u, --user-prompt <string>: Default to $DEFAULT_OPTIONS.USER_PROMPT,
   -i, --include <string>: Comma separated file patterns to include in the code review
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
-  -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `1.0`
+  -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `0.3`
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command

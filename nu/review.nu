@@ -44,7 +44,7 @@ const HTTP_HEADERS = [User-Agent curl/8.9]
 
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-chat',
-  TEMPERATURE: 1.0,
+  TEMPERATURE: 0.3,
   BASE_URL: 'https://api.deepseek.com',
   USER_PROMPT: 'Please review the following code changes:',
   SYS_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.',
@@ -69,7 +69,7 @@ export def --env deepseek-review [
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
-  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `1.0`
+  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'

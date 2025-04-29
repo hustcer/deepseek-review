@@ -28,7 +28,7 @@ inputs:
     description: 'The DeepSeek model to choose for code review.'
   temperature:
     required: false
-    default: 1.0
+    default: 0.3
     description: 'The temperature of the model.'
   base-url:
     required: false
@@ -78,7 +78,7 @@ runs:
         let includePatterns = '${{ inputs.include-patterns }}'
         let excludePatterns = '${{ inputs.exclude-patterns }}'
         let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
-        let temperature = try { '${{ inputs.temperature }}' | into float } catch { 1.0 }
+        let temperature = try { '${{ inputs.temperature }}' | into float } catch { 0.3 }
         (deepseek-review $token
           --model $model
           --repo $repo
