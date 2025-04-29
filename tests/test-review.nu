@@ -1,5 +1,6 @@
 
 use std/assert
+use std/testing *
 use ../nu/diff.nu [get-diff]
 use ../nu/util.nu [is-safe-git, prepare-awk, generate-include-regex, generate-exclude-regex]
 

@@ -1,5 +1,6 @@
 
 use std/assert
+use std/testing *
 
 use ../nu/common.nu [
   compare-ver, 'from env', is-installed, has-ref,
