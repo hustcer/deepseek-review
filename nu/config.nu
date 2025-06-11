@@ -60,7 +60,7 @@ def check-providers [options: record] {
   }
   # Each provider should have name, token and models field
   $options.providers | each {|it|
-    let empties = [name token models] | filter { |field| $it | get -i $field | is-empty }
+    let empties = [name token models] | where { |field| $it | get -i $field | is-empty }
     if ($empties | is-not-empty) {
       print $'Field (ansi r)`($empties | str join ,)`(ansi reset) should not be empty for provider:'
       $it | table -e -t psql | print

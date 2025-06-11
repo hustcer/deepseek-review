@@ -102,7 +102,7 @@ export def 'from env' []: string -> record {
 # Compact the record by removing empty columns
 export def compact-record []: record -> record {
   let record = $in
-  let empties = $record | columns | filter {|it| $record | get $it | is-empty }
+  let empties = $record | columns | where {|it| $record | get $it | is-empty }
   $record | reject ...$empties
 }
 
