@@ -59,11 +59,11 @@ def check-providers [options: record] {
     exit $ECODE.INVALID_PARAMETER
   }
   # Each provider should have name, token and models field
-  $options.providers | each {|it|
-    let empties = [name token models] | where { |field| $it | get -i $field | is-empty }
+  $options.providers | each {|p|
+    let empties = [name token models] | where { |field| $p | get -i $field | is-empty }
     if ($empties | is-not-empty) {
       print $'Field (ansi r)`($empties | str join ,)`(ansi reset) should not be empty for provider:'
-      $it | table -e -t psql | print
+      $p | table -e -t psql | print
       exit $ECODE.INVALID_PARAMETER
     }
   }
