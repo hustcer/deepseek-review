@@ -28,7 +28,7 @@ alias cr := code-review
 
 # Used to handle the path separator issue
 DEEPSEEK_REVIEW_PATH := parent_directory(justfile())
-NU_DIR := parent_directory(`(which nu).path.0`)
+NU_DIR := parent_directory(`$nu.current-exe`)
 _query_plugin := if os_family() == 'windows' { 'nu_plugin_query.exe' } else { 'nu_plugin_query' }
 
 # To pass arguments to a dependency, put the dependency
