@@ -51,8 +51,8 @@ export def compare-ver [v1: string, v2: string] {
   # If you want to compare more parts use the following code:
   # for i in 0..([2 ($a | length) ($b | length)] | math max)
   for i in 0..2 {
-    let x = $a | get -i $i | default 0
-    let y = $b | get -i $i | default 0
+    let x = $a | get -o $i | default 0
+    let y = $b | get -o $i | default 0
     if $x > $y { return 1    }
     if $x < $y { return (-1) }
   }
