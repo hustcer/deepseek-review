@@ -114,7 +114,7 @@ export def --env deepseek-review [
   print $hint; print -n (char nl)
   if ($pr_number | is-empty) {
     print 'Current Settings:'; hr-line
-    $setting | compact-record | reject -i repo | print; print -n (char nl)
+    $setting | compact-record | reject -o repo | print; print -n (char nl)
   }
 
   let content = (
@@ -151,9 +151,9 @@ export def --env deepseek-review [
     print $'✖️ Code review failed！Error: '; hr-line; print $response
     exit $ECODE.SERVER_ERROR
   }
-  let message = $response | get -i choices.0.message
+  let message = $response | get -o choices.0.message
   let reason = $message | coalesce-reasoning
-  let review = $message.content? | default ($response | get -i message.content)
+  let review = $message.content? | default ($response | get -o message.content)
   let result = ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
   if ($review | is-empty) {
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
@@ -192,7 +192,7 @@ def write-review-to-file [
     '# DeepSeek Code Review Result', ''
     $"Generated at: (date now | format date '%Y/%m/%d %H:%M:%S')", ''
     '## Code Review Settings', ''
-    ($setting | compact-record | reject -i repo | transpose key val | to md --pretty)
+    ($setting | compact-record | reject -o repo | transpose key val | to md --pretty)
     '', '## Review Detail', '', $result, '', ...$token_usage
   ]
   try {
@@ -264,10 +264,10 @@ def streaming-output [
     | try { lines } catch { print $'(ansi r)Error Happened ...(ansi reset)'; exit $ECODE.SERVER_ERROR }
     | each {|line|
         if ($line | is-empty) { return }
-        if ($IGNORED_MESSAGES | get -i $line | default false) { return }
+        if ($IGNORED_MESSAGES | get -o $line | default false) { return }
         let $last = $line | parse-line
         if $debug { $last | to json | kv set last-reply }
-        $last | get -i choices.0.delta | default ($last | get -i message) | if ($in | is-not-empty) {
+        $last | get -o choices.0.delta | default ($last | get -o message) | if ($in | is-not-empty) {
           let delta = $in
           if ($delta | coalesce-reasoning | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
           if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
@@ -279,7 +279,7 @@ def streaming-output [
 
   if $debug and (kv get last-reply | is-not-empty) {
     print $'(char nl)(char nl)Model & Token Usage:'; hr-line
-    kv get last-reply | from json | select -i model usage | table -e | print
+    kv get last-reply | from json | select -o model usage | table -e | print
   }
 }
 
