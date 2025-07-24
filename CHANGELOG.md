@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.19.0] - 2025-07-23
+
+### Bug Fixes
+
+- Fix "variable not found" error (#185)
+- Fix getting Nu binary path for Nushell 0.106
+
+### Deps
+
+- Upgrade Nu to v0.106 (#186)
+
 ## [1.18.0] - 2025-06-11
 
 ### Features
