@@ -91,7 +91,8 @@ def check-models [options: record] {
 }
 
 # Check if the config.yml file exists and if it's valid
-export def config-check [--config: string = $SETTING_FILE] {
+export def config-check [--config: string] {
+  let config = $config | default $SETTING_FILE
   file-exists $config
   let options = open $config
   check-prompts $options
