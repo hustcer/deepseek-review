@@ -161,7 +161,7 @@ DeepSeek 接口调用入参:
 
 在本地进行代码审查，支持 `macOS`, `Ubuntu` & `Windows` 不过需要安装以下工具：
 
-- [`Nushell`](https://www.nushell.sh/book/installation.html), 建议安装最新版本(最低版本 `0.103`)
+- [`Nushell`](https://www.nushell.sh/book/installation.html), 建议安装最新版本(最低版本 `0.106.1`)
 - [`awk`](https://github.com/onetrueawk/awk) 或者 [`gawk`](https://www.gnu.org/software/gawk/) 的最新版版本，优先推荐 `gawk`
 - 接下来只需要把本仓库代码克隆到本地，然后进入仓库目录执行 `nu cr -h` 即可看到类似如下输出:
 

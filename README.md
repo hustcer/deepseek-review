@@ -164,7 +164,7 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 
 To perform code reviews locally(should works for `macOS`, `Ubuntu`, and `Windows`), you need to install the following tools:
 
-- [`Nushell`](https://www.nushell.sh/book/installation.html). It is recommended to install the latest versions(min version required: `0.103`).
+- [`Nushell`](https://www.nushell.sh/book/installation.html). It is recommended to install the latest versions(min version required: `0.106.1`).
 - The latest version of [`awk`](https://github.com/onetrueawk/awk) or [`gawk`](https://www.gnu.org/software/gawk/) is required, with `gawk` being the preferred choice.
 - Clone this repository to your local machine, navigate to the repository directory, and run `nu cr -h`. You should see an output similar to the following:
 
