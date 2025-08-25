@@ -42,10 +42,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Checkout Nutest Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: v1.1.0
           path: nutest
