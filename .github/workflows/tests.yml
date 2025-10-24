@@ -47,7 +47,7 @@ jobs:
       - name: Checkout Nutest Repo
         uses: actions/checkout@v5
         with:
-          ref: v1.1.0
+          ref: main
           path: nutest
           repository: vyadh/nutest
           sparse-checkout: nutest/
