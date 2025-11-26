@@ -100,7 +100,7 @@ export def "from env" []: string -> record {
               $v | str trim -c '"'
             } else {
               $match | get 0.content | str replace -a -r '\\(.)' {|m|
-                match $m { "n" => "\n", "r" => "\r", "t" => "\t", '"' => '"', _ => $m }
+                match $m { "n" => (char nl), "r" => (char cr), "t" => (char tab), '"' => '"', _ => $m }
               }
             }
           }
