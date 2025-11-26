@@ -95,13 +95,15 @@ export def "from env" []: string -> record {
         match $val {
           # Handle double-quoted values
           $v if ($v | str starts-with '"') => {
-            let match = ($v | parse -r '^"(?P<content>(?:[^"\\]|\\.)*)"')
-            if ($match | is-empty) {
+            let matched = ($v | parse -r '^"(?P<content>(?:[^"\\]|\\.)*)"')
+            if ($matched | is-empty) {
               $v | str trim -c '"'
             } else {
-              $match | get 0.content | str replace -a -r '\\(.)' {|m|
-                match $m { "n" => (char nl), "r" => (char cr), "t" => (char tab), '"' => '"', _ => $m }
-              }
+              $matched | get 0.content
+                | str replace -a '\n' (char nl)
+                | str replace -a '\r' (char cr)
+                | str replace -a '\t' (char tab)
+                | str replace -a '\"' '"'
             }
           }
           # Handle single-quoted values
