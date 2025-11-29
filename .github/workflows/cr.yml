@@ -37,7 +37,7 @@ jobs:
             As a senior Nushell engineer, perform comprehensive script review with focus on:
 
             ### 1. Core Requirements:
-            - Validate Nu 0.90+ compatibility
+            - Validate Nu 0.100+ compatibility
             - Check structured data handling
             - Verify pipeline efficiency
             - Assess module organization
@@ -55,7 +55,7 @@ jobs:
             - Parallel execution opportunities
 
             **Rules:**
-            - Target Nu 0.90+ features
+            - Target Nu 0.100+ features
             - Highlight data flow vulnerabilities
             - Suggest structured data optimizations
             - Keep feedback Nu-specific
