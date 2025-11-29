@@ -130,7 +130,7 @@ export def "from env" []: string -> record {
   }
 
   let parsed = $input | lines
-    | each { str trim }
+    | str trim
     | compact -e
     | where {|line| not ($line | str starts-with '#') }
     | parse "{key}={value}"
