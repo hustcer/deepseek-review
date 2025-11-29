@@ -84,61 +84,60 @@ export def check-nushell [--debug] {
 # May be used like this: open .env | load-env
 # Works with quoted and unquoted .env files
 export def "from env" []: string -> record {
-  lines
-    | where { |line| not ($line | str trim | str starts-with '#') }
+  let input = $in
+
+  # Process escape sequences in double-quoted values using str replace chain
+  # Use NUL char as placeholder to avoid replacement conflicts
+  let process_escapes = {|content: string|
+    $content
+      | str replace -a '\\' (char nul)   # Placeholder for \\ to avoid conflicts
+      | str replace -a '\n' (char nl)
+      | str replace -a '\r' (char cr)
+      | str replace -a '\t' (char tab)
+      | str replace -a '\"' '"'
+      | str replace -a (char nul) '\'    # Restore \\ to single \
+  }
+
+  # Parse double-quoted value with escape sequence support
+  let parse_double_quoted = {|val: string|
+    let matched = ($val | parse -r '^"(?P<content>(?:[^"\\]|\\.)*)"')
+    if ($matched | is-empty) { $val | str trim -c '"' } else { do $process_escapes $matched.0.content }
+  }
+
+  # Parse single-quoted value (no escape processing)
+  let parse_single_quoted = {|val: string|
+    let matched = ($val | parse -r "^'(?P<content>[^']*)'")
+    if ($matched | is-empty) { $val | str trim -c "'" } else { $matched.0.content }
+  }
+
+  # Parse unquoted value: handle escaped hash (\#) and strip inline comments
+  let parse_unquoted = {|val: string|
+    $val
+      | str replace -a '\#' (char nul)    # Placeholder for \#
+      | split row '#'                     # Split by comment delimiter
+      | first                             # Take content before first #
+      | str replace -a (char nul) '#'     # Restore \# to #
+      | str trim
+  }
+
+  # Parse value based on its format
+  let parse_value = {|val: string|
+    match $val {
+      $v if ($v | str starts-with '"') => { do $parse_double_quoted $v }
+      $v if ($v | str starts-with "'") => { do $parse_single_quoted $v }
+      _ => { do $parse_unquoted $val }
+    }
+  }
+
+  let parsed = $input | lines
+    | each { str trim }
+    | compact -e
+    | where {|line| not ($line | str starts-with '#') }
     | parse "{key}={value}"
-    | update key { |row|
-        $row.key | str trim | str replace -r '^export\s+' ''
-      }
-    | update value { |row|
-        let val = ($row.value | str trim)
-        match $val {
-          # Handle double-quoted values
-          $v if ($v | str starts-with '"') => {
-            let matched = ($v | parse -r '^"(?P<content>(?:[^"\\]|\\.)*)"')
-            if ($matched | is-empty) {
-              $v | str trim -c '"'
-            } else {
-              $matched | get 0.content
-                | str replace -a '\n' (char nl)
-                | str replace -a '\r' (char cr)
-                | str replace -a '\t' (char tab)
-                | str replace -a '\"' '"'
-            }
-          }
-          # Handle single-quoted values
-          $v if ($v | str starts-with "'") => {
-            let match = ($v | parse -r "^'(?P<content>[^']*)'")
-            if ($match | is-empty) { $v | str trim -c "'" } else { $match | get 0.content }
-          }
-          # Handle unquoted values
-          _ => {
-            let chars = ($val | split chars)
-            let total = ($chars | length)
-            mut idx = 0
-            mut acc = ''
-            while $idx < $total {
-              let ch = ($chars | get $idx)
-              if $ch == "\\" {
-                let next = ($chars | get -o ($idx + 1))
-                if $next == '#' {
-                  $acc = $acc + '#'
-                  $idx = $idx + 2
-                  continue
-                }
-                $acc = $acc + $ch
-                $idx = $idx + 1
-                continue
-              }
-              if $ch == '#' { break }
-              $acc = $acc + $ch
-              $idx = $idx + 1
-            }
-            $acc | str trim
-          }
-        }
-      }
-    | transpose -r -d
+    | update key {|row| $row.key | str trim | str replace -r '^export\s+' '' }
+    | update value {|row| do $parse_value ($row.value | str trim) }
+
+  if ($parsed | is-empty) { {} } else { $parsed | transpose -r -d -l }
 }
 
 # Compact the record by removing empty columns
