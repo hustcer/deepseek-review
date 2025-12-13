@@ -58,7 +58,7 @@ runs:
   using: 'composite'
   steps:
     - name: Setup Nu
-      uses: hustcer/setup-nu@v3.21
+      uses: hustcer/setup-nu@v3.22
       with:
         version: 0.109.1
 
