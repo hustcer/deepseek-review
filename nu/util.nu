@@ -132,7 +132,7 @@ def install-gawk-for-actions [] {
     Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://get.scoop.sh")
     $env:Path = "$env:USERPROFILE\scoop\shims;" + $env:Path; scoop update; scoop install gawk
     '# | complete | get stdout | print
-  let awk_bin = $'($nu.home-path)/scoop/shims/gawk.exe'
+  let awk_bin = $'($nu.home-dir)/scoop/shims/gawk.exe'
   let version = get-awk-ver $awk_bin
   { awk_bin: $awk_bin, version: $version }
 }
