@@ -46,9 +46,9 @@ export def 'make-release' [
 export def has-ref [
   ref: string   # The git ref to check
 ] {
-  let checkRepo = (do -i { git rev-parse --is-inside-work-tree } | complete)
+  # Put `complete` inside `do` block to avoid pipefail error in Nushell 0.110+
+  let checkRepo = (do { git rev-parse --is-inside-work-tree | complete })
   if not ($checkRepo.stdout =~ 'true') { return false }
-  # Brackets were required here, or error will occur
-  let parse = (do -i { git rev-parse --verify -q $ref } | complete)
+  let parse = (do { git rev-parse --verify -q $ref | complete })
   if ($parse.stdout | is-empty) { false } else { true }
 }

@@ -193,7 +193,8 @@ export def git-check [
 # Check if current directory is a git repo
 export def is-repo [] {
   let checkRepo = try {
-      do -i { git rev-parse --is-inside-work-tree } | complete
+      # Put `complete` inside `do` block to avoid pipefail error in Nushell 0.110+
+      do { git rev-parse --is-inside-work-tree | complete }
     } catch {
       ({ stdout: 'false' })
     }
@@ -205,8 +206,8 @@ export def has-ref [
   ref: string   # The git ref to check
 ] {
   if not (is-repo) { return false }
-  # Brackets were required here, or error will occur
-  let parse = (do -i { git rev-parse --verify -q $ref } | complete)
+  # Put `complete` inside `do` block to avoid pipefail error in Nushell 0.110+
+  let parse = (do { git rev-parse --verify -q $ref | complete })
   if ($parse.stdout | is-empty) { false } else { true }
 }
 
