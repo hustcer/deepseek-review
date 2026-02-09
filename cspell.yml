@@ -20,6 +20,7 @@ words:
 - hustcer
 - Nushell
 - creatio
+- pipefail
 - justfile
 - lefthook
 - deepseek
