@@ -43,7 +43,7 @@ const IGNORED_MESSAGES = {
 const HTTP_HEADERS = [User-Agent curl/8.9]
 
 const DEFAULT_OPTIONS = {
-  MODEL: 'deepseek-chat',
+  MODEL: 'deepseek-v4-flash',
   TEMPERATURE: 0.3,
   BASE_URL: 'https://api.deepseek.com',
   USER_PROMPT: 'Please review the following code changes:',
