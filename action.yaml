@@ -24,7 +24,7 @@ inputs:
     description: 'The maximum length of the content for review, 0 means no limit.'
   model:
     required: false
-    default: 'deepseek-chat'
+    default: 'deepseek-v4-flash'
     description: 'The DeepSeek model to choose for code review.'
   temperature:
     required: false

@@ -117,7 +117,7 @@ jobs:
 | 名称           | 类型   | 描述                                                           |
 | -------------- | ------ | -------------------------------------------------------------- |
 | chat-token     | String | 必填，DeepSeek API Token                                       |
-| model          | String | 可选，配置代码审查选用的模型，默认为 `deepseek-chat`           |
+| model          | String | 可选，配置代码审查选用的模型，默认为 `deepseek-v4-flash`           |
 | base-url       | String | 可选，DeepSeek API Base URL, 默认为 `https://api.deepseek.com` |
 | max-length     | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查 |
 | sys-prompt     | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释      |
@@ -131,7 +131,7 @@ DeepSeek 接口调用入参:
 
 ```js
 {
-  // `$model` default value: deepseek-chat
+  // `$model` default value: deepseek-v4-flash
   model: $model,
   stream: false,
   temperature: $temperature,
@@ -178,7 +178,7 @@ Flags:
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
-  -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
+  -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
   -U, --chat-url <string>: DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
   -s, --sys-prompt <string>: Default to $DEFAULT_OPTIONS.SYS_PROMPT,
