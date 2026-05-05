@@ -9,7 +9,6 @@ use util.nu [generate-include-regex, generate-exclude-regex, prepare-awk, is-saf
 # If the PR title or body contains any of these keywords, skip the review
 const IGNORE_REVIEW_KEYWORDS = ['skip review' 'skip cr']
 # If the latest PR commit message contains any of these keywords, skip the review
-const IGNORE_COMMIT_KEYWORDS = ['skip cr']
 
 # Get the diff content from GitHub PR or local git changes and apply filters
 export def get-diff [
@@ -82,9 +81,9 @@ def get-pr-diff [
     exit $ECODE.SUCCESS
   }
 
-  let commit_msg = http get -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/commits?per_page=1'
-                   | first | get commit.message
-  if ($IGNORE_COMMIT_KEYWORDS | any {|it| $commit_msg =~ $it }) {
+  let commit_msg = http get -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/commits'
+                   | last | get commit.message
+  if ($IGNORE_REVIEW_KEYWORDS | any {|it| $commit_msg =~ $it }) {
     print $'(ansi r)The latest PR commit message contains keywords to skip the review, bye...(ansi reset)'
     exit $ECODE.SUCCESS
   }
