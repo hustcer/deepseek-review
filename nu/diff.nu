@@ -8,7 +8,6 @@ use util.nu [generate-include-regex, generate-exclude-regex, prepare-awk, is-saf
 
 # If the PR title or body contains any of these keywords, skip the review
 const IGNORE_REVIEW_KEYWORDS = ['skip review' 'skip cr']
-# If the latest PR commit message contains any of these keywords, skip the review
 
 # Get the diff content from GitHub PR or local git changes and apply filters
 export def get-diff [
