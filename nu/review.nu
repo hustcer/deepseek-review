@@ -135,7 +135,8 @@ export def --env deepseek-review [
     messages: [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $"($user_prompt):\n($content)" }
-    ]
+    ],
+    thinking: { type: 'disabled' }
   }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
