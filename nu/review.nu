@@ -83,7 +83,7 @@ export def --env deepseek-review [
   let model = $model | default $env.CHAT_MODEL? | default $DEFAULT_OPTIONS.MODEL
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
-  if ($url | str downcase | str contains 'anthropic') and $is_action {
+  if ($url | str contains --ignore-case 'anthropic') and $is_action {
     print $'(ansi r)The endpoint URL contains "anthropic" — this action only supports OpenAI-format APIs. Aborting.(ansi reset)'
     exit $ECODE.INVALID_PARAMETER
   }
