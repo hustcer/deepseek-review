@@ -24,7 +24,7 @@ inputs:
     description: 'The maximum length of the content for review, 0 means no limit.'
   model:
     required: false
-    default: 'deepseek-chat'
+    default: 'deepseek-v4-flash'
     description: 'The DeepSeek model to choose for code review.'
   temperature:
     required: false
@@ -58,9 +58,9 @@ runs:
   using: 'composite'
   steps:
     - name: Setup Nu
-      uses: hustcer/setup-nu@v3.22
+      uses: hustcer/setup-nu@v3.23
       with:
-        version: 0.111.0
+        version: 0.112.2
 
     - name: DeepSeek Code Review
       shell: nu {0}

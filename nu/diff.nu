@@ -80,6 +80,13 @@ def get-pr-diff [
     exit $ECODE.SUCCESS
   }
 
+  let commit_msg = http get -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/commits'
+                   | last | get commit.message
+  if ($IGNORE_REVIEW_KEYWORDS | any {|it| $commit_msg =~ $it }) {
+    print $'(ansi r)The latest PR commit message contains keywords to skip the review, bye...(ansi reset)'
+    exit $ECODE.SUCCESS
+  }
+
   # Get the diff content of the PR
   http get -H $DIFF_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)' | str trim
 }

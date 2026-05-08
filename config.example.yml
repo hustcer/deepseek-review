@@ -50,7 +50,7 @@ providers:
     token: 'YOUR_DEEPSEEK_TOKEN'    # Required, The API token for the provider
     base-url: 'https://api.deepseek.com'
     models:
-      - name: 'deepseek-chat'       # Required, Pass the model name to --model flag to use it
+      - name: 'deepseek-v4-flash'       # Required, Pass the model name to --model flag to use it
         alias: v3                   # Optional, Alias name could also be passed to --model flag
         enabled: true               # One and Only one model could be enabled in one model group
         description: 'DeepSeek V3'  # Optional, Description of the model, won't be used actually

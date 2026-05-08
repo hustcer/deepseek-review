@@ -43,7 +43,7 @@ const IGNORED_MESSAGES = {
 const HTTP_HEADERS = [User-Agent curl/8.9]
 
 const DEFAULT_OPTIONS = {
-  MODEL: 'deepseek-chat',
+  MODEL: 'deepseek-v4-flash',
   TEMPERATURE: 0.3,
   BASE_URL: 'https://api.deepseek.com',
   USER_PROMPT: 'Please review the following code changes:',
@@ -62,7 +62,7 @@ export def --env deepseek-review [
   --diff-from(-f): string,  # Git diff starting commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
-  --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
+  --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
   --chat-url(-U): string,   # DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
   --sys-prompt(-s): string  # Default to $DEFAULT_OPTIONS.SYS_PROMPT,
@@ -139,7 +139,8 @@ export def --env deepseek-review [
     messages: [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $"($user_prompt):\n($content)" }
-    ]
+    ],
+    thinking: { type: 'disabled' }
   }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'

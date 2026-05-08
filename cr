@@ -18,7 +18,7 @@ def main [
   --diff-to(-t): string,    # Git diff ending commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
-  --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
+  --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
   --chat-url(-U): string,   # DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
   --sys-prompt(-s): string  # Default to $DEFAULT_OPTIONS.SYS_PROMPT,

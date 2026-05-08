@@ -119,7 +119,7 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 | Name           | Type   | Description                                                             |
 | -------------- | ------ | ----------------------------------------------------------------------- |
 | chat-token     | String | Required, DeepSeek API Token                                            |
-| model          | String | Optional, The model used for code review, defaults to `deepseek-chat`   |
+| model          | String | Optional, The model used for code review, defaults to `deepseek-v4-flash`   |
 | base-url       | String | Optional, DeepSeek API Base URL, defaults to `https://api.deepseek.com` |
 | max-length     | Int    | Optional, Maximum length (Unicode width) of the content for review. If the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
 | sys-prompt     | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below |
@@ -133,7 +133,7 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 
 ```js
 {
-  // `$model` default value: deepseek-chat
+  // `$model` default value: deepseek-v4-flash
   model: $model,
   stream: false,
   temperature: $temperature,
@@ -162,7 +162,7 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 
 To perform code reviews locally (works on `macOS`, `Ubuntu`, and `Windows`), you need to install the following tools:
 
-- [`Nushell`](https://www.nushell.sh/book/installation.html). It is recommended to install the latest version (minimum version required: `0.111.0`).
+- [`Nushell`](https://www.nushell.sh/book/installation.html). It is recommended to install the latest version (minimum version required: `0.112.2`).
 - The latest version of [`awk`](https://github.com/onetrueawk/awk) or [`gawk`](https://www.gnu.org/software/gawk/) is required, with `gawk` being preferred.
 - Clone this repository to your local machine, navigate to the repository directory, and run `nu cr -h`. You should see an output similar to the following:
 
@@ -181,7 +181,7 @@ Flags:
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
-  -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-chat` by default
+  -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
   -U, --chat-url <string>: DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
   -s, --sys-prompt <string>: Default to $DEFAULT_OPTIONS.SYS_PROMPT,
