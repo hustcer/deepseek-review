@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/coderabbit-overrides.v2.json
+
+language: "en"
+
+early_access: true
+
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches: ["main", "develop"]
+    ignore_title_keywords:
+      - "WIP"
+      - "[skip ci]"
+      - "draft"
+
+
+  path_filters:
+    - "nu/**"
+    - "action.yaml"
+    - "cr"
+    - "Justfile"
+    - ".github/workflows/**"
+
+  path_instructions:
+    - path: "nu/**"
+      instructions: |
+        This is a Nushell project. Key conventions:
+        - Functions use `def` with explicit type annotations on parameters.
+        - Use `$env.GITHUB_EVENT_PATH` (not inline interpolation) for GitHub event data.
+        - `const NU_LIB_DIRS` sets module search paths; `use <module> *` imports.
+        - Named exit codes are defined in `common.nu` as `ECODE` constants.
+        - `is-safe-git` in `util.nu` strictly regex-whitelists git commands — any new
+          git command must be added to that whitelist.
+        - Test files live under `nu/tests/` and use the `nutest` framework.
+
+        
+    - path: "action.yaml"
+      instructions: |
+        Composite action definition. Review for:
+        - No interpolation of `github.event.comment.body` or other user-controlled
+          values directly into the `run:` block (code injection risk).
+        - Input defaults are sensible and documented.
+        
+    - path: ".github/workflows/**"
+      instructions: |
+        CI/CD workflows. Review for:
+        - No shell injection via `${{ github.event.* }}` interpolation.
+        - Matrix configurations use `fail-fast: false` (already the convention here).
+        - Permissions follow least-privilege (`pull-requests: write` only when needed).
+        - `pull_request_target` is used only where write access to the base repo is
+          required, and never checks out untrusted code.
+    - path: "cspell.yml"
+      instructions: "Keep the custom word list alphabetized."
+
+  tone_instructions: |
+    Be direct and concise. Focus on:
+    1. Security issues.
+    2. Correctness bugs.
+    3. Nushell idiom violations.
+
+    Do NOT flag:
+    - Spelling (covered by cspell pre-commit).
+    - Formatting nits unless they obscure logic.
+    - Test coverage percentage (nutest patterns are already established).
+
+  summary_options:
+    generate_Release_Notes: false
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  # Nushell fundamentals
+  - paths:
+      - "nu/"
+    summary: |
+      Nushell (nu) is a structured shell where everything is a table/record.
+      - Pipe `|` passes structured data, not text.
+      - `open` parses JSON/YAML/TOML into records.
+      - `$env.X` accesses environment variables.
+      - `?` operator (e.g., `$record.field?`) returns null instead of erroring.
+      - `default` provides a fallback for null values.
+      - `str contains` does literal substring matching (not regex).
+      - `is-empty` checks for null, empty string, or empty list.
+      - `try { } catch { }` handles errors imperatively.
+      - `use <module> *` imports exported symbols.
+      - `const` values are compile-time; `let` is runtime.
+      - `${{ }}` in GitHub Actions YAML is evaluated BEFORE Nushell sees the script.
+
+ 
