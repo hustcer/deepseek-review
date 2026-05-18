@@ -26,7 +26,7 @@
 
 ### Both GH Action & Local
 
-- Support both DeepSeek's `V3` and `R1` models
+- Support both DeepSeek's `V4` and `R1` models
 - Fully customizable: Choose models, base URLs, and prompts
 - Support self-hosted DeepSeek models for enhanced flexibility
 - Perform code reviews for changes that either include or exclude specific files
