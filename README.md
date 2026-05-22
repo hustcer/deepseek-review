@@ -31,6 +31,9 @@
 - Support self-hosted DeepSeek models for enhanced flexibility
 - Perform code reviews for changes that either include or exclude specific files
 
+## Supported models
+
+
 ## Planned Features
 
 - [ ] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
