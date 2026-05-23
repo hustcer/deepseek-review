@@ -32,16 +32,15 @@ jobs:
           # model: 'deepseek-r1'                            # Infinigence's DeepSeek R1 model
           # base-url: 'https://cloud.infini-ai.com/maas/v1' # Infinigence's API base URL
           # model: 'deepseek-ai/DeepSeek-V3'                # SiliconFlow's DeepSeek V3 model
-          model: 'deepseek-ai/DeepSeek-R1'                  # SiliconFlow's DeepSeek R1 model
-          base-url: 'https://api.siliconflow.cn/v1'         # SiliconFlow's API base URL
-          watch-mention: '@github-actions'
+          model: 'deepseek-v4-pro'                          # Official DeepSeek v4 Pro model
+          # base-url: 'https://api.siliconflow.cn/v1'       # SiliconFlow's API base URL
           # Store the chat token in GitHub Secrets, don't expose it in the workflow file
           chat-token: ${{ secrets.CHAT_TOKEN }}
           sys-prompt: >
             As a senior Nushell engineer, perform comprehensive script review with focus on:
 
             ### 1. Core Requirements:
-            - Validate Nu 0.100+ compatibility
+            - Validate Nu 0.110+ compatibility
             - Check structured data handling
             - Verify pipeline efficiency
             - Assess module organization
