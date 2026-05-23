@@ -31,7 +31,7 @@
 
 ## 计划支持特性
 
-- [ ] **通过提及触发代码审查**：当 PR 评论中提及 `github-actions bot` 时，自动触发代码审查
+- [x] **通过提及触发代码审查**：当 PR 评论中提及 `github-actions bot` 时，自动触发代码审查
 - [ ] **本地生成提交信息**：为本地仓库的代码变更生成 Commit Message
 
 ## 通过 GitHub Action 进行代码审查
@@ -45,8 +45,8 @@ name: Code Review
 on:
   pull_request_target:
     types:
-      - opened      # Triggers when a PR is opened
-      - reopened    # Triggers when a PR is reopened
+      - opened # Triggers when a PR is opened
+      - reopened # Triggers when a PR is reopened
       - synchronize # Triggers when a commit is pushed to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
@@ -67,18 +67,19 @@ jobs:
 <details>
   <summary>CHAT_TOKEN 配置</summary>
 
-  按照以下步骤配置你的 `CHAT_TOKEN`：
+按照以下步骤配置你的 `CHAT_TOKEN`：
 
-  1. 点击仓库导航栏中的 "Settings" 选项卡
-  2. 在左侧边栏中，点击 "Security" 下的 "Secrets and variables"
-  3. 点击 "Actions" -> "New repository secret" 按钮
-  4. 在 "Name" 字段中输入 `CHAT_TOKEN`
-  5. 在 "Secret" 字段中输入你的 `CHAT_TOKEN` 值
-  6. 最后，点击 "Add secret"按钮保存密钥
+1. 点击仓库导航栏中的 "Settings" 选项卡
+2. 在左侧边栏中，点击 "Security" 下的 "Secrets and variables"
+3. 点击 "Actions" -> "New repository secret" 按钮
+4. 在 "Name" 字段中输入 `CHAT_TOKEN`
+5. 在 "Secret" 字段中输入你的 `CHAT_TOKEN` 值
+6. 最后，点击 "Add secret"按钮保存密钥
 
 </details>
 
 当 PR 创建的时候会自动触发 DeepSeek 代码审查，并将审查结果（依赖于提示词）以评论的方式发布到对应的 PR 上。比如：
+
 - [示例 1](https://github.com/hustcer/deepseek-review/pull/30) 基于[默认提示词](https://github.com/hustcer/deepseek-review/blob/main/action.yaml#L35) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
 - [示例 2](https://github.com/hustcer/deepseek-review/pull/68) 基于[这个提示词](https://github.com/hustcer/deepseek-review/blob/eba892d969049caff00b51a31e5c093aeeb536e3/.github/workflows/cr.yml#L32)
 
@@ -91,7 +92,7 @@ name: Code Review
 on:
   pull_request_target:
     types:
-      - labeled     # Triggers when a label is added to the PR
+      - labeled # Triggers when a label is added to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
 permissions:
@@ -112,20 +113,67 @@ jobs:
 
 如此以来当 PR 创建的时候不会自动触发 DeepSeek 代码审查，只有你手工添加 `ai review` 标签的时候才会触发审查。
 
+### 当`@github-actions`被提及时触发审查
+
+若要通过提及`@github-actions`来触发CR工作流运行审查。首先，将 `issue_comment` 添加到你的工作流事件中，然后配置 `watch-mention` 输入，并创建如下的工作流文件:
+
+```yaml
+name: Code Review
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  issue_comment:
+    types:
+      - created # Triggers when a comment is created on a PR
+
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          model: "deepseek-ai/DeepSeek-R1"
+          base-url: "https://api.siliconflow.cn/v1"
+          watch-mention: "@github-actions"
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+          allowed-associations: "OWNER,MEMBER,COLLABORATOR"
+```
+
+**注意事项**:
+
+- 每次符合条件的提及都会触发一次新的审核，审核结果以新的评论形式发布在同一个 PR 里。
+- 机器人评论 （结尾含有`[bot]`的用户的评论）会被忽略。
+- 没有关联 PR 的议题上的评论将被忽略。
+  > [!NOTE]
+  > 默认配置中，只有**COLLABORATORs, OWNER, MEMBERs 能通过提及`@github-actions`触发审查**。
+  > 其他没有写权限的用户的评论会被忽略。
+  > 您可以通过在 `allowed-associations` 中添加或移除角色来更改此设置。例如，如果您想允许贡献者触发代码审查，请按如下方式设置工作流：
+  > `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
+
 ## 输入参数
 
-| 名称           | 类型   | 描述                                                           |
-| -------------- | ------ | -------------------------------------------------------------- |
-| chat-token     | String | 必填，DeepSeek API Token                                       |
-| model          | String | 可选，配置代码审查选用的模型，默认为 `deepseek-v4-flash`           |
-| base-url       | String | 可选，DeepSeek API Base URL, 默认为 `https://api.deepseek.com` |
-| max-length     | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查 |
-| sys-prompt     | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释      |
-| user-prompt    | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释     |
-| temperature    | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `0.3`        |
-| include-patterns | String | 可选，代码审查中要包含的以逗号分隔的文件模式，无默认值 |
-| exclude-patterns | String | 可选，代码审查中要排除的以逗号分隔的文件模式，默认值为 `pnpm-lock.yaml,package-lock.json,*.lock` |
-| github-token   | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}` |
+| 名称                 | 类型   | 描述                                                                                                              |
+| -------------------- | ------ | ----------------------------------------------------------------------------------------------------------------- |
+| chat-token           | String | 必填，DeepSeek API Token                                                                                          |
+| model                | String | 可选，配置代码审查选用的模型，默认为 `deepseek-v4-flash`                                                          |
+| base-url             | String | 可选，DeepSeek API Base URL, 默认为 `https://api.deepseek.com`                                                    |
+| max-length           | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查                                  |
+| sys-prompt           | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释                                                      |
+| user-prompt          | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释                                                     |
+| temperature          | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `0.3`                                                                |
+| include-patterns     | String | 可选，代码审查中要包含的以逗号分隔的文件模式，无默认值                                                            |
+| exclude-patterns     | String | 可选，代码审查中要排除的以逗号分隔的文件模式，默认值为 `pnpm-lock.yaml,package-lock.json,*.lock`                  |
+| github-token         | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}`                                      |
+| watch-mention        | String | 可选，当 PR 评论中提及此字符串时触发代码审查，例如 `@github-actions`。需要在 workflow 中启用 `issue_comment` 事件 |
+| allowed-associations | String | 可选，允许通过 PR 评论触发审查的 `author_association` 列表（逗号分隔），默认为 `OWNER,MEMBER,COLLABORATOR`        |
 
 DeepSeek 接口调用入参:
 
@@ -203,7 +251,6 @@ Parameters:
 >
 > `config.yml` 配置文件仅在本地使用，在 GitHub Workflow 里面不会使用，里面的敏感信息请
 > 妥善保存，不要提交到代码仓库里面
->
 
 **创建命令别名**
 

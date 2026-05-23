@@ -36,7 +36,7 @@
 
 ## Planned Features
 
-- [ ] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
+- [x] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
 - [ ] **Generate Commit Message Locally**: Generate a commit message for the code changes in any local repository.
 
 ## Code Review with GitHub Action
@@ -50,8 +50,8 @@ name: Code Review
 on:
   pull_request_target:
     types:
-      - opened      # Triggers when a PR is opened
-      - reopened    # Triggers when a PR is reopened
+      - opened # Triggers when a PR is opened
+      - reopened # Triggers when a PR is reopened
       - synchronize # Triggers when a commit is pushed to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
@@ -72,18 +72,19 @@ jobs:
 <details>
   <summary>CHAT_TOKEN Config</summary>
 
-  Follow these steps to config your `CHAT_TOKEN`:
+Follow these steps to config your `CHAT_TOKEN`:
 
-  - Click on the "Settings" tab in your repository navigation bar.
-  - In the left sidebar, click on "Secrets and variables" under "Security".
-  - Click on "Actions" -> "New repository secret" button.
-  - Enter `CHAT_TOKEN` in the "Name" field.
-  - Enter the value of your `CHAT_TOKEN` in the "Secret" field.
-  - Finally, click the "Add secret" button to save the secret.
+- Click on the "Settings" tab in your repository navigation bar.
+- In the left sidebar, click on "Secrets and variables" under "Security".
+- Click on "Actions" -> "New repository secret" button.
+- Enter `CHAT_TOKEN` in the "Name" field.
+- Enter the value of your `CHAT_TOKEN` in the "Secret" field.
+- Finally, click the "Add secret" button to save the secret.
 
 </details>
 
 When a PR is created, DeepSeek code review will be automatically triggered, and the review results (depending on your prompt) will be posted as comments on the corresponding PR. For example:
+
 - [Example 1](https://github.com/hustcer/deepseek-review/pull/30) with [default prompts](https://github.com/hustcer/deepseek-review/blob/main/action.yaml#L35) & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
 - [Example 2](https://github.com/hustcer/deepseek-review/pull/68) with [this prompt](https://github.com/hustcer/deepseek-review/blob/eba892d969049caff00b51a31e5c093aeeb536e3/.github/workflows/cr.yml#L32)
 
@@ -96,7 +97,7 @@ name: Code Review
 on:
   pull_request_target:
     types:
-      - labeled     # Triggers when a label is added to the PR
+      - labeled # Triggers when a label is added to the PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
 permissions:
@@ -117,20 +118,67 @@ jobs:
 
 With this setup, DeepSeek code review will not run automatically upon PR creation. Instead, it will only be triggered when you manually add the `ai review` label.
 
+### Trigger Code Review via PR Comment Mention
+
+You can trigger code review by mentioning a specific string (e.g. `@github-actions`) in a PR comment. First, add `issue_comment` to your workflow events, then configure the `watch-mention` input:
+
+```yaml
+name: Code Review
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  issue_comment:
+    types:
+      - created # Triggers when a comment is created on a PR
+
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          model: "deepseek-ai/DeepSeek-R1"
+          base-url: "https://api.siliconflow.cn/v1"
+          watch-mention: "@github-actions"
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+          allowed-associations: "OWNER,MEMBER,COLLABORATOR"
+```
+
+**PRECAUTIONS**:
+
+- Every qualifying mention triggers a new review run; the results are posted as a new comment on the same PR.
+- Bot comments (users ending with `[bot]`) are ignored.
+- Comments on issues without an associated PR are ignored.
+  > [!NOTE]
+  > By default, only **COLLABORATORs, OWNER, MEMBERs can trigger the code review** by mentioning `@github-actions`.
+  > Other users without write access will be ignored.
+  > You can change this by appending or removing roles in `allowed-associations`. For example, if you want to enable contributors to trigger code reviews, set it as follows:
+  > `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
+
 ## Input Parameters
 
-| Name           | Type   | Description                                                             |
-| -------------- | ------ | ----------------------------------------------------------------------- |
-| chat-token     | String | Required, DeepSeek API Token                                            |
-| model          | String | Optional, The model used for code review, defaults to `deepseek-v4-flash`   |
-| base-url       | String | Optional, DeepSeek API Base URL, defaults to `https://api.deepseek.com` |
-| max-length     | Int    | Optional, Maximum length (Unicode width) of the content for review. If the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
-| sys-prompt     | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below |
-| user-prompt    | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below |
-| temperature    | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. Default value is `0.3` |
-| include-patterns | String | Optional, Comma-separated file patterns to include in the code review. No default |
-| exclude-patterns | String | Optional, Comma-separated file patterns to exclude from the code review. Defaults to `pnpm-lock.yaml,package-lock.json,*.lock` |
-| github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`. |
+| Name                 | Type   | Description                                                                                                                                                           |
+| -------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| chat-token           | String | Required, DeepSeek API Token                                                                                                                                          |
+| model                | String | Optional, The model used for code review, defaults to `deepseek-v4-flash`                                                                                             |
+| base-url             | String | Optional, DeepSeek API Base URL, defaults to `https://api.deepseek.com`                                                                                               |
+| max-length           | Int    | Optional, Maximum length (Unicode width) of the content for review. If the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
+| sys-prompt           | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below                                                                   |
+| user-prompt          | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below                                                                    |
+| temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. Default value is `0.3`                                                         |
+| include-patterns     | String | Optional, Comma-separated file patterns to include in the code review. No default                                                                                     |
+| exclude-patterns     | String | Optional, Comma-separated file patterns to exclude from the code review. Defaults to `pnpm-lock.yaml,package-lock.json,*.lock`                                        |
+| github-token         | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`.                                                      |
+| watch-mention        | String | Optional, Trigger code review when this string is mentioned in a PR comment, e.g. `@github-actions`. Requires `issue_comment` event in the workflow.                  |
+| allowed-associations | String | Optional, Comma-separated `author_association` values allowed to trigger review via PR comment. Defaults to `OWNER,MEMBER,COLLABORATOR`.                              |
 
 **DeepSeek API Call Payload**:
 
@@ -208,7 +256,6 @@ To perform code reviews locally, you need to modify the configuration file. The 
 > [!WARNING]
 >
 > The `config.yml` configuration file is **only used locally** and will not be utilized in GitHub Workflows. **Sensitive information** in this file should be properly secured and **never committed** to the code repository.
->
 
 **Create a Command Alias**
 
@@ -280,4 +327,4 @@ cr --pr-number 31 --exclude pnpm-lock.yaml
 
 Licensed under:
 
-* MIT license ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT)
+- MIT license ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT)
