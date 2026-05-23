@@ -9,6 +9,9 @@ on:
       - reopened    # Triggers when a PR is reopened
       - synchronize # Triggers when a commit is pushed to the PR
       # - labeled   # Triggers when a label is added to the PR
+  issue_comment:
+    types:
+      - created     # Triggers when a comment is created on a PR
 
 # fix: GraphQL: Resource not accessible by integration (addComment) error
 permissions:
@@ -31,6 +34,7 @@ jobs:
           # model: 'deepseek-ai/DeepSeek-V3'                # SiliconFlow's DeepSeek V3 model
           model: 'deepseek-v4-pro'                          # Official DeepSeek v4 Pro model
           # base-url: 'https://api.siliconflow.cn/v1'       # SiliconFlow's API base URL
+          watch-mention: '@github-actions'
           # Store the chat token in GitHub Secrets, don't expose it in the workflow file
           chat-token: ${{ secrets.CHAT_TOKEN }}
           sys-prompt: >

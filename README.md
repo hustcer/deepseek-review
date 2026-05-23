@@ -33,7 +33,7 @@
 
 ## Planned Features
 
-- [ ] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
+- [x] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
 - [ ] **Generate Commit Message Locally**: Generate a commit message for the code changes in any local repository.
 
 ## Code Review with GitHub Action
@@ -114,6 +114,51 @@ jobs:
 
 With this setup, DeepSeek code review will not run automatically upon PR creation. Instead, it will only be triggered when you manually add the `ai review` label.
 
+### Trigger Code Review via PR Comment Mention
+
+You can trigger code review by mentioning a specific string (e.g. `@github-actions`) in a PR comment. First, add `issue_comment` to your workflow events, then configure the `watch-mention` input:
+
+```yaml
+name: Code Review
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  issue_comment:
+    types:
+      - created     # Triggers when a comment is created on a PR
+
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          model: 'deepseek-ai/DeepSeek-R1'
+          base-url: 'https://api.siliconflow.cn/v1'
+          watch-mention: '@github-actions'
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+          allowed-associations: 'OWNER,MEMBER,COLLABORATOR'
+```
+
+**PRECAUTIONS**:
+- Subsequent mentions in the same PR don't retrigger an existing review.
+- The review results are posted as a new comment on the same PR.
+- Bot comments (users ending with `[bot]`) are ignored.
+- Comments on issues without an associated PR are ignored.
+> [!NOTE]
+> By default, only **COLLABORATORs, OWNER, MEMBERs can trigger the code review** by mentioning `@github-actions`.
+> Other users without write access will be ignored.
+> You can change this by appending or removing roles in `allowed-associations`. For example, if you want to enable contributors to trigger code reviews, set it as follows:
+> `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
+
 ## Input Parameters
 
 | Name           | Type   | Description                                                             |
@@ -128,6 +173,8 @@ With this setup, DeepSeek code review will not run automatically upon PR creatio
 | include-patterns | String | Optional, Comma-separated file patterns to include in the code review. No default |
 | exclude-patterns | String | Optional, Comma-separated file patterns to exclude from the code review. Defaults to `pnpm-lock.yaml,package-lock.json,*.lock` |
 | github-token   | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`. |
+| watch-mention  | String | Optional, Trigger code review when this string is mentioned in a PR comment, e.g. `@github-actions`. Requires `issue_comment` event in the workflow. |
+| allowed-associations | String | Optional, Contains allowed roles for triggering a code review by mentioning `@github-actions`. |
 
 **DeepSeek API Call Payload**:
 

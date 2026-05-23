@@ -53,6 +53,14 @@ inputs:
     required: false
     default: '${{ github.token }}'
     description: 'The GITHUB_TOKEN secret or personal access token to authenticate. Defaults to `github.token`.'
+  watch-mention:
+    required: false
+    default: ''
+    description: 'Trigger code review when this string is mentioned in a PR comment, e.g. `@github-actions`. Requires `issue_comment` event in the workflow.'
+  allowed-associations:
+    required: false
+    default: 'OWNER,MEMBER,COLLABORATOR'
+    description: 'Comma-separated author_association values allowed to trigger review via PR comment. Default: OWNER,MEMBER,COLLABORATOR.'
 
 runs:
   using: 'composite'
@@ -64,21 +72,49 @@ runs:
 
     - name: DeepSeek Code Review
       shell: nu {0}
+      env:
+        WATCH_MENTION: ${{ inputs.watch-mention }}
       run: |
         const NU_LIB_DIRS = [ ${{ github.action_path }}/nu ]
         use review.nu *
         let model = '${{ inputs.model }}'
         let baseUrl = '${{ inputs.base-url }}'
+        let event = (open $env.GITHUB_EVENT_PATH)
         let repo = '${{ github.repository }}'
         let token = '${{ inputs.chat-token }}'
         let ghToken = '${{ inputs.github-token }}'
         let sysPrompt = '${{ inputs.sys-prompt }}'
         let userPrompt = '${{ inputs.user-prompt }}'
-        let pr = '${{ github.event.pull_request.number }}'
+        let pr = $event.pull_request?.number? | default $event.issue?.number? | default '' | into string
         let includePatterns = '${{ inputs.include-patterns }}'
         let excludePatterns = '${{ inputs.exclude-patterns }}'
         let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
         let temperature = try { '${{ inputs.temperature }}' | into float } catch { 0.3 }
+        let watchMention = $env.WATCH_MENTION
+        if '${{ github.event_name }}' == 'issue_comment' {
+          if ($event.issue?.pull_request? | is-empty) {
+            print 'Not a pull request comment, skipping.'
+            exit 0
+          }
+          if ($event.sender?.type? == 'Bot') or ($event.sender?.login? | str ends-with '[bot]') {
+            print 'Comment from bot, skipping to avoid infinite loop.'
+            exit 0
+          }
+          if ($watchMention | is-empty) {
+            print 'issue_comment trigger fired but no watch-mention configured, exiting.'
+            exit 0
+          }
+          let allowed = '${{ inputs.allowed-associations }}' | split row ',' | str trim
+          if ($event.comment?.author_association? not-in $allowed) {
+            print 'Comment author lacks write access, skipping.'
+            exit 0
+          }
+          let commentBody = $event.comment?.body? | default ''
+          if not ($commentBody | str contains $watchMention) {
+            print 'The comment does not mention the watch-mention string, exiting.'
+            exit 0
+          }
+        }
         (deepseek-review $token
           --model $model
           --repo $repo

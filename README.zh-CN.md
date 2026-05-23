@@ -31,7 +31,7 @@
 
 ## 计划支持特性
 
-- [ ] **通过提及触发代码审查**：当 PR 评论中提及 `github-actions bot` 时，自动触发代码审查
+- [x] **通过提及触发代码审查**：当 PR 评论中提及 `github-actions bot` 时，自动触发代码审查
 - [ ] **本地生成提交信息**：为本地仓库的代码变更生成 Commit Message
 
 ## 通过 GitHub Action 进行代码审查
@@ -112,6 +112,50 @@ jobs:
 
 如此以来当 PR 创建的时候不会自动触发 DeepSeek 代码审查，只有你手工添加 `ai review` 标签的时候才会触发审查。
 
+### 当`@github-actions`被提及时触发审查
+
+若要通过提及`@github-actions`来触发CR工作流运行审查。首先，将 `issue_comment` 添加到你的工作流事件中，然后配置 `watch-mention` 输入，并创建如下的工作流文件:
+
+```yaml
+name: Code Review
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  issue_comment:
+    types:
+      - created     # Triggers when a comment is created on a PR
+
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          model: 'deepseek-ai/DeepSeek-R1'
+          base-url: 'https://api.siliconflow.cn/v1'
+          watch-mention: '@github-actions'
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+          allowed-associations: 'OWNER,MEMBER,COLLABORATOR'
+```
+
+**注意事项**:
+- 同一个 PR 中后续的提及不会重新触发已有的审核。
+- 审核结果以新的评论形式发布在同一个PR里。
+- 机器人评论 （结尾含有`[bot]`的用户的评论）会被忽略。
+- 没有关联 PR 的议题上的评论将被忽略。
+>[!NOTE]
+>默认配置中，只有**COLLABORATORs, OWNER, MEMBERs 能通过提及`@github-actions`触发审查**。
+>其他没有写权限的用户的评论会被忽略。
+>您可以通过在 `allowed-associations` 中添加或移除角色来更改此设置。例如，如果您想允许贡献者触发代码审查，请按如下方式设置工作流：
+> `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
 ## 输入参数
 
 | 名称           | 类型   | 描述                                                           |
