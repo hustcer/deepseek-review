@@ -32,30 +32,41 @@
 - Perform code reviews for changes that either include or exclude specific files
 
 ## Supported models
+
 Here is a list of supported models for reference.
-|Deepseek|V3|V4|R1|
-V3: 🟢
-v4: 🟢
-R1: 🟢
 
-|Doubao|Doubao-1.5-pro|Doubao-seed-2.0|Doubao-seed-2.0-pro|Other Models|
-Doubao-1.5-pro(1.5 series): 🟢
-Doubao-seed-2.0 (seed-2.0 series) 🟢
-Doubao-seed-2.0-pro: 🟢
-Other Models: ✔️
+### DeepSeek
+| Model | Status              |
+|-------|---------------------|
+| V3    | :green_circle:      |
+| V4    | :green_circle:      |
+| R1    | :green_circle:      |
 
-|Qwen|Qwen-2|Qwen-2.5|
-Qwen: 🟡
+### Doubao
+| Model                       | Status              |
+|-----------------------------|---------------------|
+| Doubao-1.5-pro (1.5 series) | :green_circle:      |
+| Doubao-seed-2.0             | :green_circle:      |
+| Doubao-seed-2.0-pro         | :green_circle:      |
+| Other Models                | :heavy_check_mark:  |
 
-|OpenAI|GPT-4o|GPT-4o-mini|GPT-4.1|
-GPT-4o: 🟢
-GPT-4o-mini: 🟢
-GPT-4.1: 🟢
-Other Models: ✔️
+### Qwen
+| Model    | Status              |
+|----------|---------------------|
+| Qwen-2   | :yellow_circle:     |
+| Qwen-2.5 | :yellow_circle:     |
 
-🟢: Avaliable, and behaves correctly.
-🟡: Legacy, should be working, but we do not have to condition to run tests.
-✔️: Expected, should behave correctly but no test were ran.
+### OpenAI
+| Model       | Status              |
+|-------------|---------------------|
+| GPT-4o      | :green_circle:      |
+| GPT-4o-mini | :green_circle:      |
+| GPT-4.1     | :green_circle:      |
+| Other Models| :heavy_check_mark:  |
+
+:green_circle: Available, and behaves correctly.
+:yellow_circle: Legacy, should be working, but we do not have the conditions to run tests.
+:heavy_check_mark: Expected, should behave correctly but no tests were run.
 
 
 ## Planned Features
