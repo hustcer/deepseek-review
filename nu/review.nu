@@ -70,6 +70,7 @@ export def --env deepseek-review [
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
+  --comment: string,       # Additional comment text from a PR comment mention trigger
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
@@ -128,13 +129,18 @@ export def --env deepseek-review [
   print $'Review content length: (ansi g)($length)(ansi reset), current max length: (ansi g)($max_length)(ansi reset)'
   let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
   let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
+  let user_content = if ($comment | is-not-empty) {
+    $"($user_prompt):\n($content)\n\nAdditional instructions from PR comment:\n($comment)"
+  } else {
+    $"($user_prompt):\n($content)"
+  }
   let payload = {
     model: $model,
     stream: $stream,
     temperature: $temperature,
     messages: [
       { role: 'system', content: $sys_prompt },
-      { role: 'user', content: $"($user_prompt):\n($content)" }
+      { role: 'user', content: $user_content }
     ],
     thinking: { type: 'disabled' }
   }
