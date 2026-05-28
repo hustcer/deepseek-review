@@ -91,6 +91,7 @@ runs:
         let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
         let temperature = try { '${{ inputs.temperature }}' | into float } catch { 0.3 }
         let watchMention = $env.WATCH_MENTION
+        let commentBody = $event.comment?.body? | default ''
         if '${{ github.event_name }}' == 'issue_comment' {
           if ($event.issue?.pull_request? | is-empty) {
             print 'Not a pull request comment, skipping.'
@@ -109,8 +110,7 @@ runs:
             print 'Comment author lacks write access, skipping.'
             exit 0
           }
-          let commentBody = $event.comment?.body? | default ''
-          if not ($commentBody | str contains $watchMention) {
+          if not ($commentBody =~ $'($watchMention)\b') {
             print 'The comment does not mention the watch-mention string, exiting.'
             exit 0
           }
@@ -127,5 +127,6 @@ runs:
           --temperature $temperature
           --include $includePatterns
           --exclude $excludePatterns
+          --comment $commentBody
         )
 
