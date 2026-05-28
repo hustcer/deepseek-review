@@ -130,7 +130,7 @@ export def --env deepseek-review [
   let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
   let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
   let user_content = if ($comment | is-not-empty) {
-    $"($user_prompt):\n($content)\n\nAdditional instructions from PR comment:\n($comment)"
+    $"($user_prompt):\n($content)\n\nAdditional context from PR comment (enclosed in <comment> tags):\n<comment>\n($comment)\n</comment>"
   } else {
     $"($user_prompt):\n($content)"
   }

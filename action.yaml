@@ -110,7 +110,7 @@ runs:
             print 'Comment author lacks write access, skipping.'
             exit 0
           }
-          if not ($commentBody =~ $'($watchMention)\b') {
+          if not ($commentBody =~ $'($watchMention | str escape-regex)\b') {
             print 'The comment does not mention the watch-mention string, exiting.'
             exit 0
           }
