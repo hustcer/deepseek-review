@@ -17,7 +17,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Configure Git
         run: |
@@ -42,8 +42,6 @@ jobs:
           done
 
       - name: Commit and Push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git checkout main
           git add README.md README.zh-CN.md
@@ -51,6 +49,5 @@ jobs:
             echo "No badge changes detected, skipping push."
             exit 0
           fi
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git commit -m "chore: update status badges [skip ci]"
           git push -u origin main
