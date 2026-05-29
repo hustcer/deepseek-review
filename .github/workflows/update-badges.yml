@@ -21,12 +21,11 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "AutoUpdater"
+          git config --global user.name "AutoUpdater[bot]"
           git config --global user.email "user@localhost.localdomain"
 
       - name: Update the badge
         run: |
-          # Fetch the latest test summary from the gist
           SUMMARY=$(curl -fsSL "https://gist.githubusercontent.com/hustcer/b99391ee59016b17d0befe3331387e89/raw/test-summary.json")
           TOTAL=$(echo "$SUMMARY" | jq -r '.total')
           PASSED=$(echo "$SUMMARY" | jq -r '.passed')
@@ -53,5 +52,5 @@ jobs:
             exit 0
           fi
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git commit -m "chore: update status badges"
-          git push origin main  
+          git commit -m "chore: update status badges [skip ci]"
+          git push -u origin main
