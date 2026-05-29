@@ -14,6 +14,7 @@
 - Automate PR Reviews with DeepSeek via GitHub Action
 - Add `skip cr` or `skip review` to the PR title or body to disable code review in GitHub Actions
 - Cross-platform Support: Compatible with GitHub Runners across `macOS`, `Ubuntu`, and `Windows`.
+- Allows interactive pull request author (with write access) to model conversation by appending a message after mentioning `$WATCH-MENTION` in a pull request comment.
 
 ### Local Code Review
 
