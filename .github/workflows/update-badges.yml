@@ -16,7 +16,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
           persist-credentials: false
 
       - name: Configure Git
@@ -46,6 +45,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git checkout main
           git add README.md README.zh-CN.md
           if git diff --quiet && git diff --staged --quiet; then
             echo "No badge changes detected, skipping push."
