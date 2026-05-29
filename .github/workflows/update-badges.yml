@@ -16,6 +16,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
           persist-credentials: false
 
       - name: Configure Git
