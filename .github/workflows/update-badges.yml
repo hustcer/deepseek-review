@@ -18,24 +18,39 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Configure Git
         run: |
-          echo "Starting to configure git."
           git config --global user.name "AutoUpdater"
           git config --global user.email "user@localhost.localdomain"
 
       - name: Update the badge
         run: |
-          #TODO: Update 3 badges logic.
+          # Fetch the latest test summary from the gist
+          SUMMARY=$(curl -fsSL "https://gist.githubusercontent.com/hustcer/b99391ee59016b17d0befe3331387e89/raw/test-summary.json")
+          TOTAL=$(echo "$SUMMARY" | jq -r '.total')
+          PASSED=$(echo "$SUMMARY" | jq -r '.passed')
+          FAILED=$(echo "$SUMMARY" | jq -r '.failed')
+          SKIPPED=$(echo "$SUMMARY" | jq -r '.skipped')
+
+          echo "Tests: total=${TOTAL}, passed=${PASSED}, failed=${FAILED}, skipped=${SKIPPED}"
+
+          for FILE in README.md README.zh-CN.md; do
+            sed -i "s|^!\[Tests\](.*|![Tests](https://img.shields.io/badge/Tests-${TOTAL}-blue)|" "$FILE"
+            sed -i "s|^!\[Passed\](.*|![Passed](https://img.shields.io/badge/Passed-${PASSED}-success)|" "$FILE"
+            sed -i "s|^!\[Failed\](.*|![Failed](https://img.shields.io/badge/Failed-${FAILED}-critical)|" "$FILE"
+            sed -i "s|^!\[Skipped\](.*|![Skipped](https://img.shields.io/badge/Skipped-${SKIPPED}-yellow)|" "$FILE"
+          done
 
       - name: Commit and Push
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add README.md
-          git add README.zh-CN.md
-          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update status badges"
+          git add README.md README.zh-CN.md
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No badge changes detected, skipping push."
+            exit 0
+          fi
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git commit -m "chore: update status badges"
           git push origin main  
