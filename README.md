@@ -151,7 +151,8 @@ jobs:
 
 **PRECAUTIONS**:
 
-- Every qualifying mention triggers a new review run; the results are posted as a new comment on the same PR.
+- Every qualifying mention triggers a new review run; the results are submitted as a new review on the same PR.
+- The triggering PR comment body is included as additional model input for that review run.
 - Bot comments (users ending with `[bot]`) are ignored.
 - Comments on issues without an associated PR are ignored.
   > [!NOTE]
