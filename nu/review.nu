@@ -56,7 +56,7 @@ def submit-review-to-pr [
   ]
 
   try {
-    http post -t application/json -H $headers $review_url {
+    http post -e -t application/json -H $headers $review_url {
       event: 'COMMENT'
       body: $review_body
     }
