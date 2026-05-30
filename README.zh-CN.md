@@ -78,7 +78,7 @@ jobs:
 
 </details>
 
-当 PR 创建的时候会自动触发 DeepSeek 代码审查，并将审查结果（依赖于提示词）以评论的方式发布到对应的 PR 上。比如：
+当 PR 创建的时候会自动触发 DeepSeek 代码审查，并将审查结果（依赖于提示词）以 PR review 的形式提交到对应的 PR 上。比如：
 
 - [示例 1](https://github.com/hustcer/deepseek-review/pull/30) 基于[默认提示词](https://github.com/hustcer/deepseek-review/blob/main/action.yaml#L35) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
 - [示例 2](https://github.com/hustcer/deepseek-review/pull/68) 基于[这个提示词](https://github.com/hustcer/deepseek-review/blob/eba892d969049caff00b51a31e5c093aeeb536e3/.github/workflows/cr.yml#L32)
@@ -149,7 +149,7 @@ jobs:
 
 **注意事项**:
 
-- 每次符合条件的提及都会触发一次新的审核，审核结果以新的评论形式发布在同一个 PR 里。
+- 每次符合条件的提及都会触发一次新的审核，审核结果会以新的 PR review 形式提交到同一个 PR 里。
 - 机器人评论 （结尾含有`[bot]`的用户的评论）会被忽略。
 - 没有关联 PR 的议题上的评论将被忽略。
   > [!NOTE]
