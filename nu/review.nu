@@ -42,6 +42,31 @@ const IGNORED_MESSAGES = {
 # When make http post pretend to be curl, it gets a response just as quickly as curl.
 const HTTP_HEADERS = [User-Agent curl/8.9]
 
+def submit-review-to-pr [
+  repo: string,
+  pr_number: string,
+  review_body: string,
+] {
+  let review_url = $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/reviews'
+  let headers = [
+    Authorization $'Bearer ($env.GH_TOKEN)'
+    Accept application/vnd.github+json
+    X-GitHub-Api-Version 2022-11-28
+    ...$HTTP_HEADERS
+  ]
+
+  try {
+    http post -t application/json -H $headers $review_url {
+      event: 'COMMENT'
+      body: $review_body
+    }
+  } catch {|err|
+    print $'(ansi r)Failed to submit review to PR: (ansi reset)'
+    $err | table -e | print
+    exit $ECODE.SERVER_ERROR
+  }
+}
+
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-v4-flash',
   TEMPERATURE: 0.3,
@@ -164,8 +189,8 @@ export def --env deepseek-review [
 
   match $output_mode {
     'action' => {
-      post-comments-to-pr $repo $pr_number $result
-      print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was posted as a comment.'
+      submit-review-to-pr $repo $pr_number $result
+      print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was submitted as a review.'
     }
     'file' => { write-review-to-file $output $setting $result $response }
     _ => { print $'Code Review Result:'; hr-line; print $result }
@@ -209,7 +234,7 @@ def write-review-to-file [
 def validate-token [token?: string, --pr-number: string, --repo: string] {
   if ($token | is-empty) {
     print $'(ansi r)Please provide your DeepSeek API token by setting `CHAT_TOKEN` or passing it as an argument.(ansi reset)'
-    if ($pr_number | is-not-empty) { post-comments-to-pr $repo $pr_number $NO_TOKEN_TIP }
+    if ($pr_number | is-not-empty) { submit-review-to-pr $repo $pr_number $NO_TOKEN_TIP }
     exit $ECODE.INVALID_PARAMETER
   }
   $token
@@ -222,23 +247,6 @@ def validate-temperature [temp: float] {
     exit $ECODE.INVALID_PARAMETER
   }
   $temp
-}
-
-# Post review comments to GitHub PR
-def post-comments-to-pr [
-  repo: string,        # GitHub repository name, e.g. hustcer/deepseek-review
-  pr_number: string,   # GitHub PR number
-  comments: string,    # Comments content to post
-] {
-  let comment_url = $'($GITHUB_API_BASE)/repos/($repo)/issues/($pr_number)/comments'
-  let BASE_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json ...$HTTP_HEADERS]
-  try {
-    http post -t application/json -H $BASE_HEADER $comment_url { body: $comments }
-  } catch {|err|
-    print $'(ansi r)Failed to post comments to PR: (ansi reset)'
-    $err | table -e | print
-    exit $ECODE.SERVER_ERROR
-  }
 }
 
 # Output the streaming response of review result from DeepSeek API
