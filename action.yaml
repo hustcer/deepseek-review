@@ -74,6 +74,7 @@ runs:
       shell: nu {0}
       env:
         WATCH_MENTION: ${{ inputs.watch-mention }}
+        TEMPERATURE_INPUT: ${{ inputs.temperature }}
       run: |
         const NU_LIB_DIRS = [ ${{ github.action_path }}/nu ]
         use review.nu *
@@ -89,8 +90,9 @@ runs:
         let includePatterns = '${{ inputs.include-patterns }}'
         let excludePatterns = '${{ inputs.exclude-patterns }}'
         let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
-        let temperature = try { '${{ inputs.temperature }}' | into float } catch { 0.3 }
+        let temperature = try { ($env.TEMPERATURE_INPUT | into float) } catch { 0.3 }
         let watchMention = $env.WATCH_MENTION
+        let commentBody = $event.comment?.body? | default ''
         if '${{ github.event_name }}' == 'issue_comment' {
           if ($event.issue?.pull_request? | is-empty) {
             print 'Not a pull request comment, skipping.'
@@ -109,8 +111,7 @@ runs:
             print 'Comment author lacks write access, skipping.'
             exit 0
           }
-          let commentBody = $event.comment?.body? | default ''
-          if not ($commentBody | str contains $watchMention) {
+          if not ($commentBody =~ $'(^|[^A-Za-z0-9_-])($watchMention | str escape-regex)($|[^A-Za-z0-9_-])') {
             print 'The comment does not mention the watch-mention string, exiting.'
             exit 0
           }
@@ -127,5 +128,5 @@ runs:
           --temperature $temperature
           --include $includePatterns
           --exclude $excludePatterns
+          --comment $commentBody
         )
-
