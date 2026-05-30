@@ -80,7 +80,7 @@ Follow these steps to config your `CHAT_TOKEN`:
 
 </details>
 
-When a PR is created, DeepSeek code review will be automatically triggered, and the review results (depending on your prompt) will be posted as comments on the corresponding PR. For example:
+When a PR is created, DeepSeek code review will be automatically triggered, and the review results (depending on your prompt) will be posted as a formal review on the corresponding PR. For example:
 
 - [Example 1](https://github.com/hustcer/deepseek-review/pull/30) with [default prompts](https://github.com/hustcer/deepseek-review/blob/main/action.yaml#L35) & [Run Log](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
 - [Example 2](https://github.com/hustcer/deepseek-review/pull/68) with [this prompt](https://github.com/hustcer/deepseek-review/blob/eba892d969049caff00b51a31e5c093aeeb536e3/.github/workflows/cr.yml#L32)
@@ -152,7 +152,6 @@ jobs:
 **PRECAUTIONS**:
 
 - Every qualifying mention triggers a new review run; the results are submitted as a new review on the same PR.
-- The triggering PR comment body is included as additional model input for that review run.
 - Bot comments (users ending with `[bot]`) are ignored.
 - Comments on issues without an associated PR are ignored.
   > [!NOTE]
