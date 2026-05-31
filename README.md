@@ -115,7 +115,7 @@ jobs:
 
 With this setup, DeepSeek code review will not run automatically upon PR creation. Instead, it will only be triggered when you manually add the `ai review` label.
 
-### Trigger Code Review via PR Comment Mention
+### Triggering Code Review via PR Comment Mention
 
 You can trigger code review by mentioning a specific string (e.g. `@github-actions`) in a PR comment. First, add `issue_comment` to your workflow events, then configure the `watch-mention` input:
 
