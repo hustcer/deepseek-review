@@ -47,6 +47,11 @@ def submit-review-to-pr [
   pr_number: string,
   review_body: string,
 ] {
+  if ($repo | is-empty) or ($pr_number | is-empty) {
+    print $'(ansi r)Repo or PR number is empty, cannot submit review.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
+
   let review_url = $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/reviews'
   let headers = [
     Authorization $'Bearer ($env.GH_TOKEN)'
@@ -55,13 +60,29 @@ def submit-review-to-pr [
     ...$HTTP_HEADERS
   ]
 
+  print $'Posting review to: (ansi g)($review_url)(ansi reset)'
+
   try {
-    http post -e -t application/json -H $headers $review_url {
+    let response = http post -e -t application/json -H $headers $review_url {
       event: 'COMMENT'
       body: $review_body
     }
+
+    let status = $response | get -o status | default 0
+
+    if $status >= 200 and $status < 300 {
+      print $'Review submitted successfully! HTTP (ansi g)($status)(ansi reset)'
+    } else {
+      print $'(ansi r)Failed to submit review. HTTP Status: ($status)(ansi reset)'
+      let err_body = $response | get -o body | default ''
+      if ($err_body | is-not-empty) {
+        print $'(ansi r)Response body:(ansi reset)'
+        print $err_body
+      }
+      exit $ECODE.SERVER_ERROR
+    }
   } catch {|err|
-    print $'(ansi r)Failed to submit review to PR: (ansi reset)'
+    print $'(ansi r)Failed to submit review to PR — network or connection error:(ansi reset)'
     $err | table -e | print
     exit $ECODE.SERVER_ERROR
   }
