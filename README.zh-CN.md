@@ -78,7 +78,7 @@ jobs:
 
 </details>
 
-当 PR 创建的时候会自动触发 DeepSeek 代码审查，并将审查结果（依赖于提示词）以 PR review 的形式提交到对应的 PR 上。比如：
+当 PR 创建的时候会自动触发 DeepSeek 代码审查，并将审查结果（依赖于提示词）以审查的形式提交到对应的 PR 上。比如：
 
 - [示例 1](https://github.com/hustcer/deepseek-review/pull/30) 基于[默认提示词](https://github.com/hustcer/deepseek-review/blob/main/action.yaml#L35) & [运行日志](https://github.com/hustcer/deepseek-review/actions/runs/13043609677/job/36390331791#step:2:53).
 - [示例 2](https://github.com/hustcer/deepseek-review/pull/68) 基于[这个提示词](https://github.com/hustcer/deepseek-review/blob/eba892d969049caff00b51a31e5c093aeeb536e3/.github/workflows/cr.yml#L32)
