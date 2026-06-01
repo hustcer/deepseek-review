@@ -12,7 +12,7 @@
 - 通过 GitHub Action 使用 DeepSeek 进行自动化 PR 审查
 - 在 PR 的标题或描述中添加 `skip cr` or `skip review` 可跳过 GitHub Actions 里的代码审查
 - 跨平台：支持 GitHub `macOS`, `Ubuntu` & `Windows` Runners
-- 支持通过在PR评论中提及`$watch-mention`实现互动性的PR作者（必须要归属于`$allow-associations`）与模型之间的对话
+- 支持通过在PR评论中提及`$watch-mention`实现互动性的PR作者（必须要归属于`$allowed-associations`）与模型之间的对话
 
 ### 本地代码审查
 
