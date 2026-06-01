@@ -63,7 +63,7 @@ def submit-review-to-pr [
   print $'Posting review to: (ansi g)($review_url)(ansi reset)'
 
   try {
-    let response = http post -e -t application/json -H $headers $review_url {
+    let response = http post -e -f -t application/json -H $headers $review_url {
       event: 'COMMENT'
       body: $review_body
     }
