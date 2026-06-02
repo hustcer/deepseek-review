@@ -154,11 +154,11 @@ jobs:
 - Every qualifying mention triggers a new review run; the results are submitted as a new review on the same PR.
 - Bot comments (users ending with `[bot]`) are ignored.
 - Comments on issues without an associated PR are ignored.
-  > [!NOTE]
-  > By default, only **COLLABORATORs, OWNER, MEMBERs can trigger the code review** by mentioning `@github-actions`.
-  > Other users without write access will be ignored.
-  > You can change this by appending or removing roles in `allowed-associations`. For example, if you want to enable contributors to trigger code reviews, set it as follows:
-  > `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
+> [!NOTE]
+> By default, only **COLLABORATORs, OWNER, MEMBERs can trigger the code review** by mentioning `@github-actions`.
+> Other users without write access will be ignored.
+> You can change this by appending or removing roles in `allowed-associations`. For example, if you want to enable contributors to trigger code reviews, set it as follows:
+> `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
 
 ## Input Parameters
 
