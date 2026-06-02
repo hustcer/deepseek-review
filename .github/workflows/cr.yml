@@ -16,6 +16,7 @@ on:
 # fix: GraphQL: Resource not accessible by integration (addComment) error
 permissions:
   pull-requests: write
+  contents: read
 
 jobs:
   setup-deepseek-review:
