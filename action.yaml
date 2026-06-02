@@ -111,7 +111,12 @@ runs:
             print 'Comment author lacks write access, skipping.'
             exit 0
           }
-          if not ($commentBody =~ $'(^|[^A-Za-z0-9_-])($watchMention | str escape-regex)($|[^A-Za-z0-9_-])') {
+          let mentionPattern = [
+            '(^|[^A-Za-z0-9_-])'
+            ($watchMention | str escape-regex)
+            '([^A-Za-z0-9_-]|$)'
+          ] | str join
+          if not ($commentBody =~ $mentionPattern) {
             print 'The comment does not mention the watch-mention string, exiting.'
             exit 0
           }
