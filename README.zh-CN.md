@@ -56,6 +56,9 @@ permissions:
 jobs:
   setup-deepseek-review:
     runs-on: ubuntu-latest
+    env:
+      HOMEBREW_ASK: "0"
+      HOMEBREW_NO_ENV_HINTS: "1"
     name: Code Review
     steps:
       - name: DeepSeek Code Review
@@ -101,6 +104,9 @@ permissions:
 jobs:
   setup-deepseek-review:
     runs-on: ubuntu-latest
+    env:
+      HOMEBREW_ASK: "0"
+      HOMEBREW_NO_ENV_HINTS: "1"
     name: Code Review
     # Make sure the code review happens only when the PR has the label 'ai review'
     if: contains(github.event.pull_request.labels.*.name, 'ai review')
@@ -135,6 +141,9 @@ permissions:
 jobs:
   setup-deepseek-review:
     runs-on: ubuntu-latest
+    env:
+      HOMEBREW_ASK: "0"
+      HOMEBREW_NO_ENV_HINTS: "1"
     name: Code Review
     steps:
       - name: DeepSeek Code Review
