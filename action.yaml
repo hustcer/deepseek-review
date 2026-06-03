@@ -73,8 +73,6 @@ runs:
     - name: DeepSeek Code Review
       shell: nu {0}
       env:
-        HOMEBREW_NO_ENV_HINTS: "1"
-        HOMEBREW_ASK: "0"
         WATCH_MENTION: ${{ inputs.watch-mention }}
       run: |
         const NU_LIB_DIRS = [ ${{ github.action_path }}/nu ]
