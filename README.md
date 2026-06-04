@@ -16,7 +16,7 @@
 - Cross-platform Support: Compatible with GitHub Runners across `macOS`, `Ubuntu`, and `Windows`.
 - Allows interactive pull request author (must be included within `$allowed-associations`) to model conversation by appending a message after mentioning `$watch-mention` in a pull request comment.
 > [!WARNING]
-> Contents retrieved from a comment with `$watch-mention` has lower priority than `$sys-prompt`. Therefore, it might be overridden by `$sys-prompt` and jgnored by model.
+> Contents retrieved from a comment with `$watch-mention` has lower priority than `$sys-prompt`. Therefore, it might be overridden by `$sys-prompt` and ignored by model.
 
 ### Local Code Review
 
