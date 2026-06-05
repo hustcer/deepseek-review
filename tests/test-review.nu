@@ -32,6 +32,16 @@ def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git show 2393375 o+e>diff.patch') false
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 nu/*') true
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/*') true
+  assert equal (is-safe-git 'git diff --output tmp.patch') false
+  assert equal (is-safe-git 'git diff --ext-diff HEAD') false
+  assert equal (is-safe-git 'git diff --no-index a b') false
+  # Options must be rejected even when they appear AFTER a ref/pathspec, not just
+  # right after the subcommand: the ref char class accepts leading dashes, so the
+  # grammar regex alone would pass `--ext-diff` (external diff driver → arbitrary
+  # command execution) and `--output` (overwrites a file). The token scan catches
+  # them wherever they sit.
+  assert equal (is-safe-git 'git diff head~3 --ext-diff') false
+  assert equal (is-safe-git 'git show head~1 --output x') false
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/*; rm -rf abc') false
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/* && rm -rf abc') false
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/* || rm -rf abc') false
@@ -68,9 +78,29 @@ def 'generate-include-regex：escapes regex metacharacters' [] {
   # C1: metacharacters in patterns must be escaped so they match literally; `*`
   # expands to `.*`. Previously the escape map never fired (keys had a spurious
   # leading backslash), leaving `.`, `+`, etc. as live regex operators.
-  assert equal (generate-include-regex ['*.nu']) '/^diff --git/{p=/^diff --git a\/.*\.nu/}p'
-  assert equal (generate-include-regex ['a+b.rs']) '/^diff --git/{p=/^diff --git a\/a\+b\.rs/}p'
-  assert equal (generate-exclude-regex ['*.nu']) '/^diff --git/{p=/^diff --git a\/.*\.nu/}!p'
+  assert equal (generate-include-regex ['*.nu']) '/^diff --git/{p=/^diff --git a\/.*\.nu b\//}p'
+  assert equal (generate-include-regex ['a+b.rs']) '/^diff --git/{p=/^diff --git a\/a\+b\.rs b\//}p'
+  assert equal (generate-exclude-regex ['*.nu']) '/^diff --git/{p=/^diff --git a\/.*\.nu b\//}!p'
+}
+
+@test
+def 'generate-include-regex：matches complete diff header path' [] {
+  let awk_bin = $in.awk
+  let nu_patch = "diff --git a/foo.nu b/foo.nu\nindex 000..111 100644\n--- a/foo.nu\n+++ b/foo.nu\n@@ -1 +1 @@\n-a\n+b\n"
+  let nux_patch = "diff --git a/foo.nux b/foo.nux\nindex 000..111 100644\n--- a/foo.nux\n+++ b/foo.nux\n@@ -1 +1 @@\n-a\n+b\n"
+
+  assert equal ($nu_patch | ^$awk_bin (generate-include-regex ['*.nu']) | is-not-empty) true
+  assert equal ($nux_patch | ^$awk_bin (generate-include-regex ['*.nu']) | is-empty) true
+}
+
+@test
+def 'generate-include-regex：double-star matches root and nested paths' [] {
+  let awk_bin = $in.awk
+  let root_patch = "diff --git a/action.yaml b/action.yaml\nindex 000..111 100644\n--- a/action.yaml\n+++ b/action.yaml\n@@ -1 +1 @@\n-a\n+b\n"
+  let nested_patch = "diff --git a/.github/workflows/action.yaml b/.github/workflows/action.yaml\nindex 000..111 100644\n--- a/.github/workflows/action.yaml\n+++ b/.github/workflows/action.yaml\n@@ -1 +1 @@\n-a\n+b\n"
+
+  assert equal ($root_patch | ^$awk_bin (generate-include-regex ['**/*.yaml']) | is-not-empty) true
+  assert equal ($nested_patch | ^$awk_bin (generate-include-regex ['**/*.yaml']) | is-not-empty) true
 }
 
 @test

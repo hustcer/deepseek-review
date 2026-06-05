@@ -57,6 +57,7 @@ export def prepare-awk [] {
 # 1. Convert * to .*
 # 2. Convert ? to . (optional, as needed)
 # 3. Convert / to \/
+# 4. Convert **/ to an optional directory prefix
 def glob-to-regex [patterns: list<string>] {
   # Handle empty patterns list
   if ($patterns | length) == 0 { return '' }
@@ -87,9 +88,11 @@ def glob-to-regex [patterns: list<string>] {
 
   $patterns
     | each { |pat|
-        $regex_escapes | columns | reduce -f $pat { |k, acc|
+        let double_star_prefix = '__DOUBLE_STAR_SLASH__'
+        let normalized = $pat | str replace -a '**/' $double_star_prefix
+        $regex_escapes | columns | reduce -f $normalized { |k, acc|
           $acc | str replace -a $k ($regex_escapes | get $k)
-        }
+        } | str replace -a $double_star_prefix '(.*\/)?'
       }
     | str join '|'
 }
@@ -97,13 +100,13 @@ def glob-to-regex [patterns: list<string>] {
 # Generate the awk include regex pattern string for the specified patterns
 export def generate-include-regex [patterns: list<string>] {
   let pattern = glob-to-regex $patterns
-  $"/^diff --git/{p=/^diff --git a\\/($pattern)/}p"
+  $"/^diff --git/{p=/^diff --git a\\/($pattern) b\\//}p"
 }
 
 # Generate the awk exclude regex pattern string for the specified patterns
 export def generate-exclude-regex [patterns: list<string>] {
   let pattern = glob-to-regex $patterns
-  $"/^diff --git/{p=/^diff --git a\\/($pattern)/}!p"
+  $"/^diff --git/{p=/^diff --git a\\/($pattern) b\\//}!p"
 }
 
 # Check if the git command is safe to run in the shell
@@ -132,6 +135,12 @@ export def is-safe-git [cmd: string] {
 
   if ($normalized_cmd !~ $git_cmd_pattern) {
     print $'(ansi r)Invalid git command format. (ansi g)Only simple `git show` or `git diff` commands are allowed.(ansi reset)'
+    return false
+  }
+
+  let argv = $normalized_cmd | split row -r ' +'
+  if ($argv | skip 2 | any {|arg| $arg | str starts-with '-' }) {
+    print $'(ansi r)Invalid git command: git options are not allowed in patch commands.(ansi reset)'
     return false
   }
   true
