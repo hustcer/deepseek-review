@@ -44,6 +44,13 @@ def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git diff f536acc 0dd0eb5 :!nu/* << in.txt') false
   assert equal (is-safe-git 'git show head:nu/common.nu') true
   assert equal (is-safe-git 'git show HEAD:nu/common.nu') true
+  # Injected newlines / control chars must be rejected: a second line would run
+  # as its own command in the patch-cmd executor, and line-oriented matchers
+  # (e.g. `find -r`) can mask it by matching only the first line (S1).
+  assert equal (is-safe-git $'git diff abc(char nl)rm -rf abc') false
+  assert equal (is-safe-git $'git show(char nl)whoami') false
+  assert equal (is-safe-git $'git diff(char cr)rm -rf abc') false
+  assert equal (is-safe-git $'git diff(char tab)HEAD') false
 }
 
 @test
@@ -54,6 +61,16 @@ def 'generate-include-regex：should work as expected' [] {
   assert equal ($patch | ^$awk_bin (generate-include-regex [nu/*]) | get-uw) 2576
   assert equal ($patch | ^$awk_bin (generate-include-regex [nu/*, **/*.yaml]) | get-uw) 3669
   assert equal ($patch | ^$awk_bin (generate-include-regex [.env*, *.md, nu/*]) | get-uw) 6871
+}
+
+@test
+def 'generate-include-regex：escapes regex metacharacters' [] {
+  # C1: metacharacters in patterns must be escaped so they match literally; `*`
+  # expands to `.*`. Previously the escape map never fired (keys had a spurious
+  # leading backslash), leaving `.`, `+`, etc. as live regex operators.
+  assert equal (generate-include-regex ['*.nu']) '/^diff --git/{p=/^diff --git a\/.*\.nu/}p'
+  assert equal (generate-include-regex ['a+b.rs']) '/^diff --git/{p=/^diff --git a\/a\+b\.rs/}p'
+  assert equal (generate-exclude-regex ['*.nu']) '/^diff --git/{p=/^diff --git a\/.*\.nu/}!p'
 }
 
 @test

@@ -119,8 +119,13 @@ def get-patch-diff [
     exit $ECODE.INVALID_PARAMETER
   }
 
-  # Get the diff content from the specified git command
-  nu -c $cmd
+  # Run the validated command with separated arguments instead of `nu -c $cmd`,
+  # so the string is never re-interpreted by a shell/nu (no newline injection).
+  # `is-safe-git` guarantees a simple `git show`/`git diff` whose tokens contain
+  # no spaces, quotes, metacharacters, or control characters, so splitting on
+  # spaces is safe here. Pathspecs like `nu/*` / `:!nu/*` reach git verbatim.
+  let argv = $cmd | str trim | split row -r ' +'
+  ^($argv | first) ...($argv | skip 1)
 }
 
 # Apply file filters to the diff content to include or exclude specific files

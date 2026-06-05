@@ -307,9 +307,9 @@ def streaming-output [
           let delta = $in
           if ($delta | coalesce-reasoning | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
           if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
-          if ($delta.content | is-not-empty) { kv set content ((kv get content) + 1) }
+          if ($delta.content? | is-not-empty) { kv set content ((kv get content) + 1) }
           if (kv get content) == 1 { print $'(char nl)Review Details:'; hr-line }
-          print -n ($delta | coalesce-reasoning | default $delta.content)
+          print -n ($delta | coalesce-reasoning | default ($delta.content? | default ''))
         }
       }
 

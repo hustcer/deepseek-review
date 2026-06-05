@@ -11,44 +11,35 @@
 # Usage:
 #   Change `version` in meta.json and then run: `just release` OR `just release -u`
 
+use common.nu [ECODE, has-ref]
+
 export def 'make-release' [
   --update-log(-u)    # Add flag to enable updating CHANGELOG.md
 ] {
 
   cd $env.DEEPSEEK_REVIEW_PATH
-  let releaseVer = (open meta.json | get actionVer)
+  let release_ver = (open meta.json | get actionVer)
 
-  if (has-ref $releaseVer) {
-  	echo $'The version ($releaseVer) already exists, Please choose another version.(char nl)'
-  	exit 5
+  if (has-ref $release_ver) {
+    print $'The version ($release_ver) already exists, Please choose another version.(char nl)'
+    exit $ECODE.CONDITION_NOT_SATISFIED
   }
-  let majorTag = $releaseVer | split row '.' | first
-  let statusCheck = (git status --porcelain)
-  if not ($statusCheck | is-empty) {
-  	echo $'You have uncommitted changes, please commit them and try `release` again!(char nl)'
-  	exit 5
+  let major_tag = $release_ver | split row '.' | first
+  let status_check = (git status --porcelain)
+  if not ($status_check | is-empty) {
+    print $'You have uncommitted changes, please commit them and try `release` again!(char nl)'
+    exit $ECODE.CONDITION_NOT_SATISFIED
   }
   if ($update_log) {
-    git cliff --unreleased --tag $releaseVer --prepend CHANGELOG.md;
-    git commit CHANGELOG.md -m $'update CHANGELOG.md for ($releaseVer)'
+    git cliff --unreleased --tag $release_ver --prepend CHANGELOG.md;
+    git commit CHANGELOG.md -m $'update CHANGELOG.md for ($release_ver)'
   }
   # Delete tags that not exist in remote repo
   git fetch origin --prune '+refs/tags/*:refs/tags/*'
-  let commitMsg = $'A new release for version: ($releaseVer) created by Release command of deepseek-review.'
-  git tag $releaseVer -am $commitMsg;
+  let commit_msg = $'A new release for version: ($release_ver) created by Release command of deepseek-review.'
+  git tag $release_ver -am $commit_msg;
   # Remove local major version tag if exists and ignore errors
-  do -i { git tag -d $majorTag | complete | ignore }
-  git checkout $releaseVer; git tag $majorTag
-  git push origin $majorTag $releaseVer --force
-}
-
-# Check if a git repo has the specified ref: could be a branch or tag, etc.
-export def has-ref [
-  ref: string   # The git ref to check
-] {
-  # Put `complete` inside `do` block to avoid pipefail error in Nushell 0.110+
-  let checkRepo = (do { git rev-parse --is-inside-work-tree | complete })
-  if not ($checkRepo.stdout =~ 'true') { return false }
-  let parse = (do { git rev-parse --verify -q $ref | complete })
-  if ($parse.stdout | is-empty) { false } else { true }
+  do -i { git tag -d $major_tag | complete | ignore }
+  git checkout $release_ver; git tag $major_tag
+  git push origin $major_tag $release_ver --force
 }
