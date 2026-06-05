@@ -104,6 +104,16 @@ def 'generate-include-regex：double-star matches root and nested paths' [] {
 }
 
 @test
+def 'generate-exclude-regex：double-star excludes root and nested paths' [] {
+  let awk_bin = $in.awk
+  let root_patch = "diff --git a/action.yaml b/action.yaml\nindex 000..111 100644\n--- a/action.yaml\n+++ b/action.yaml\n@@ -1 +1 @@\n-a\n+b\n"
+  let nested_patch = "diff --git a/.github/workflows/action.yaml b/.github/workflows/action.yaml\nindex 000..111 100644\n--- a/.github/workflows/action.yaml\n+++ b/.github/workflows/action.yaml\n@@ -1 +1 @@\n-a\n+b\n"
+
+  assert equal ($root_patch | ^$awk_bin (generate-exclude-regex ['**/*.yaml']) | is-empty) true
+  assert equal ($nested_patch | ^$awk_bin (generate-exclude-regex ['**/*.yaml']) | is-empty) true
+}
+
+@test
 def 'generate-exclude-regex：should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
