@@ -15,6 +15,7 @@
 - 支持通过在PR评论中提及`$watch-mention`实现互动性的PR作者（必须要归属于`$allowed-associations`）与模型之间的对话
 > [!WARNING]
 > 从提及`$watch-mention`的评论中检索到的内容优先级低于`$sys-prompt`。因此，它可能会被`$sys-prompt`覆盖，并被模型忽略。
+- 如果拉取请求对话被锁定，则自动跳过审查。
 
 ### 本地代码审查
 
