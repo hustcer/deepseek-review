@@ -172,7 +172,7 @@ export def --env deepseek-review [
   }
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
 
-  if ($pr_number | is-not-empty) and ($repo | is-not-empty) and (is-pr-locked $repo $pr_number) {
+  if $is_action and ($pr_number | is-not-empty) and ($repo | is-not-empty) and (is-pr-locked $repo $pr_number) {
     print $'(ansi y)PR #($pr_number) is locked, skipping review.(ansi reset)'
     exit $ECODE.SUCCESS
   }
