@@ -13,7 +13,7 @@
 - 在 PR 的标题或描述中添加 `skip cr` or `skip review` 可跳过 GitHub Actions 里的代码审查
 - 跨平台：支持 GitHub `macOS`, `Ubuntu` & `Windows` Runners
 - 支持通过在PR评论中提及`$watch-mention`实现互动性的PR作者（必须要归属于`$allowed-associations`）与模型之间的对话
-> [!WARNING]
+> [!IMPORTANT]
 > 从提及`$watch-mention`的评论中检索到的内容优先级低于`$sys-prompt`。因此，它可能会被`$sys-prompt`覆盖，并被模型忽略。
 - 如果拉取请求对话被锁定，则自动跳过审查。
 
