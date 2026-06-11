@@ -76,7 +76,7 @@ runs:
         WATCH_MENTION: ${{ inputs.watch-mention }}
         TEMPERATURE_INPUT: ${{ inputs.temperature }}
       run: |
-        const NU_LIB_DIRS = [ $env.GITHUB_ACTION_PATH/nu ]
+        const NU_LIB_DIRS = [ './nu' ]
         use review.nu *
         let model = '${{ inputs.model }}'
         let baseUrl = '${{ inputs.base-url }}'
