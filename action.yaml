@@ -76,7 +76,6 @@ runs:
         WATCH_MENTION: ${{ inputs.watch-mention }}
         TEMPERATURE_INPUT: ${{ inputs.temperature }}
       run: |
-        source ($env.GITHUB_ACTION_PATH | path join 'nu' 'review.nu')
         let model = '${{ inputs.model }}'
         let baseUrl = '${{ inputs.base-url }}'
         let event = (open $env.GITHUB_EVENT_PATH)
@@ -120,7 +119,7 @@ runs:
             exit 0
           }
         }
-        (deepseek-review $token
+        (nu ($env.GITHUB_ACTION_PATH | path join 'nu' 'review.nu') $token
           --model $model
           --repo $repo
           --pr-number $pr
