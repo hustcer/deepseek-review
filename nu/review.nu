@@ -91,6 +91,7 @@ def submit-review-to-pr [
 
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-v4-flash',
+  MAX_TOKENS: 5000,
   TEMPERATURE: 0.3,
   BASE_URL: 'https://api.deepseek.com',
   USER_PROMPT: 'Please review the following code changes:',
@@ -133,7 +134,7 @@ export def --env deepseek-review [
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
-  #TODO: max_tokens
+  let max_tokens = try { $max_tokens | default $env.MAX_TOKENS? | default $DEFAULT_OPTIONS.MAX_TOKENS | into int } catch { $DEFAULT_OPTIONS.MAX_TOKENS }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
   # Determine output mode
   let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }

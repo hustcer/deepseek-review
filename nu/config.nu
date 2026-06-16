@@ -147,6 +147,7 @@ export def --env config-load [
     USER_PROMPT: $user_prompt,
     SYSTEM_PROMPT: $system_prompt,
     MAX_LENGTH: $settings.max-length,
+    MAX_TOKENS: $settings.max-tokens,
     TEMPERATURE: $settings.temperature,
     GITHUB_TOKEN: $settings.github-token,
     EXCLUDE_PATTERNS: $settings.exclude-patterns,
