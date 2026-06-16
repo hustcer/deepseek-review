@@ -22,6 +22,10 @@ inputs:
     default: 0
     required: false
     description: 'The maximum length of the content for review, 0 means no limit.'
+  max-tokens:
+    default: 5000
+    required: false
+    description: 'The maximum amount of tokens allowed for the model to cost, it is recommended to set it to a larger number on big project or modification.'
   model:
     required: false
     default: 'deepseek-v4-flash'
