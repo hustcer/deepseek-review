@@ -133,6 +133,7 @@ export def --env deepseek-review [
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
+  #TODO: max_tokens
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
   # Determine output mode
   let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }
@@ -149,6 +150,7 @@ export def --env deepseek-review [
     patch_cmd: $patch_cmd,
     pr_number: $pr_number,
     max_length: $max_length,
+    max_tokens: $max_tokens
     local_repo: $local_repo,
     temperature: $temperature,
   }
@@ -186,6 +188,7 @@ export def --env deepseek-review [
     model: $model,
     stream: $stream,
     temperature: $temperature,
+    max_tokens:  $max_tokens
     messages: [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $user_content }
