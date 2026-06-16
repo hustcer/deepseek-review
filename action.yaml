@@ -94,6 +94,7 @@ runs:
         let includePatterns = '${{ inputs.include-patterns }}'
         let excludePatterns = '${{ inputs.exclude-patterns }}'
         let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
+        let maxTokens = try { '${{ inputs.max-tokens }}' | into int } catch { 5000 }
         let temperature = try { ($env.TEMPERATURE_INPUT | into float) } catch { 0.3 }
         let watchMention = $env.WATCH_MENTION
         let commentBody = $event.comment?.body? | default ''
@@ -132,6 +133,7 @@ runs:
           --gh-token $ghToken
           --base-url $baseUrl
           --max-length $maxLength
+          --max-tokens $maxTokens
           --sys-prompt $sysPrompt
           --user-prompt $userPrompt
           --temperature $temperature
