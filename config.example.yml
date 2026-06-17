@@ -75,10 +75,10 @@ providers:
     token: sk-or-v1-*****
     base-url: https://openrouter.ai/api/v1
     models:
-      - name: deepseek/deepseek-chat-v3-0324:free
-        alias: v3
+      - name: deepseek/deepseek-v4-flash:free
+        alias: v4
         enabled: true
-        description: 'OpenRouter DeepSeek V3 model'
+        description: 'OpenRouter DeepSeek V4 Flash model'
       - name: deepseek/deepseek-r1:free
         alias: r1
         description: 'OpenRouter DeepSeek R1 model'
