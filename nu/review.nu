@@ -88,6 +88,26 @@ def submit-review-to-pr [
   }
 }
 
+def is-pr-locked [
+  repo: string,
+  pr_number: string,
+] {
+  let url = $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)'
+  let headers = [
+    Authorization $'Bearer ($env.GH_TOKEN)'
+    Accept application/vnd.github+json
+    X-GitHub-Api-Version '2022-11-28'
+    ...$HTTP_HEADERS
+  ]
+
+  try {
+    let response = http get -H $headers $url
+    ($response | get -o locked | default false)
+  } catch {
+    false
+  }
+}
+
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-v4-flash',
   TEMPERATURE: 0.3,
@@ -151,6 +171,11 @@ export def --env deepseek-review [
     temperature: $temperature,
   }
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
+
+  if $is_action and ($pr_number | is-not-empty) and ($repo | is-not-empty) and (is-pr-locked $repo $pr_number) {
+    print $'(ansi y)PR #($pr_number) is locked, skipping review.(ansi reset)'
+    exit $ECODE.SUCCESS
+  }
 
   validate-token $token --pr-number $pr_number --repo $repo
   let hint = if not $is_action and ($pr_number | is-empty) {
