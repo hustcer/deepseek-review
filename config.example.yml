@@ -63,10 +63,10 @@ providers:
     token: 'YOUR_SILICONFLOW_TOKEN'
     base-url: 'https://api.siliconflow.cn/v1' # Required if not the official API
     models:
-      - name: 'deepseek-ai/DeepSeek-V3'
-        alias: v3
+      - name: 'deepseek-ai/DeepSeek-V4-Flash'
+        alias: v4
         enabled: true
-        description: 'SiliconFlow DeepSeek V3 model'
+        description: 'SiliconFlow DeepSeek V4 Flash model'
       - name: 'deepseek-ai/DeepSeek-R1'
         alias: r1
         description: 'SiliconFlow DeepSeek R1 model'
