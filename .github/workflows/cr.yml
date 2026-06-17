@@ -28,7 +28,7 @@ jobs:
         uses: hustcer/deepseek-review@develop
         with:
           max-length: 50000
-          max-tokens: 5000
+          max-tokens: 3000
           # model: 'deepseek-v3'                            # Infinigence's DeepSeek V3 model
           # model: 'deepseek-r1'                            # Infinigence's DeepSeek R1 model
           # base-url: 'https://cloud.infini-ai.com/maas/v1' # Infinigence's API base URL

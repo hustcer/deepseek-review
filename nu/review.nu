@@ -91,7 +91,7 @@ def submit-review-to-pr [
 
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-v4-flash',
-  MAX_TOKENS: 5000,
+  MAX_TOKENS: 3000,
   TEMPERATURE: 0.3,
   BASE_URL: 'https://api.deepseek.com',
   USER_PROMPT: 'Please review the following code changes:',

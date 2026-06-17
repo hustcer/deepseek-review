@@ -170,7 +170,7 @@ jobs:
 | model                | String | 可选，配置代码审查选用的模型，默认为 `deepseek-v4-flash`                                                          |
 | base-url             | String | 可选，DeepSeek API Base URL, 默认为 `https://api.deepseek.com`                                                    |
 | max-length           | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查                                  |
-| max-tokens           | Int    | 可选，模型回复可用的最大生成 Token 数，对应请求体中的 `max_tokens`，默认值 `5000`                                 |
+| max-tokens           | Int    | 可选，模型回复可用的最大生成 Token 数，对应请求体中的 `max_tokens`，默认值 `3000`                                 |
 | sys-prompt           | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释                                                      |
 | user-prompt          | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释                                                     |
 | temperature          | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `0.3`                                                                |
@@ -232,7 +232,7 @@ Flags:
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
-  -K, --max-tokens <int>: Maximum generation tokens for model response, default value `5000`
+  -K, --max-tokens <int>: Maximum generation tokens for model response, default value `3000`
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
   -U, --chat-url <string>: DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat

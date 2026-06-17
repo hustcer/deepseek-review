@@ -172,7 +172,7 @@ jobs:
 | model                | String | Optional, The model used for code review, defaults to `deepseek-v4-flash`                                                                                             |
 | base-url             | String | Optional, DeepSeek API Base URL, defaults to `https://api.deepseek.com`                                                                                               |
 | max-length           | Int    | Optional, Maximum length (Unicode width) of the content for review. If the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
-| max-tokens           | Int    | Optional, Maximum generation tokens for model response, mapped to `max_tokens` in payload. Default `5000`.                                                           |
+| max-tokens           | Int    | Optional, Maximum generation tokens for model response, mapped to `max_tokens` in payload. Default `3000`.                                                           |
 | sys-prompt           | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below                                                                   |
 | user-prompt          | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below                                                                    |
 | temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. Default value is `0.3`                                                         |
@@ -235,7 +235,7 @@ Flags:
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
-  -K, --max-tokens <int>: Maximum generation tokens for model response, default value `5000`
+  -K, --max-tokens <int>: Maximum generation tokens for model response, default value `3000`
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
   -U, --chat-url <string>: DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat

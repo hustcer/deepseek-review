@@ -23,7 +23,7 @@ inputs:
     required: false
     description: 'The maximum length of the content for review, 0 means no limit.'
   max-tokens:
-    default: 5000
+    default: 3000
     required: false
     description: 'The maximum amount of tokens allowed for the model to cost, it is recommended to set it to a larger number on big project or modification.'
   model:
@@ -94,7 +94,7 @@ runs:
         let includePatterns = '${{ inputs.include-patterns }}'
         let excludePatterns = '${{ inputs.exclude-patterns }}'
         let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
-        let maxTokens = try { '${{ inputs.max-tokens }}' | into int } catch { 5000 }
+        let maxTokens = try { '${{ inputs.max-tokens }}' | into int } catch { 3000 }
         let temperature = try { ($env.TEMPERATURE_INPUT | into float) } catch { 0.3 }
         let watchMention = $env.WATCH_MENTION
         let commentBody = $event.comment?.body? | default ''
