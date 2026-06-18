@@ -17,6 +17,7 @@
 - Allows interactive pull request author (must be included within `$allowed-associations`) to model conversation by appending a message after mentioning `$watch-mention` in a pull request comment.
 > [!IMPORTANT]
 > Contents retrieved from a comment with `$watch-mention` has lower priority than `$sys-prompt`. Therefore, it might be overridden by `$sys-prompt` and ignored by model.
+- Automatically skip a review if the pull request conversation is locked.
 
 ### Local Code Review
 
