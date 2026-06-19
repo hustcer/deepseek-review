@@ -163,6 +163,28 @@ jobs:
 > 您可以通过在 `$allowed-associations` 中添加或移除角色来更改此设置。例如，如果您想允许贡献者触发代码审查，请按如下方式设置工作流：
 > `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
 
+## 将 Github Models 作为你的审查模型
+
+_Github Models_ 提供了非常慷慨的免费额度，对于基本的代码审查已经足够。下面是你如何修改工作流程以使用 _Github Models_ 的方法。
+
+```yaml
+permissions:
+  pull-requests: write
+  models: read        # 必要的权限
+
+jobs:
+  setup-deepseek-review:
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          chat-token: ${{ secrets.GITHUB_TOKEN }}      # 以前是CHAT_TOKEN
+          model: 'openai/gpt-4o'
+          base-url: 'https://models.github.ai/inference/chat/completions'       # Github Models的API端点
+```
+
 ## 输入参数
 
 | 名称                 | 类型   | 描述                                                                                                              |
