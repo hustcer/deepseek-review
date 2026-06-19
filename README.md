@@ -166,6 +166,7 @@ jobs:
 > `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
 
 ## Using Github Models as Your Model Provider
+
 _Github Models_ offers a generous free tier, and it is enough for basic code reviews. Here is how you can modify the workflow to utilize _Github Models_.
 
 ```yaml
