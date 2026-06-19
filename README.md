@@ -183,7 +183,7 @@ jobs:
         with:
           chat-token: ${{ secrets.GITHUB_TOKEN }}       # Originally CHAT_TOkEN
           model: 'openai/gpt-4o'
-          base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
+          base-url: 'https://models.github.ai/inference/chat/completions'      # Github Models API Endpoint
 ```
 
 ## Input Parameters
