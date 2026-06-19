@@ -181,9 +181,9 @@ jobs:
       - name: DeepSeek Code Review
         uses: hustcer/deepseek-review@v1
         with:
-          chat-token: ${{ secrets.GITHUB_TOKEN }}
-          model: "openai/gpt-4o"
-          base-url: "https://models.github.ai/inference".      # Github Models API Endpoint
+          chat-token: ${{ secrets.GITHUB_TOKEN }}       # Originally CHAT_TOkEN
+          model: 'openai/gpt-4o'
+          base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
 ```
 
 ## Input Parameters
