@@ -181,8 +181,8 @@ jobs:
         uses: hustcer/deepseek-review@v1
         with:
           chat-token: ${{ secrets.GITHUB_TOKEN }}      # 以前是CHAT_TOKEN
-          model: 'openai/gpt-4o'
-          base-url: 'https://models.github.ai/inference/chat/completions'       # Github Models的API端点
+          model: 'openai/gpt-5'
+          base-url: 'https://models.github.ai/inference'       # Github Models的API端点
 ```
 
 ## 输入参数
