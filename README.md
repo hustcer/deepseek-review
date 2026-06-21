@@ -183,8 +183,8 @@ jobs:
         uses: hustcer/deepseek-review@v1
         with:
           chat-token: ${{ secrets.GITHUB_TOKEN }}       # Originally CHAT_TOKEN
-          model: 'openai/gpt-4o'
-          base-url: 'https://models.github.ai/inference/chat/completions'      # Github Models API Endpoint
+          model: 'openai/gpt-5'
+          base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
 ```
 
 ## Input Parameters
