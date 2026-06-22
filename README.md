@@ -165,6 +165,28 @@ jobs:
 > You can change this by appending or removing roles in `$allowed-associations`. For example, if you want to enable contributors to trigger code reviews, set it as follows:
 > `allowed-associations: 'OWNER,MEMBER,COLLABORATOR,CONTRIBUTOR'`
 
+## Using Github Models as Your Model Provider
+
+_Github Models_ offers a generous free tier, and it is enough for basic code reviews. Here is how you can modify the workflow to utilize _Github Models_.
+
+```yaml
+permissions:
+  pull-requests: write
+  models: read   # Required for using Github Models
+
+jobs:
+  setup-deepseek-review:
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          chat-token: ${{ secrets.GITHUB_TOKEN }}       # Originally CHAT_TOKEN
+          model: 'openai/gpt-5'
+          base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
+```
+
 ## Input Parameters
 
 | Name                 | Type   | Description                                                                                                                                                           |
