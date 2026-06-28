@@ -74,7 +74,7 @@ jobs:
           )
 
       - name: Publish Test Summary
-        if: runner.os == 'macOS' && matrix.version == '*' && github.ref == 'refs/heads/main'
+        if: runner.os == 'macOS' && matrix.version == '*' && github.ref == 'refs/heads/main' && github.repository_owner == 'hustcer'
         shell: nu {0}
         run: |
           let filename = 'test-summary.json'
