@@ -1,0 +1,37 @@
+# Description:
+#   - Manually verify DeepSeek code review inside a Docker job container.
+
+name: Docker Code Review
+
+on:
+  issue_comment:
+    types:
+      - created
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: docker-cr-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  docker-code-review:
+    name: Docker Code Review
+    if: >-
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/docker-cr') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    container:
+      image: hustcer/debian-node:latest
+
+    steps:
+      - name: DeepSeek Code Review in Docker
+        uses: hustcer/deepseek-review@develop
+        with:
+          max-length: 50000
+          model: 'deepseek-v4-pro'
+          watch-mention: '/docker-cr'
+          chat-token: ${{ secrets.CHAT_TOKEN }}
