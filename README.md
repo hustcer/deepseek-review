@@ -18,6 +18,7 @@
 > [!IMPORTANT]
 > Contents retrieved from a comment with `$watch-mention` has lower priority than `$sys-prompt`. Therefore, it might be overridden by `$sys-prompt` and ignored by model.
 - Automatically skip a review if the pull request conversation is locked.
+- **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
 
 ### Local Code Review
 
@@ -34,11 +35,6 @@
 - Fully customizable: Choose models, base URLs, and prompts
 - Support self-hosted DeepSeek models for enhanced flexibility
 - Perform code reviews for changes that either include or exclude specific files
-
-## Planned Features
-
-- [x] **Trigger Code Review on Mention**: Automatically initiate code review when the `github-actions` bot is mentioned in a PR comment.
-- [ ] **Generate Commit Message Locally**: Generate a commit message for the code changes in any local repository.
 
 ## Code Review with GitHub Action
 
