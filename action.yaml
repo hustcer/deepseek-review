@@ -74,26 +74,24 @@ runs:
       shell: nu {0}
       env:
         WATCH_MENTION: ${{ inputs.watch-mention }}
+        CHAT_TOKEN_INPUT: ${{ inputs.chat-token }}
+        MODEL_INPUT: ${{ inputs.model }}
+        BASE_URL_INPUT: ${{ inputs.base-url }}
+        SYS_PROMPT_INPUT: ${{ inputs.sys-prompt }}
+        USER_PROMPT_INPUT: ${{ inputs.user-prompt }}
+        INCLUDE_PATTERNS_INPUT: ${{ inputs.include-patterns }}
+        EXCLUDE_PATTERNS_INPUT: ${{ inputs.exclude-patterns }}
+        GH_TOKEN_INPUT: ${{ inputs.github-token }}
+        MAX_LENGTH_INPUT: ${{ inputs.max-length }}
         TEMPERATURE_INPUT: ${{ inputs.temperature }}
+        REPO_INPUT: ${{ github.repository }}
+        ALLOWED_ASSOCIATIONS_INPUT: ${{ inputs.allowed-associations }}
       run: |
-        const NU_LIB_DIRS = [ ${{ github.action_path }}/nu ]
-        use review.nu *
-        let model = '${{ inputs.model }}'
-        let baseUrl = '${{ inputs.base-url }}'
         let event = (open $env.GITHUB_EVENT_PATH)
-        let repo = '${{ github.repository }}'
-        let token = '${{ inputs.chat-token }}'
-        let ghToken = '${{ inputs.github-token }}'
-        let sysPrompt = '${{ inputs.sys-prompt }}'
-        let userPrompt = '${{ inputs.user-prompt }}'
         let pr = $event.pull_request?.number? | default $event.issue?.number? | default '' | into string
-        let includePatterns = '${{ inputs.include-patterns }}'
-        let excludePatterns = '${{ inputs.exclude-patterns }}'
-        let maxLength = try { '${{ inputs.max-length }}' | into int } catch { 0 }
-        let temperature = try { ($env.TEMPERATURE_INPUT | into float) } catch { 0.3 }
         let watchMention = $env.WATCH_MENTION
         let commentBody = $event.comment?.body? | default ''
-        if '${{ github.event_name }}' == 'issue_comment' {
+        if $env.GITHUB_EVENT_NAME == 'issue_comment' {
           if ($event.issue?.pull_request? | is-empty) {
             print 'Not a pull request comment, skipping.'
             exit 0
@@ -106,7 +104,7 @@ runs:
             print 'issue_comment trigger fired but no watch-mention configured, exiting.'
             exit 0
           }
-          let allowed = '${{ inputs.allowed-associations }}' | split row ',' | str trim
+          let allowed = $env.ALLOWED_ASSOCIATIONS_INPUT | split row ',' | str trim
           if ($event.comment?.author_association? not-in $allowed) {
             print 'Comment author lacks write access, skipping.'
             exit 0
@@ -121,17 +119,23 @@ runs:
             exit 0
           }
         }
-        (deepseek-review $token
-          --model $model
-          --repo $repo
-          --pr-number $pr
-          --gh-token $ghToken
-          --base-url $baseUrl
-          --max-length $maxLength
-          --sys-prompt $sysPrompt
-          --user-prompt $userPrompt
-          --temperature $temperature
-          --include $includePatterns
-          --exclude $excludePatterns
-          --comment $commentBody
-        )
+        $env.PR_NUMBER_INPUT = $pr
+        $env.COMMENT_BODY_INPUT = $commentBody
+        # Let the child Nu parser receive the runtime container-side action path before `use`.
+        ^nu -I ($env.GITHUB_ACTION_PATH | path join nu) -c "
+          use review.nu *
+          (deepseek-review $env.CHAT_TOKEN_INPUT
+            --model $env.MODEL_INPUT
+            --repo $env.REPO_INPUT
+            --pr-number $env.PR_NUMBER_INPUT
+            --gh-token $env.GH_TOKEN_INPUT
+            --base-url $env.BASE_URL_INPUT
+            --max-length (try { $env.MAX_LENGTH_INPUT | into int } catch { 0 })
+            --sys-prompt $env.SYS_PROMPT_INPUT
+            --user-prompt $env.USER_PROMPT_INPUT
+            --temperature (try { $env.TEMPERATURE_INPUT | into float } catch { 0.3 })
+            --include $env.INCLUDE_PATTERNS_INPUT
+            --exclude $env.EXCLUDE_PATTERNS_INPUT
+            --comment $env.COMMENT_BODY_INPUT
+          )
+        "
