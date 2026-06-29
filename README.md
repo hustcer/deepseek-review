@@ -57,6 +57,7 @@ permissions:
 
 jobs:
   setup-deepseek-review:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     name: Code Review
     steps:
@@ -102,6 +103,7 @@ permissions:
 
 jobs:
   setup-deepseek-review:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     name: Code Review
     # Make sure the code review happens only when the PR has the label 'ai review'
@@ -136,6 +138,7 @@ permissions:
 
 jobs:
   setup-deepseek-review:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     name: Code Review
     steps:
@@ -172,6 +175,7 @@ permissions:
 
 jobs:
   setup-deepseek-review:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     name: Code Review
     steps:
