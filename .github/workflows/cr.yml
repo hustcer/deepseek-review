@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   setup-deepseek-review:
+    timeout-minutes: 30
     runs-on: macos-latest
     name: Code Review
     # Make sure the code review happens only when the PR has the label 'ai review'
