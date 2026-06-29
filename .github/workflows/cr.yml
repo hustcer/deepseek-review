@@ -23,6 +23,8 @@ jobs:
     name: Code Review
     # Make sure the code review happens only when the PR has the label 'ai review'
     # if: contains(github.event.pull_request.labels.*.name, 'ai review')
+    env:
+      HOMEBREW_NO_REQUIRE_TAP_TRUST: '1'
     steps:
       - name: DeepSeek Code Review
         uses: hustcer/deepseek-review@develop
