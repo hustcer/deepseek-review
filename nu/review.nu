@@ -42,6 +42,244 @@ const IGNORED_MESSAGES = {
 # When make http post pretend to be curl, it gets a response just as quickly as curl.
 const HTTP_HEADERS = [User-Agent curl/8.9]
 
+# Hidden HTML comment fingerprint embedded in every tracking review.
+# Used to identify the AI's own review when reconciling across commits.
+const TRACKER_MARKER_PREFIX = '<!-- dsr-tracker:'
+
+def tracker-marker [pr_number: string, sha: string] {
+  $"($TRACKER_MARKER_PREFIX)pr=($pr_number) sha=($sha) updated=(date now | format date '%Y-%m-%dT%H:%M:%SZ') -->"
+}
+
+# Find the existing tracking review for a PR (returns null if none).
+# Walks the page of reviews until it sees a body containing the tracker marker.
+def find-existing-review [
+  repo: string,
+  pr_number: string,
+] {
+  let headers = [
+    Authorization $'Bearer ($env.GH_TOKEN)'
+    Accept application/vnd.github+json
+    X-GitHub-Api-Version '2022-11-28'
+    ...$HTTP_HEADERS
+  ]
+  let base_url = $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/reviews'
+  let page_size = 100
+
+  # Helper: scan one page of reviews, return the first tracker-marked review (or null).
+  def scan-page [headers: list, url: string] {
+    let resp = (try { http get -H $headers $url } catch { return null })
+    let items = if ($resp | describe) == 'list' { $resp } else { [$resp] }
+    if ($items | is-empty) { return null }
+    let marked = ($items | where { |r| (($r | get -o body | default '') | str contains $TRACKER_MARKER_PREFIX) })
+    if ($marked | is-empty) { null } else { ($marked | first | upsert body ($marked | first | get -o body | default '')) }
+  }
+
+  let page1 = (scan-page $headers $'($base_url)?per_page=($page_size)&page=1')
+  if $page1 != null { return $page1 }
+
+  # Page 2-10 only if page 1 was full but had no marker
+  let p1_count = (try {
+    http get -H $headers $'($base_url)?per_page=($page_size)&page=1' | length
+  } catch { 0 })
+  if $p1_count < $page_size { return null }
+
+  for page in 2..10 {
+    let found = (scan-page $headers $'($base_url)?per_page=($page_size)&page=($page)')
+    if $found != null { return $found }
+  }
+  null
+}
+
+# Parse the previous tracking review body into a record:
+#   { sha, findings: list<{severity, file, line, message, suggestion}> }
+# Findings are parsed from the per-finding markdown list items.
+export def parse-tracking-body [body: string] {
+  # Pattern: capture the SHA from `<!-- dsr-tracker:pr=... sha=<SHA> updated=... -->`
+  let sha_pattern = '<!-- dsr-tracker:pr=\S+ sha=(\S+)'
+  let sha_match = ($body | parse --regex $sha_pattern)
+  let sha = if ($sha_match | is-empty) { '' } else { ($sha_match | first | get capture0) }
+
+  # Parse findings from our own generated body. Each finding line looks like:
+  #   "- <severity> `path:line` — message  → suggestion"
+  # We split on " — " first (which separates severity+location from message),
+  # then split the prefix on " `" to get severity and `path:line`.
+  mut findings = []
+  for line in ($body | lines) {
+    let trimmed = ($line | str trim)
+    # Only consider lines that look like findings (start with "- <severity>")
+    if not ($trimmed | str starts-with '- ') { continue }
+    # Strip leading "- "
+    let content = ($trimmed | str substring 2..)
+    # Split on " — " (em-dash) to separate [severity `path:line`] from [message [+ suggestion]]
+    let parts = ($content | split row ' — ')
+    if ($parts | length) < 2 { continue }
+    let head = ($parts | first | str trim)
+    let rest = ($parts | skip 1 | str join ' — ' | str trim)
+    # head looks like:  high `nu/review.nu:120`
+    let head_parts = ($head | split row ' `')
+    if ($head_parts | length) < 2 { continue }
+    let severity = ($head_parts | first | str trim | str downcase)
+    let loc_raw  = ($head_parts | get 1 | str trim)
+    # Strip trailing backtick (last char if it's '`'). substring 0..end is
+    # INCLUSIVE on the right in Nushell 0.113, so to drop the last char we
+    # need 0..(n-2), not 0..(n-1).
+    let loc_clean = if ($loc_raw | str ends-with '`') {
+      let n = ($loc_raw | str length)
+      $loc_raw | str substring 0..(($n) - 2) | str trim
+    } else { $loc_raw }
+    # Split loc on the LAST ":" (file paths may themselves contain ":")
+    let last_colon = ($loc_clean | str index-of --end ':')
+    let file = if $last_colon < 0 { $loc_clean } else { $loc_clean | str substring 0..(($last_colon) - 1) | str trim }
+    let line_str = if $last_colon < 0 { '' } else { $loc_clean | str substring (($last_colon) + 1).. | str trim }
+    let line_num = (try { $line_str | into int } catch { 0 })
+    # Split rest on " → " to get message and suggestion
+    let rest_parts = ($rest | split row ' → ')
+    let message = ($rest_parts | first | str trim)
+    let suggestion = if ($rest_parts | length) > 1 { ($rest_parts | get 1 | str trim) } else { '' }
+    $findings = ($findings | append {
+      severity: $severity,
+      file: $file,
+      line: $line_num,
+      message: $message,
+      suggestion: $suggestion,
+    })
+  }
+  { sha: $sha, findings: $findings }
+}
+
+# Reconcile old vs new findings, classify each as:
+#   resolved  - was in old, not in new (the diff no longer mentions it)
+#   still_open - was in old, still in new
+#   new_issues - was not in old, is in new
+def finding-key [f: record] { $'($f.file):($f.line)' }
+
+export def reconcile-findings [old_findings: list, new_findings: list] {
+  let old_keys = ($old_findings | each { |f| (finding-key $f) })
+  let new_keys = ($new_findings | each { |f| (finding-key $f) })
+  let resolved   = ($old_findings | where { |f| ((finding-key $f) not-in $new_keys) })
+  let still_open = ($old_findings | where { |f| ((finding-key $f) in $new_keys) })
+  let new_issues = ($new_findings | where { |f| ((finding-key $f) not-in $old_keys) })
+  { resolved: $resolved, still_open: $still_open, new_issues: $new_issues }
+}
+
+# Build the final tracking review body with a fingerprint marker + status sections.
+export def format-finding [f: record] {
+  let loc = if ($f.line | default 0) > 0 { $'`($f.file):($f.line)`' } else { $'`($f.file)`' }
+  let suggestion = if ($f.suggestion | default '') == '' { '' } else { $'  → ($f.suggestion)' }
+  $'- ($f.severity) (ansi reset)($loc)(ansi reset) — ($f.message)(ansi reset)($suggestion)'
+}
+
+export def build-tracking-body [
+  pr_number: string,
+  latest_sha: string,
+  update_count: int,
+  reconciled: record,
+] {
+  let resolved_block   = if ($reconciled.resolved   | is-empty) { '_(none yet)_' } else { ($reconciled.resolved   | each { |f| (format-finding $f) } | str join "\n") }
+  let still_open_block = if ($reconciled.still_open | is-empty) { '_(none)_' }        else { ($reconciled.still_open | each { |f| (format-finding $f) } | str join "\n") }
+  let new_issues_block = if ($reconciled.new_issues | is-empty) { '_(none)_' }        else { ($reconciled.new_issues | each { |f| (format-finding $f) } | str join "\n") }
+
+  let marker = (tracker-marker $pr_number $latest_sha)
+  let sha_short = if ($latest_sha | str length) > 0 { ($latest_sha | str substring 0..6) } else { 'no-sha' }
+  let title = $"## 🤖 AI Code Review — update #($update_count)  ·  SHA: (ansi reset)($sha_short)(ansi reset)"
+
+  [
+    $marker
+    $title
+    ''
+    '### ✅ Resolved (previously flagged, no longer in diff)'
+    $resolved_block
+    ''
+    '### 🆕 Newly introduced'
+    $new_issues_block
+    ''
+    '### ❌ Still open (flagged in previous review, still present)'
+    $still_open_block
+    ''
+    '_Generated by DeepSeek-Review single-review mode. Each commit re-runs the review and updates this comment in place._'
+  ] | str join "\n"
+}
+
+# Parse DeepSeek's free-form review output into structured findings.
+# The model is instructed (via sys-prompt injection in this function) to output
+# a "FINDINGS:" block where each line is `- <severity> <file>:<line> — <message> → <suggestion>`.
+export def parse-deepseek-findings [review: string, original_diff: string] {
+  # Try to extract a structured "FINDINGS:" block if the model followed the instruction
+  let findings_block = (
+    if ($review | str contains 'FINDINGS:') {
+      $review | str substring ((($review | str index-of 'FINDINGS:') + 9)..)
+    } else {
+      ''
+    }
+  )
+  mut findings = []
+  if ($findings_block | str trim | is-not-empty) {
+    for line in ($findings_block | lines) {
+      let trimmed = ($line | str trim)
+      if ($trimmed | is-empty) { continue }
+      if not ($trimmed | str starts-with '- ') { continue }
+      # Strip leading "- "
+      let content = ($trimmed | str substring 2..)
+      # Format: "<severity> `path:line` — message  → suggestion"
+      let parts = ($content | split row ' — ')
+      if ($parts | length) < 2 { continue }
+      let head = ($parts | first | str trim)
+      let rest = ($parts | skip 1 | str join ' — ' | str trim)
+      let head_parts = ($head | split row ' `')
+      if ($head_parts | length) < 2 { continue }
+      let severity = ($head_parts | first | str trim | str downcase)
+      let loc_raw  = ($head_parts | get 1 | str trim)
+      let loc_clean = if ($loc_raw | str ends-with '`') {
+        let n = ($loc_raw | str length)
+        $loc_raw | str substring 0..(($n) - 2) | str trim
+      } else { $loc_raw }
+      let last_colon = ($loc_clean | str index-of --end ':')
+      let file = if $last_colon < 0 { $loc_clean } else { $loc_clean | str substring 0..(($last_colon) - 1) | str trim }
+      let line_str = if $last_colon < 0 { '' } else { $loc_clean | str substring (($last_colon) + 1).. | str trim }
+      let line_num = (try { $line_str | into int } catch { 0 })
+      let rest_parts = ($rest | split row ' → ')
+      let message = ($rest_parts | first | str trim)
+      let suggestion = if ($rest_parts | length) > 1 { ($rest_parts | get 1 | str trim) } else { '' }
+      $findings = ($findings | append {
+        severity: $severity,
+        file: $file,
+        line: $line_num,
+        message: $message,
+        suggestion: $suggestion,
+      })
+    }
+  }
+  # Fallback: if the model didn't follow the structured format, surface the
+  # whole review as a single "low"-severity entry so we never lose content.
+  if ($findings | is-empty) {
+    $findings = [{
+      severity: 'low'
+      file: '(see review)'
+      line: 0
+      message: ($review | str substring 0..200)
+      suggestion: 'See full review body for details.'
+    }]
+  }
+  $findings
+}
+
+# Inject the structured-output instruction into the user-prompt so the model
+# emits a parseable FINDINGS: block alongside its free-form review.
+def inject-findings-instruction [user_prompt: string] {
+  let instructions = $'(char nl)(char nl)---(char nl)STRUCTURED OUTPUT (required for single-review mode):(char nl)After your human-readable review, append a `FINDINGS:` section where each line is EXACTLY in this format so the tool can track resolution across commits:(char nl)'
+  $'- <severity> `<file>:<line>` — <one-line problem> → <one-line fix>(char nl)'
+  let example = 'Example: `- high `nu/review.nu:120` — def --env deprecation warning → use with-env block`'
+  [
+    $user_prompt
+    $instructions
+    $'- <severity> `<file>:<line>` — <one-line problem> → <one-line fix>'
+    $example
+    ''
+    'Use severity ∈ {critical, high, med, low, info}.'
+    'Only include findings you can ground in a specific `path:line` from the diff. Do NOT list findings without a file:line anchor.'
+  ] | str join "\n"
+}
+
 def submit-review-to-pr [
   repo: string,
   pr_number: string,
@@ -83,6 +321,43 @@ def submit-review-to-pr [
     }
   } catch {|err|
     print $'(ansi r)Failed to submit review to PR — network or connection error:(ansi reset)'
+    $err | table -e | print
+    exit $ECODE.SERVER_ERROR
+  }
+}
+
+# Update an existing review's body via PATCH.
+def update-review-body [
+  repo: string,
+  pr_number: string,
+  review_id: int,
+  new_body: string,
+] {
+  if ($repo | is-empty) or ($pr_number | is-empty) or ($review_id <= 0) {
+    print $'(ansi r)Repo/PR/review_id is empty, cannot update review.(ansi reset)'
+    exit $ECODE.INVALID_PARAMETER
+  }
+  let url = $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/reviews/($review_id)'
+  let headers = [
+    Authorization $'Bearer ($env.GH_TOKEN)'
+    Accept application/vnd.github+json
+    X-GitHub-Api-Version '2022-11-28'
+    ...$HTTP_HEADERS
+  ]
+  print $'Patching existing review: (ansi g)($url)(ansi reset)'
+  try {
+    let response = http patch -e -f -t application/json -H $headers $url { body: $new_body }
+    let status = $response | get -o status | default 0
+    if $status >= 200 and $status < 300 {
+      print $'Review updated successfully! HTTP (ansi g)($status)(ansi reset)'
+    } else {
+      print $'(ansi r)Failed to update review. HTTP Status: ($status)(ansi reset)'
+      let err_body = $response | get -o body | default ''
+      if ($err_body | is-not-empty) { print $err_body }
+      exit $ECODE.SERVER_ERROR
+    }
+  } catch {|err|
+    print $'(ansi r)Failed to update review — network error:(ansi reset)'
     $err | table -e | print
     exit $ECODE.SERVER_ERROR
   }
@@ -137,6 +412,7 @@ export def --env deepseek-review [
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
   --comment: string,       # Additional comment text from a PR comment mention trigger
+  --single-review = false, # Single-review mode: keep one AI review per PR and update it in place across commits
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
@@ -200,6 +476,9 @@ export def --env deepseek-review [
   print $'Review content length: (ansi g)($length)(ansi reset), current max length: (ansi g)($max_length)(ansi reset)'
   let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
   let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
+  # In single-review mode, inject the structured-output instruction so the
+  # model emits a parseable FINDINGS: block alongside its free-form review.
+  let user_prompt = if $single_review { (inject-findings-instruction $user_prompt) } else { $user_prompt }
   let user_content = if ($comment | is-not-empty) {
     $"($user_prompt):\n($content)\n\nAdditional context from PR comment (char lp)enclosed in <comment> tags(char rp):\n<comment>\n($comment)\n</comment>"
   } else {
@@ -232,20 +511,53 @@ export def --env deepseek-review [
   let message = $response | get -o choices.0.message
   let reason = $message | coalesce-reasoning
   let review = $message.content? | default ($response | get -o message.content)
-  let result = ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
+  # In single-review mode, do NOT fold reasoning into <details> — it would break
+  # the structured FINDINGS: parser (it can confuse < > → inside the folded block).
+  let result = if ($reason | is-empty) or $single_review {
+    $review
+  } else {
+    ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
+  }
   if ($review | is-empty) {
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
     exit $ECODE.SERVER_ERROR
   }
-  let result = if ($reason | is-empty) { $review } else { $result }
 
-  match $output_mode {
-    'action' => {
-      submit-review-to-pr $repo $pr_number $result
-      print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was submitted as a review.'
+  # In single-review mode, reconcile with any existing review on the PR.
+  if $single_review and $is_action and ($pr_number | is-not-empty) and ($repo | is-not-empty) {
+    let existing = (find-existing-review $repo $pr_number)
+    let new_findings = (parse-deepseek-findings $review $content)
+    let old_findings = (
+      if $existing == null {
+        []
+      } else {
+        let prev_body = ($existing | get body)
+        let prev_parsed = (parse-tracking-body $prev_body)
+        $prev_parsed.findings
+      }
+    )
+    let update_count = (($old_findings | length) + 1)   # rough: increment each run
+    let reconciled = (reconcile-findings $old_findings $new_findings)
+    # Latest commit SHA comes from env var (set by action.yaml from github.event.head_sha)
+    let latest_sha = ($env.HEAD_SHA? | default '')
+    let tracking_body = (build-tracking-body $pr_number $latest_sha $update_count $reconciled)
+    if $existing == null {
+      submit-review-to-pr $repo $pr_number $tracking_body
+      print $'✅ Code review finished！Tracking review created on PR (ansi g)#($pr_number)(ansi reset).'
+    } else {
+      let review_id = ($existing | get id)
+      update-review-body $repo $pr_number $review_id $tracking_body
+      print $'✅ Code review finished！Tracking review updated on PR (ansi g)#($pr_number)(ansi reset) (review id: ($review_id)).'
     }
-    'file' => { write-review-to-file $output $setting $result $response }
-    _ => { print $'Code Review Result:'; hr-line; print $result }
+  } else {
+    match $output_mode {
+      'action' => {
+        submit-review-to-pr $repo $pr_number $result
+        print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was submitted as a review.'
+      }
+      'file' => { write-review-to-file $output $setting $result $response }
+      _ => { print $'Code Review Result:'; hr-line; print $result }
+    }
   }
 
   if ($response.usage? | is-not-empty) {

@@ -61,6 +61,10 @@ inputs:
     required: false
     default: 'OWNER,MEMBER,COLLABORATOR'
     description: 'Comma-separated author_association values allowed to trigger review via PR comment. Default: OWNER,MEMBER,COLLABORATOR.'
+  single-review:
+    required: false
+    default: 'false'
+    description: 'When true, keep only one AI review per PR and update it on every commit, showing which findings were resolved / newly introduced / still open. Default: false (one new review per commit, original behavior).'
 
 runs:
   using: 'composite'
@@ -86,6 +90,8 @@ runs:
         TEMPERATURE_INPUT: ${{ inputs.temperature }}
         REPO_INPUT: ${{ github.repository }}
         ALLOWED_ASSOCIATIONS_INPUT: ${{ inputs.allowed-associations }}
+        SINGLE_REVIEW_INPUT: ${{ inputs.single-review }}
+        HEAD_SHA: ${{ github.head_sha }}
       run: |
         let event = (open $env.GITHUB_EVENT_PATH)
         let pr = $event.pull_request?.number? | default $event.issue?.number? | default '' | into string
@@ -137,5 +143,6 @@ runs:
             --include $env.INCLUDE_PATTERNS_INPUT
             --exclude $env.EXCLUDE_PATTERNS_INPUT
             --comment $env.COMMENT_BODY_INPUT
+            --single-review ($env.SINGLE_REVIEW_INPUT | str down-case == 'true')
           )
         "
