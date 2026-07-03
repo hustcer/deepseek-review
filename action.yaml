@@ -24,8 +24,8 @@ inputs:
     description: 'The maximum length of the content for review, 0 means no limit.'
   max-tokens:
     required: false
-    default: 2000
-    description: 'The maximum number of tokens allowed in a single code review. Default: 2000.'
+    default: 4096
+    description: 'The maximum number of tokens allowed in a single code review. Default: 4096.'
   model:
     required: false
     default: 'deepseek-v4-flash'

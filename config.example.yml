@@ -19,7 +19,7 @@ settings:
   # Note that it's unicode width not LLM token length
   max-length: 0
   # The maximum number of tokens allowed for the model to use in a single review, 0 means no limit
-  max-tokens: 2000
+  max-tokens: 4096
   # The temperature of the model, The value should be between 0 and 2, with default value 0.3
   temperature: 0.3
   # The user prompt name to use for DeepSeek API select from 'prompts.user'
