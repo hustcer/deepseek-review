@@ -136,7 +136,7 @@ runs:
             --gh-token $env.GH_TOKEN_INPUT
             --base-url $env.BASE_URL_INPUT
             --max-length (try { $env.MAX_LENGTH_INPUT | into int } catch { 0 })
-            --max-tokens (try { $env.MAX_TOKENS_INPUT | into int } catch { 2000 })
+            --max-tokens (try { $env.MAX_TOKENS_INPUT | into int } catch { 4096 })
             --sys-prompt $env.SYS_PROMPT_INPUT
             --user-prompt $env.USER_PROMPT_INPUT
             --temperature (try { $env.TEMPERATURE_INPUT | into float } catch { 0.3 })
