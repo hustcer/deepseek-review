@@ -9,7 +9,7 @@
 #  [√] Perform CR for changes that either include or exclude specific files
 #  [√] Support streaming output for local code review
 #  [√] Support using custom patch command to get diff content
-#  [ ] Add more action outputs
+#  [√] Add more action outputs
 # Description: A script to do code review by DeepSeek
 # REF:
 #   - https://docs.github.com/en/rest/issues/comments
@@ -128,6 +128,7 @@ export def --env deepseek-review [
   --diff-from(-f): string,  # Git diff starting commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
+  --max-tokens(-K): int     # Maximum amount of tokens allowed for the model to use in a single review, 4096 by default.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
   --chat-url(-U): string,   # DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
@@ -151,6 +152,7 @@ export def --env deepseek-review [
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
+  let max_tokens = try { $max_tokens | default ($env.MAX_TOKENS? | default 4096 | into int) } catch { 4096 }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
   # Determine output mode
   let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }
@@ -167,6 +169,7 @@ export def --env deepseek-review [
     patch_cmd: $patch_cmd,
     pr_number: $pr_number,
     max_length: $max_length,
+    max_tokens: $max_tokens,
     local_repo: $local_repo,
     temperature: $temperature,
   }
@@ -214,6 +217,11 @@ export def --env deepseek-review [
       { role: 'user', content: $user_content }
     ],
     thinking: { type: 'disabled' }
+  }
+  let payload = if $max_tokens > 0 {
+    $payload | merge { max_tokens: $max_tokens }
+  } else {
+    $payload
   }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
