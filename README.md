@@ -188,7 +188,7 @@ jobs:
 ```
 
 ## Set up a Limit for Token Usage:
-You can set a limit for the maximum amount of tokens to spend in a single code review by specifing `$max-tokens` in your workflow. This should be compatible with most provider, such as Deepseek and SiliconFlow. For providers that are not compatible with it, set it as follows:
+You can set a limit for the maximum amount of tokens to spend in a single code review by specifing `$max-tokens` in your workflow. This should be compatible with most of the OpenAI-compatible API providers, such as Deepseek and SiliconFlow. For providers that are not compatible with it, set it as follows:
 
 ```yaml
 permissions:
