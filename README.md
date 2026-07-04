@@ -189,7 +189,9 @@ jobs:
 
 ## Set a Limit for Token Usage:
 
-You can set a limit for the amount of tokens allowed in a single code review by specifing `$max-tokens` in your workflow. This should be compatible with most OpenAI-compatible API providers, such as Deepseek and SiliconFlow.
+You can set a limit for the amount of tokens allowed in a single code review. This works in both GitHub Actions and local environments, and is compatible with most OpenAI-compatible API providers, such as Deepseek and SiliconFlow.
+
+### In GitHub Actions
 
 ```yaml
 permissions:
@@ -215,6 +217,22 @@ jobs:
 > [!NOTE]
 > If the model provider does not allow `$max-tokens` in its payload, or you just want to turn off the token limit, set `$max-tokens` to `-1`.
 > Values less than or equal to 0 will leave the `$max-tokens` field disabled in the API payload, and falls back to the provider's default limit if applicable.
+
+### Locally
+
+Set `max-tokens` in your `config.yml`:
+
+```yaml
+settings:
+  max-tokens: 4096
+```
+
+Or pass it via the CLI flag:
+
+```sh
+cr --max-tokens 8192
+cr -K 16384
+```
 
 ## Input Parameters
 
@@ -285,7 +303,8 @@ Flags:
   -f, --diff-from <string>: Git diff starting commit SHA
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
-  -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
+  -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.  
+  -K, --max-tokens <int>: Maximum amount of tokens allowed for the model in a single code review, 4096 by default.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
   -U, --chat-url <string>: DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat

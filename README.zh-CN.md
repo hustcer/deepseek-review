@@ -187,7 +187,9 @@ jobs:
 
 ## 设置 Token 限额
 
-你可以通过在你的工作流文件中指定 `$max-tokens` 来设置单次代码审查允许的最大 token 数量。这应该与大多数兼容 OpenAI 格式的 API 提供商兼容，比如 _Deepseek_ 和 _硅基流动_。
+你可以设置单次代码审查允许的最大 token 数量。这在 GitHub Actions 和本地环境中都可以使用，并且与大多数兼容 OpenAI 格式的 API 提供商兼容，比如 _Deepseek_ 和 _硅基流动_。
+
+### 在 GitHub Actions 中
 
 ```yaml
 permissions:
@@ -213,6 +215,22 @@ jobs:
 > [!NOTE]
 > 如果模型提供商不允许在其请求体中使用 `$max-tokens`，或者你只是想关闭 Token 限制，可以将 `$max-tokens` 设置为 `-1`。
 > 小于或等于 0 的值会禁用 API 请求体中的 `$max-tokens` 字段。如果适用的话，会回退到提供商的默认限制。
+
+### 本地使用
+
+在 `config.yml` 中设置 `max-tokens`：
+
+```yaml
+settings:
+  max-tokens: 4096
+```
+
+或者通过 CLI 参数传入：
+
+```sh
+cr --max-tokens 8192
+cr -K 16384
+```
 
 ## 输入参数
 
@@ -283,6 +301,7 @@ Flags:
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
+  -K, --max-tokens <int>: Maximum amount of tokens allowed for the model in a single code review, 4096 by default.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
   -U, --chat-url <string>: DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
