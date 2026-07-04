@@ -187,8 +187,9 @@ jobs:
           base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
 ```
 
-## Set up a Limit for Token Usage:
-You can set a limit for the maximum amount of tokens to spend in a single code review by specifing `$max-tokens` in your workflow. This should be compatible with most of the OpenAI-compatible API providers, such as Deepseek and SiliconFlow. For providers that are not compatible with it, set it as follows:
+## Set a Limit for Token Usage:
+
+You can set a limit for the amount of tokens allowed in a single code review by specifing `$max-tokens` in your workflow. This should be compatible with most OpenAI-compatible API providers, such as Deepseek and SiliconFlow.
 
 ```yaml
 permissions:
@@ -203,13 +204,17 @@ jobs:
       - name: DeepSeek Code Review
         uses: hustcer/deepseek-review@v1
         with:
-          max-tokens: -1         # Values less or equal to 0 will leave the $max-tokens field disabled in the API payload.
+          max-tokens: 4096
           model: "deepseek-ai/DeepSeek-R1"
           base-url: "https://api.siliconflow.cn/v1"
           watch-mention: "@github-actions"
           chat-token: ${{ secrets.CHAT_TOKEN }}
           allowed-associations: "OWNER,MEMBER,COLLABORATOR"
 ```
+
+> [!NOTE]
+> If the model provider does not allow `$max-tokens` in its payload, or you just want to turn off the token limit, set `$max-tokens` to `-1`.
+> Values less than or equal to 0 will leave the `$max-tokens` field disabled in the API payload.
 
 ## Input Parameters
 
