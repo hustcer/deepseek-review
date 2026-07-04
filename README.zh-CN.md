@@ -185,6 +185,35 @@ jobs:
           base-url: 'https://models.github.ai/inference'       # Github Models的API端点
 ```
 
+## 设置 Token 限额
+
+你可以通过在你的工作流文件中指定 `$max-tokens` 来设置单次代码审查允许的最大 token 数量。这应该与大多数兼容 OpenAI 格式的 API 提供商兼容，比如 _Deepseek_ 和 _硅基流动_。
+
+```yaml
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          max-tokens: 4096
+          model: "deepseek-ai/DeepSeek-R1"
+          base-url: "https://api.siliconflow.cn/v1"
+          watch-mention: "@github-actions"
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+          allowed-associations: "OWNER,MEMBER,COLLABORATOR"
+```
+
+> [!NOTE]
+> 如果模型提供商不允许在其请求体中使用 `$max-tokens`，或者你只是想关闭 Token 限制，可以将 `$max-tokens` 设置为 `-1`。
+> 小于或等于 0 的值会禁用 API 请求体中的 `$max-tokens` 字段。
+
 ## 输入参数
 
 | 名称                 | 类型   | 描述                                                                                                              |
@@ -193,6 +222,7 @@ jobs:
 | model                | String | 可选，配置代码审查选用的模型，默认为 `deepseek-v4-flash`                                                          |
 | base-url             | String | 可选，DeepSeek API Base URL, 默认为 `https://api.deepseek.com`                                                    |
 | max-length           | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查                                  |
+| max-tokens           | Int    | 可选，模型在单次评论中可使用的最大 Token 数量，默认值是4096。                                                   |
 | sys-prompt           | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释                                                      |
 | user-prompt          | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释                                                     |
 | temperature          | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `0.3`                                                                |
