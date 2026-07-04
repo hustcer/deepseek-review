@@ -8,7 +8,7 @@
 #   - Multiple providers could be defined, but only one could be selected, with its name in 'settings.provider'
 #   - One and Only one model could be enabled in one model group
 #   - Model in model groups is disabled by default, even if there is no 'enabled' field
-#   - If you are using the Official Deepseek API, the default $max-tokens is 4096, and 8192 on beta endpoints (varies by model). Reference https://api-docs.deepseek.com for more information.
+#   - If you are using the official Deepseek API, the default $max-tokens is 4096, and 8192 on beta endpoints (varies by model). Reference https://api-docs.deepseek.com for more information.
 
 settings:
   # The provider to use for code review, with it's name in 'providers'
