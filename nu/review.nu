@@ -219,7 +219,7 @@ export def --env deepseek-review [
     thinking: { type: 'disabled' }
   }
   let payload = if $max_tokens > 0 {
-    $payload | merge { max_tokens: $max_tokens }
+    $payload | insert max_tokens $max_tokens
   } else {
     $payload
   }
