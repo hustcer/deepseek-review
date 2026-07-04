@@ -187,6 +187,30 @@ jobs:
           base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
 ```
 
+## Set up a Limit for Token Usage:
+You can set a limit for the maximum amount of tokens to spend in a single code review by specifing `$max-tokens` in your workflow. This should be compatible with most provider, such as Deepseek and SiliconFlow. For providers that are not compatible with it, set it as follows:
+
+```yaml
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          max-tokens: -1         # Values less or equal to 0 will leave the $max-tokens field disabled in the API payload.
+          model: "deepseek-ai/DeepSeek-R1"
+          base-url: "https://api.siliconflow.cn/v1"
+          watch-mention: "@github-actions"
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+          allowed-associations: "OWNER,MEMBER,COLLABORATOR"
+```
+
 ## Input Parameters
 
 | Name                 | Type   | Description                                                                                                                                                           |
@@ -195,6 +219,7 @@ jobs:
 | model                | String | Optional, The model used for code review, defaults to `deepseek-v4-flash`                                                                                             |
 | base-url             | String | Optional, DeepSeek API Base URL, defaults to `https://api.deepseek.com`                                                                                               |
 | max-length           | Int    | Optional, Maximum length (Unicode width) of the content for review. If the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
+| max-tokens           | Int    | Optional, The maximum amount of tokens allowed for the model to use in a single review, 4096 by default.        |
 | sys-prompt           | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below                                                                   |
 | user-prompt          | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below                                                                    |
 | temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. Default value is `0.3`                                                         |
