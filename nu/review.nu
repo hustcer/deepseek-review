@@ -9,7 +9,7 @@
 #  [√] Perform CR for changes that either include or exclude specific files
 #  [√] Support streaming output for local code review
 #  [√] Support using custom patch command to get diff content
-#  [√] Add more action outputs
+#  [ ] Add more action outputs
 # Description: A script to do code review by DeepSeek
 # REF:
 #   - https://docs.github.com/en/rest/issues/comments
