@@ -214,7 +214,7 @@ jobs:
 
 > [!NOTE]
 > If the model provider does not allow `$max-tokens` in its payload, or you just want to turn off the token limit, set `$max-tokens` to `-1`.
-> Values less than or equal to 0 will leave the `$max-tokens` field disabled in the API payload.
+> Values less than or equal to 0 will leave the `$max-tokens` field disabled in the API payload, and falls back to the provider's default limit if applicable.
 
 ## Input Parameters
 
