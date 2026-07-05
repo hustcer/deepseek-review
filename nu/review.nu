@@ -137,7 +137,7 @@ export def --env deepseek-review [
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
   --comment: string,       # Additional comment text from a PR comment mention trigger
-  --thinking(-g): bool,    # Enable thinking/reasoning in the model response, default false
+  --thinking(-g),          # Enable thinking/reasoning in the model response
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
