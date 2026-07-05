@@ -153,6 +153,7 @@ export def --env deepseek-review [
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
+  let thinking = $thinking | default ($env.THINKING? | default false | into bool)
   # Determine output mode
   let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }
 
