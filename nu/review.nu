@@ -171,6 +171,7 @@ export def --env deepseek-review [
     max_length: $max_length,
     local_repo: $local_repo,
     temperature: $temperature,
+    thinking: $thinking,
   }
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
 
@@ -215,8 +216,7 @@ export def --env deepseek-review [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $user_content }
     ],
-    thinking: { type: 'disabled' }
-  }
+  } | if $thinking { merge { thinking: { type: 'enabled' } } } else { $in }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
   if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
