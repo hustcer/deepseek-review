@@ -203,6 +203,7 @@ jobs:
 | github-token         | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`.                                                      |
 | watch-mention        | String | Optional, Trigger code review when this string is mentioned in a PR comment, e.g. `@github-actions`. Requires `issue_comment` event in the workflow.                  |
 | allowed-associations | String | Optional, Comma-separated `author_association` values allowed to trigger review via PR comment. Defaults to `OWNER,MEMBER,COLLABORATOR`.                              |
+| thinking             | Boolean | Optional, Setting it to `true` enables thinking mode.        |
 
 **DeepSeek API Call Payload**:
 
