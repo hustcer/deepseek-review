@@ -187,6 +187,50 @@ jobs:
           base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
 ```
 
+## Enable _Thinking_ Mode for Your Model
+
+To enable thinking mode for your model, simply set `thinking` to true in your workflow or local configuration file.
+
+> [!WARNING]
+> _Thinking mode is disabled by default, because some models are not compatible with thinking mode._
+> Supported model providers are **Deepseek** and **SiliconFlow (Deepseek API)**.
+> Other providers are experimental and may produce unexpected outputs.
+
+### In Github Action
+
+```yaml
+jobs:
+  setup-deepseek-review:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@develop
+        with:
+          max-length: 50000
+          thinking: true
+          model: 'deepseek-v4-pro'
+          watch-mention: '@github-actions'
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+```
+
+### Locally
+
+Set `thinking` to true in your `config.yml`:
+
+```yaml
+settings:
+  thinking: true
+```
+
+Or pass it via the CLI flag:
+
+```sh
+cr --thinking true
+cr -g true
+```
+
 ## Input Parameters
 
 | Name                 | Type   | Description                                                                                                                                                           |
