@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   setup-deepseek-review:
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.draft == false
     timeout-minutes: 30
     runs-on: macos-latest
     name: Code Review
