@@ -28,6 +28,7 @@ def main [
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
   --config(-C): string      # Config file path, default to `config.yml`
   --output(-o): string,     # Output file path
+  --thinking(-g): bool,     # Thinking mode 
 ] {
 
   check-nushell
@@ -50,6 +51,7 @@ def main [
       --sys-prompt=$sys_prompt
       --user-prompt=$user_prompt
       --temperature=$temperature
+      --thinking=$thinking
       --include=($include | default $env.INCLUDE_PATTERNS?)
       --exclude=($exclude | default $env.EXCLUDE_PATTERNS?)
   )
