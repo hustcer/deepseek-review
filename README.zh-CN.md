@@ -265,6 +265,7 @@ Flags:
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command
+  -g, --thinking: Sets thinking mode for the model
 
 Parameters:
   token <string>: Your DeepSeek API token, fallback to CHAT_TOKEN env var (optional)
