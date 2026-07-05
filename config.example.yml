@@ -19,6 +19,10 @@ settings:
   max-length: 0
   # The temperature of the model, The value should be between 0 and 2, with default value 0.3
   temperature: 0.3
+  # Enable thinking/reasoning for DeepSeek models, default: false
+  # Only works with DeepSeek API and compatible providers (e.g. SiliconFlow)
+  # Disable when using OpenAI, Github Models, or other non-DeepSeek endpoints
+  thinking: false
   # The user prompt name to use for DeepSeek API select from 'prompts.user'
   user-prompt: 'default'
   # The system prompt name to use for DeepSeek API select from 'prompts.system'
