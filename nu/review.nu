@@ -42,6 +42,16 @@ const IGNORED_MESSAGES = {
 # When make http post pretend to be curl, it gets a response just as quickly as curl.
 const HTTP_HEADERS = [User-Agent curl/8.9]
 
+# Define Header Gloablly
+def gh-headers [] {
+  [
+    Authorization $'Bearer ($env.GH_TOKEN)'
+    Accept application/vnd.github+json
+    X-GitHub-Api-Version '2022-11-28'
+    ...$HTTP_HEADERS
+  ]
+}
+
 def submit-review-to-pr [
   repo: string,
   pr_number: string,
@@ -53,12 +63,7 @@ def submit-review-to-pr [
   }
 
   let review_url = $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/reviews'
-  let headers = [
-    Authorization $'Bearer ($env.GH_TOKEN)'
-    Accept application/vnd.github+json
-    X-GitHub-Api-Version '2022-11-28'
-    ...$HTTP_HEADERS
-  ]
+  let headers = gh-headers
 
   print $'Posting review to: (ansi g)($review_url)(ansi reset)'
 
@@ -93,12 +98,7 @@ def is-pr-locked [
   pr_number: string,
 ] {
   let url = $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)'
-  let headers = [
-    Authorization $'Bearer ($env.GH_TOKEN)'
-    Accept application/vnd.github+json
-    X-GitHub-Api-Version '2022-11-28'
-    ...$HTTP_HEADERS
-  ]
+  let headers = gh-headers
 
   try {
     let response = http get -H $headers $url
@@ -195,9 +195,8 @@ export def --env deepseek-review [
 
   # Fetch PR title and description for additional review context
   let pr_metadata = if ($pr_number | is-not-empty) and ($repo | is-not-empty) {
-    let PR_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json ...$HTTP_HEADERS]
     try {
-      let pr = http get -H $PR_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)'
+      let pr = http get -H (gh-headers) $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)'
       let title = $pr.title? | default ''
       let body = $pr.body? | default ''
       if ($title | is-not-empty) or ($body | is-not-empty) {
