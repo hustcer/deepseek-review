@@ -192,6 +192,20 @@ export def --env deepseek-review [
   let content = (
     get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to
              --diff-from $diff_from --include $include --exclude $exclude --patch-cmd $patch_cmd)
+
+  # Fetch PR title and description for additional review context
+  let pr_metadata = if ($pr_number | is-not-empty) and ($repo | is-not-empty) {
+    let PR_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3+json ...$HTTP_HEADERS]
+    try {
+      let pr = http get -H $PR_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)'
+      let title = $pr.title? | default ''
+      let body = $pr.body? | default ''
+      if ($title | is-not-empty) or ($body | is-not-empty) {
+        $"\n\nPR Title: (char lp)($title)(char rp)\n\nPR Description:\n($body)"
+      } else { '' }
+    } catch { '' }
+  } else { '' }
+
   let length = $content | str stats | get unicode-width
   if ($max_length != 0) and ($length > $max_length) {
     print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
@@ -201,9 +215,9 @@ export def --env deepseek-review [
   let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
   let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
   let user_content = if ($comment | is-not-empty) {
-    $"($user_prompt):\n($content)\n\nAdditional context from PR comment (char lp)enclosed in <comment> tags(char rp):\n<comment>\n($comment)\n</comment>"
+    $"($user_prompt):($pr_metadata)\n($content)\n\nAdditional context from PR comment (char lp)enclosed in <comment> tags(char rp):\n<comment>\n($comment)\n</comment>"
   } else {
-    $"($user_prompt):\n($content)"
+    $"($user_prompt):($pr_metadata)\n($content)"
   }
   let payload = {
     model: $model,
