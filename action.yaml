@@ -142,6 +142,6 @@ runs:
             --include $env.INCLUDE_PATTERNS_INPUT
             --exclude $env.EXCLUDE_PATTERNS_INPUT
             --comment $env.COMMENT_BODY_INPUT
-            --thinking ($env.THINKING_INPUT | into bool)
+            --thinking $env.THINKING_INPUT
           )
         "

@@ -137,7 +137,7 @@ export def --env deepseek-review [
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
   --comment: string,       # Additional comment text from a PR comment mention trigger
-  --thinking(-g),          # Enable thinking/reasoning in the model response
+  --thinking(-g): string,  # Enable thinking/reasoning: "true" or "false"
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
@@ -153,7 +153,7 @@ export def --env deepseek-review [
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
-  let thinking = $thinking | default ($env.THINKING? | default false | into bool)
+  let thinking = $thinking | default ($env.THINKING? | default "false") | into bool
   # Determine output mode
   let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }
 

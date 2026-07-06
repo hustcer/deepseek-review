@@ -28,7 +28,7 @@ def main [
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
   --config(-C): string      # Config file path, default to `config.yml`
   --output(-o): string,     # Output file path
-  --thinking(-g): bool,     # Thinking mode 
+  --thinking(-g): string,   # Enable thinking/reasoning: "true" or "false"
 ] {
 
   check-nushell
