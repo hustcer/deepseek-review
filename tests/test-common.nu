@@ -37,8 +37,8 @@ def 'compare-ver：v1.0.1 is lower than v1.1.0' [] {
 @test
 def 'from-env：.env load should work' [] {
   open tests/resources/.env.test | from env | load-env
-  assert equal $env.CHAT_MODEL deepseek-chat
-  assert equal $env.BASE_URL https://api.deepseek.ai
+  assert equal $env.CHAT_MODEL deepseek-v4-flash
+  assert equal $env.BASE_URL https://api.deepseek.com
   assert equal $env.TEMPERATURE '1.0'
   assert equal $env.MAX_LENGTH '0'
   assert equal $env.USER_PROMPT 'Please review the following code changes'
