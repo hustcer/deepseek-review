@@ -201,7 +201,7 @@ jobs:
 | github-token         | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}`                                      |
 | watch-mention        | String | 可选，当 PR 评论中提及此字符串时触发代码审查，例如 `@github-actions`。需要在 workflow 中启用 `issue_comment` 事件 |
 | allowed-associations | String | 可选，允许通过 PR 评论触发审查的 `author_association` 列表（逗号分隔），默认为 `OWNER,MEMBER,COLLABORATOR`        |
-| thinking             | Boolean | 可选，设置为`true`启用模型的思考模式                                                                          |
+| thinking             | String | 可选，设置为`true`启用模型的思考模式                                                                          |
 
 DeepSeek 接口调用入参:
 
