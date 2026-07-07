@@ -219,8 +219,9 @@ jobs:
     // suggestions. Clearly list the problems and recommendations in a concise manner.
     { role: 'system', content: $sys_prompt },
     // `$user_prompt` default value: Please review the following code changes
+    // `pr_title` and `pr_body` are fetched from the PR metadata (only when reviewing a GitHub PR)
     // `diff_content` will be the code changes of current PR
-    { role: 'user', content: $"($user_prompt):\n($diff_content)" }
+    { role: 'user', content: $"($user_prompt):\n\nPR Title: ($pr_title)\n\nPR Description:\n($pr_body)\n($diff_content)" }
   ]
 }
 ```

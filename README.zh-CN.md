@@ -217,8 +217,9 @@ DeepSeek 接口调用入参:
     // suggestions. Clearly list the problems and recommendations in a concise manner.
     { role: 'system', content: $sys_prompt },
     // `$user_prompt` default value: Please review the following code changes
+    // `pr_title` 和 `pr_body` 从 PR 元数据中获取（仅在审查 GitHub PR 时有效）
     // `diff_content` will be the code changes of current PR
-    { role: 'user', content: $"($user_prompt):\n($diff_content)" }
+    { role: 'user', content: $"($user_prompt):\n\nPR Title: ($pr_title)\n\nPR Description:\n($pr_body)\n($diff_content)" }
   ]
 }
 ```
