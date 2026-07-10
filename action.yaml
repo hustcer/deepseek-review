@@ -14,6 +14,22 @@ branding:
   icon: 'eye'
   color: 'purple'
 
+outputs:
+  review_status:
+    description: 'The status of the code review: success, skipped, or failed.'
+  review_result:
+    description: 'The code review result text. Only set when review_status is success.'
+  model:
+    description: 'The model used for code review.'
+  content_length:
+    description: 'The Unicode width of the diff content that was reviewed.'
+  usage_prompt_tokens:
+    description: 'Number of prompt tokens consumed, if reported by the API.'
+  usage_completion_tokens:
+    description: 'Number of completion tokens consumed, if reported by the API.'
+  usage_total_tokens:
+    description: 'Total tokens consumed, if reported by the API.'
+
 inputs:
   chat-token:
     required: true

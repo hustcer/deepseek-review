@@ -9,7 +9,7 @@
 #  [√] Perform CR for changes that either include or exclude specific files
 #  [√] Support streaming output for local code review
 #  [√] Support using custom patch command to get diff content
-#  [ ] Add more action outputs
+#  [√] Add more action outputs
 # Description: A script to do code review by DeepSeek
 # REF:
 #   - https://docs.github.com/en/rest/issues/comments
@@ -194,6 +194,7 @@ export def --env deepseek-review [
              --diff-from $diff_from --include $include --exclude $exclude --patch-cmd $patch_cmd)
   let length = $content | str stats | get unicode-width
   if ($max_length != 0) and ($length > $max_length) {
+    set-action-outputs --model $model --length $length --status 'skipped' --response {}
     print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
     exit $ECODE.SUCCESS
   }
@@ -221,11 +222,13 @@ export def --env deepseek-review [
 
   let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
   if ($response | is-empty) {
+    set-action-outputs --model $model --length $length --status 'failed' --response {}
     print $'(ansi r)Oops, No response returned from ($url) ...(ansi reset)'
     exit $ECODE.SERVER_ERROR
   }
   if $debug { print $'DeepSeek Model Response:'; hr-line; $response | table -e | print }
   if ($response | describe) == 'string' {
+    set-action-outputs --model $model --length $length --status 'failed' --response {}
     print $'✖️ Code review failed！Error: '; hr-line; print $response
     exit $ECODE.SERVER_ERROR
   }
@@ -234,6 +237,7 @@ export def --env deepseek-review [
   let review = $message.content? | default ($response | get -o message.content)
   let result = ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
   if ($review | is-empty) {
+    set-action-outputs --model $model --length $length --status 'failed' --response $response
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
     exit $ECODE.SERVER_ERROR
   }
@@ -247,6 +251,8 @@ export def --env deepseek-review [
     'file' => { write-review-to-file $output $setting $result $response }
     _ => { print $'Code Review Result:'; hr-line; print $result }
   }
+
+  set-action-outputs --result $result --model $model --length $length --status 'success' --response $response
 
   if ($response.usage? | is-not-empty) {
     print $'(char nl)Token Usage:'; hr-line
@@ -299,6 +305,36 @@ def validate-temperature [temp: float] {
     exit $ECODE.INVALID_PARAMETER
   }
   $temp
+}
+
+# Set GitHub Actions step outputs for downstream consumption
+def set-action-outputs [
+  --result: string,       # Review result text (for success)
+  --model: string,        # Model used
+  --length: int,          # Content length
+  --status: string,       # 'success', 'skipped', or 'failed'
+  --response: record,     # API response (for token usage)
+] {
+  if ($env.GITHUB_OUTPUT? | is-empty) { return }
+
+  echo $"review_status=($status)" | save --append $env.GITHUB_OUTPUT
+  echo $"model=($model)" | save --append $env.GITHUB_OUTPUT
+  echo $"content_length=($length | into string)" | save --append $env.GITHUB_OUTPUT
+
+  if ($result | is-not-empty) {
+    # Use heredoc syntax for multiline output values
+    let delimiter = 'REVIEW_RESULT_EOF'
+    echo $"review_result<<($delimiter)" | save --append $env.GITHUB_OUTPUT
+    echo $result | save --append $env.GITHUB_OUTPUT
+    echo $delimiter | save --append $env.GITHUB_OUTPUT
+  }
+
+  let usage = $response.usage? | default {}
+  if ($usage | is-not-empty) {
+    echo $"usage_prompt_tokens=($usage.prompt_tokens? | default 0 | into string)" | save --append $env.GITHUB_OUTPUT
+    echo $"usage_completion_tokens=($usage.completion_tokens? | default 0 | into string)" | save --append $env.GITHUB_OUTPUT
+    echo $"usage_total_tokens=($usage.total_tokens? | default 0 | into string)" | save --append $env.GITHUB_OUTPUT
+  }
 }
 
 # Output the streaming response of review result from DeepSeek API
