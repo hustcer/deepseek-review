@@ -205,6 +205,31 @@ export def --env deepseek-review [
   } else {
     $"($user_prompt):\n($content)"
   }
+
+  let repo_info = if ($repo | is-not-empty) and ($env.GH_TOKEN? | is-not-empty) {
+    try {
+      let api_url = $'($GITHUB_API_BASE)/repos/($repo)'
+      let gh_headers = [
+        Authorization $'Bearer ($env.GH_TOKEN)'
+        Accept application/vnd.github+json
+        X-GitHub-Api-Version '2022-11-28'
+        ...$HTTP_HEADERS
+      ]
+      http get -H $gh_headers $api_url
+    }
+  }
+  let description = $repo_info | get -o description | default ''
+  let metadata = if ($repo | is-not-empty) and ($description | is-not-empty) {
+    $"Reviewing changes in ($repo). Repository description: \"($description)\"."
+  } else if ($repo | is-not-empty) {
+    $"Reviewing changes in ($repo)."
+  }
+  let user_content = if ($metadata | is-not-empty) {
+    $"($metadata)\n\n($user_content)"
+  } else {
+    $user_content
+  }
+
   let payload = {
     model: $model,
     stream: $stream,
