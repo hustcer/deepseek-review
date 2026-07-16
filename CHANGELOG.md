@@ -1,6 +1,52 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.21.0] - YYYY-MM-DD
+
+### Features
+
+- Add trigger for skipping code review (#199)
+- Review models integration (#200)
+- Trigger code review by mentioning @github-actions (#203)
+- Interactive author to chat conversation integration (#211)
+- Implement `submit-review-to-pr` function (#214)
+- Skip code review on locked pull requests (#222)
+
+### Bug Fixes
+
+- Fix workflow error for Nu 0.111 (#197)
+- Prevent patch-cmd injection and fix glob/streaming/release bugs
+- Reject git options in `is-safe-git`; anchor glob path matching
+- Update models to newest in example configuration (#229)
+- Resolve Nu module path in container jobs (#234)
+- Fix tests error for Nu nightly (#245)
+
+### Documentation
+
+- Add a section for GitHub Models (#230)
+
+### Miscellaneous Tasks
+
+- Add timeout to setup-deepseek-review job (#237)
+- Update README
+- Do not publish test summary for forked repos
+- Improve README (#225)
+- Add test for double-star excludes root and nested paths
+- Update README docs and format with oxfmt
+- Use deepseek-v4-pro as the default review model
+- Update supported DeepSeek models (#207)
+- Align README files for consistency (#220)
+- Skip CR on draft PRs (#247)
+- Update BASE_URL & CHAT_MODEL in tests (#248)
+
+### Deps
+
+- Upgrade Nu to 0.111 (#198)
+- Upgrade Nu to 0.112.2 & hustcer/setup-nu to v3.23 (#202)
+- Bump actions to v7 (#231)
+- Upgrade hustcer/setup-nu to v3.25
+- Upgrade Nu to 0.113.1
+
 ## [1.20.0] - 2026-01-23
 
 ### Bug Fixes
