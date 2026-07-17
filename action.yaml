@@ -63,7 +63,7 @@ inputs:
     description: 'Comma-separated author_association values allowed to trigger review via PR comment. Default: OWNER,MEMBER,COLLABORATOR.'
   thinking:
     required: false
-    default: false
+    default: 'false'
     description: "Enables thinking mode for the review model, which may increase accuracy. False by default to increase compatibility with other APIs."
 
 runs:
