@@ -61,6 +61,10 @@ inputs:
     required: false
     default: 'OWNER,MEMBER,COLLABORATOR'
     description: 'Comma-separated author_association values allowed to trigger review via PR comment. Default: OWNER,MEMBER,COLLABORATOR.'
+  use-conversation:
+    required: false
+    default: 'true'
+    description: 'Whether to use conversation mode for code review. If true, the model will fetch conversation from the pull request.'
 
 runs:
   using: 'composite'
@@ -86,6 +90,7 @@ runs:
         TEMPERATURE_INPUT: ${{ inputs.temperature }}
         REPO_INPUT: ${{ github.repository }}
         ALLOWED_ASSOCIATIONS_INPUT: ${{ inputs.allowed-associations }}
+        USE_CONVERSATION_INPUT: ${{ inputs.use-conversation }}
       run: |
         let event = (open $env.GITHUB_EVENT_PATH)
         let pr = $event.pull_request?.number? | default $event.issue?.number? | default '' | into string
@@ -137,5 +142,6 @@ runs:
             --include $env.INCLUDE_PATTERNS_INPUT
             --exclude $env.EXCLUDE_PATTERNS_INPUT
             --comment $env.COMMENT_BODY_INPUT
+            --use-conversation $env.USE_CONVERSATION_INPUT
           )
         "

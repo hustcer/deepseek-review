@@ -32,7 +32,9 @@ settings:
   # Include changes in the following file patterns
   include-patterns: ''
   # Exclude changes in the following file patterns
+  # Whether the model should read from a pull request conversation.
   exclude-patterns: 'pnpm-lock.yaml,package-lock.json,*.lock'
+  use-conversation: 'true'
 
 # Multiple providers could be defined, select the one by name in 'settings.provider'
 # This way you could switch between different predefined providers easily

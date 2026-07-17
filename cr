@@ -28,6 +28,7 @@ def main [
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
   --config(-C): string      # Config file path, default to `config.yml`
   --output(-o): string,     # Output file path
+  --use-conversation(-O): string, # Whether the model should read from the pull request conversation.
 ] {
 
   check-nushell

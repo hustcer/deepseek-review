@@ -35,3 +35,4 @@ jobs:
           model: 'deepseek-v4-pro'
           watch-mention: '/docker-cr'
           chat-token: ${{ secrets.CHAT_TOKEN }}
+          use-conversation: 'true'

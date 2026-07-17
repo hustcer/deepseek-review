@@ -40,6 +40,7 @@ jobs:
           watch-mention: '@github-actions'
           # Store the chat token in GitHub Secrets, don't expose it in the workflow file
           chat-token: ${{ secrets.CHAT_TOKEN }}
+          use-conversation: 'true'
           sys-prompt: >
             As a senior Nushell engineer, perform comprehensive script review with focus on:
 
