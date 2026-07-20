@@ -118,7 +118,7 @@ export def generate-exclude-regex [patterns: list<string>] {
 #  - git diff 2393375 71f5a31 nu/*
 #  - git diff 2393375 71f5a31 :!nu/*
 export def is-safe-git [cmd: string] {
-  let normalized_cmd = ($cmd | str trim | str downcase)
+  let normalized_cmd = ($cmd | str trim | str lowercase)
 
   # Reject embedded newlines/CR outright. `nu -c`/a shell would treat a second
   # line as its own command, and line-oriented matchers (see below) can mask it.

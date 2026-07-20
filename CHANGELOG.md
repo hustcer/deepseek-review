@@ -1,6 +1,47 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.21] - 2026-07-20
+
+### Bug Fixes
+
+- Try to fix workflow error for Nu 0.111 (#197)
+- Prevent patch-cmd injection and fix glob/streaming/release bugs
+- Reject git options in is-safe-git; anchor glob path matching
+- Update models to newest in example configuration (#229)
+- Resolve Nu module path in container jobs (#234)
+- Fix tests error for Nu nightly (#245)
+
+### Documentation
+
+- Add a section for github models (#230)
+
+### Features
+
+- Skip code review on locked pull requests (#222)
+
+### Miscellaneous Tasks
+
+- Use deepseek-v4-pro as the default review model
+- Update README docs and format with oxfmt
+- Add test for double-star excludes root and nested paths
+- Do not publish test summary for forked repos
+- Update README
+- Skip CR on draft PRs (#247)
+- Use `str lowercase` instead of `str downcase` (#252)
+
+### Testing
+
+- Update BASE_URL & CHAT_MODEL (#248)
+
+### Deps
+
+- Upgrade Nu to 0.111 (#198)
+- Upgrade Nu to 0.112.2 & hustcer/setup-nu to v3.23 (#202)
+- Upgrade Nu to 0.113.1
+- Upgrade hustcer/setup-nu to v3.25
+- Upgrade nushell version to 0.114.1 with hustcer/setup-nu@v3.25 (#254)
+
 ## [1.20.0] - 2026-01-23
 
 ### Bug Fixes
