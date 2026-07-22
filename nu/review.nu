@@ -42,8 +42,8 @@ const IGNORED_MESSAGES = {
 # When make http post pretend to be curl, it gets a response just as quickly as curl.
 const HTTP_HEADERS = [User-Agent curl/8.9]
 
-# Define Header Gloablly
-def gh-headers [] {
+# Define Header Globally
+export def gh-headers [] {
   [
     Authorization $'Bearer ($env.GH_TOKEN)'
     Accept application/vnd.github+json
