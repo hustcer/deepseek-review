@@ -53,6 +53,6 @@ code-review *OPTIONS:
 test:
   @use $'($nu.default-config-dir)/lib/nutest' *; run-tests
 
-# Plugins need to be registered only once after nu v0.61
+# Plugins need to be added only once; run `just _setup` to add nu_plugin_query
 _setup:
-  @register -e json {{ join(NU_DIR, _query_plugin) }}
+  @plugin add {{ join(NU_DIR, _query_plugin) }}
