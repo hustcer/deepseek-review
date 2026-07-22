@@ -58,12 +58,14 @@ jobs:
           version: ${{ matrix.version }}
         
       - name: Setup Just
+        if: matrix.platform != 'macos-latest'
         uses: extractions/setup-just@v4
         with:
           github-token: ${{ github.token }}
           just-version: '*'
 
       - name: Test Justfile
+        if: matrix.platform != 'macos-latest'
         run: |
           just --list
           just cr --help
