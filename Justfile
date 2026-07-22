@@ -51,7 +51,11 @@ code-review *OPTIONS:
 
 # Run the test cases locally by nutest
 test:
-  @use $'($nu.default-config-dir)/lib/nutest' *; run-tests
+  @if not ('{{ join(DEEPSEEK_REVIEW_PATH, "nutest", "nutest", "mod.nu") }}' | path exists) { \
+    print 'Cloning nutest ...'; \
+    git clone --depth 1 https://github.com/vyadh/nutest.git '{{ join(DEEPSEEK_REVIEW_PATH, "nutest") }}' \
+  }
+  @use '{{ join(DEEPSEEK_REVIEW_PATH, "nutest", "nutest") }}' *; run-tests --path tests
 
 # Plugins need to be added only once; run `just _setup` to add nu_plugin_query
 _setup:
