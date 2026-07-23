@@ -177,3 +177,17 @@ def 'get-diff：get patch from remote PR with exclude & include should work' [] 
   let patch = get-diff --pr-number 93 --repo $repo --exclude **/*.yaml,*.md --include **/*.nu
   assert equal ($patch | get-uw) 2576
 }
+
+@test
+def 'get-diff：should read diff from file with --diff-file' [] {
+  let content = get-diff --diff-file tests/resources/diff.patch
+  assert ($content | is-not-empty)
+  assert ($content | str contains 'diff --git')
+}
+
+@test
+def 'get-diff：--diff-file takes priority over --patch-cmd' [] {
+  let content = get-diff --diff-file tests/resources/diff.patch --patch-cmd 'git show HEAD'
+  assert ($content | is-not-empty)
+  assert ($content | str contains 'diff --git')
+}
