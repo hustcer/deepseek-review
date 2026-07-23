@@ -51,16 +51,11 @@ def get-diff-content [
   } else if ($diff_from | is-not-empty) {
     get-ref-diff $diff_from --diff-to $diff_to
   } else if ($patch_file | is-not-empty) {
-    let patch_path = if ($patch_file | str starts-with '/') {
-      $patch_file
-    } else {
-      $"($local_repo)/($patch_file)"
-    }
-    if not ($patch_path | path exists) {
-      print $'(ansi r)The patch file ($patch_path) does not exist, bye...(ansi reset)(char nl)'
+    if not ($patch_file | path exists) {
+      print $'(ansi r)The patch file ($patch_file) does not exist, bye...(ansi reset)(char nl)'
       exit $ECODE.CONDITION_NOT_SATISFIED
     }
-    open --raw $patch_path
+    open --raw $patch_file
   } else if not (git-check $local_repo --check-repo=1) {
     print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
     exit $ECODE.CONDITION_NOT_SATISFIED
