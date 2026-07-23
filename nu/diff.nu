@@ -51,7 +51,16 @@ def get-diff-content [
   } else if ($diff_from | is-not-empty) {
     get-ref-diff $diff_from --diff-to $diff_to
   } else if ($diff_file | is-not-empty) {
-    open --raw $diff_file
+    let diff_path = if ($diff_file | str starts-with '/') {
+      $diff_file
+    } else {
+      $"($local_repo)/($diff_file)"
+    }
+    if not ($diff_path | path exists) {
+      print $'(ansi r)The diff file ($diff_path) does not exist, bye...(ansi reset)(char nl)'
+      exit $ECODE.CONDITION_NOT_SATISFIED
+    }
+    open --raw $diff_path
   } else if not (git-check $local_repo --check-repo=1) {
     print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
     exit $ECODE.CONDITION_NOT_SATISFIED
