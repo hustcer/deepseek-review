@@ -50,7 +50,7 @@ def get-diff-content [
     get-pr-diff --repo $repo $pr_number
   } else if ($diff_from | is-not-empty) {
     get-ref-diff $diff_from --diff-to $diff_to
-  } else if ($diff-file | is-not-empty) {
+  } else if ($diff_file | is-not-empty) {
     open --raw $diff_file
   } else if not (git-check $local_repo --check-repo=1) {
     print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
