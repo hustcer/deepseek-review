@@ -255,7 +255,7 @@ Flags:
   -f, --diff-from <string>: Git diff starting commit SHA
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
-  -D, --diff-file <string>: Location of the diff file to review, for local CR only
+  -F, --patch-file <string>: Location of the patch file to review, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var

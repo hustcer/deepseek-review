@@ -127,7 +127,7 @@ export def --env deepseek-review [
   --diff-to(-t): string,    # Git diff ending commit SHA
   --diff-from(-f): string,  # Git diff starting commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
-  --diff-file(-D): string,  # Location of the diff file to review, for local CR only
+  --patch-file(-F): string,  # Location of the patch file to review, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
@@ -166,7 +166,7 @@ export def --env deepseek-review [
     diff_to: $diff_to,
     diff_from: $diff_from,
     patch_cmd: $patch_cmd,
-    diff_file: $diff_file,
+    patch_file: $patch_file,
     pr_number: $pr_number,
     max_length: $max_length,
     local_repo: $local_repo,
@@ -194,7 +194,7 @@ export def --env deepseek-review [
   let content = (
     get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to
              --diff-from $diff_from --include $include --exclude $exclude --patch-cmd $patch_cmd
-             --diff-file $diff_file)
+             --patch-file $patch_file)
   let length = $content | str stats | get unicode-width
   if ($max_length != 0) and ($length > $max_length) {
     print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'

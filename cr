@@ -17,7 +17,7 @@ def main [
   --diff-from(-f): string,  # Git diff starting commit SHA
   --diff-to(-t): string,    # Git diff ending commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
-  --diff-file(-D): string,  # Location of the diff file to review, for local CR only
+  --patch-file(-F): string,  # Location of the patch file to review, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
@@ -46,7 +46,7 @@ def main [
       --diff-to=$diff_to
       --diff-from=$diff_from
       --patch-cmd=$patch_cmd
-      --diff-file=$diff_file
+      --patch-file=$patch_file
       --pr-number=$pr_number
       --max-length=$max_length
       --sys-prompt=$sys_prompt

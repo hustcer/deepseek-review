@@ -18,12 +18,12 @@ export def get-diff [
   --include: string,    # Comma separated file patterns to include in the code review
   --exclude: string,    # Comma separated file patterns to exclude in the code review
   --patch-cmd: string,  # The `git show` or `git diff` command to get the diff content
-  --diff-file: string,  # Location of the diff file to review
+  --patch-file: string,  # Location of the patch file to review
 ] {
   let content = (
     get-diff-content --repo $repo --pr-number $pr_number --patch-cmd $patch_cmd
       --diff-to $diff_to --diff-from $diff_from --include $include --exclude $exclude
-      --diff-file $diff_file)
+      --patch-file $patch_file)
 
   if ($content | is-empty) {
     print $'(ansi g)Nothing to review.(ansi reset)'
@@ -42,7 +42,7 @@ def get-diff-content [
   --include: string,    # Comma separated file patterns to include in the code review
   --exclude: string,    # Comma separated file patterns to exclude in the code review
   --patch-cmd: string,  # The `git show` or `git diff` command to get the diff content
-  --diff-file: string,  # Location of the diff file to review
+  --patch-file: string,  # Location of the patch file to review
 ] {
   let local_repo = $env.PWD
 
@@ -50,17 +50,17 @@ def get-diff-content [
     get-pr-diff --repo $repo $pr_number
   } else if ($diff_from | is-not-empty) {
     get-ref-diff $diff_from --diff-to $diff_to
-  } else if ($diff_file | is-not-empty) {
-    let diff_path = if ($diff_file | str starts-with '/') {
-      $diff_file
+  } else if ($patch_file | is-not-empty) {
+    let patch_path = if ($patch_file | str starts-with '/') {
+      $patch_file
     } else {
-      $"($local_repo)/($diff_file)"
+      $"($local_repo)/($patch_file)"
     }
-    if not ($diff_path | path exists) {
-      print $'(ansi r)The diff file ($diff_path) does not exist, bye...(ansi reset)(char nl)'
+    if not ($patch_path | path exists) {
+      print $'(ansi r)The patch file ($patch_path) does not exist, bye...(ansi reset)(char nl)'
       exit $ECODE.CONDITION_NOT_SATISFIED
     }
-    open --raw $diff_path
+    open --raw $patch_path
   } else if not (git-check $local_repo --check-repo=1) {
     print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
     exit $ECODE.CONDITION_NOT_SATISFIED
