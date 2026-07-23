@@ -22,7 +22,8 @@ export def get-diff [
 ] {
   let content = (
     get-diff-content --repo $repo --pr-number $pr_number --patch-cmd $patch_cmd
-      --diff-to $diff_to --diff-from $diff_from --include $include --exclude $exclude)
+      --diff-to $diff_to --diff-from $diff_from --include $include --exclude $exclude
+      --diff-file $diff_file)
 
   if ($content | is-empty) {
     print $'(ansi g)Nothing to review.(ansi reset)'
@@ -49,10 +50,12 @@ def get-diff-content [
     get-pr-diff --repo $repo $pr_number
   } else if ($diff_from | is-not-empty) {
     get-ref-diff $diff_from --diff-to $diff_to
+  } else if ($diff-file | is-not-empty) {
+    open --raw $diff_file
   } else if not (git-check $local_repo --check-repo=1) {
     print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
     exit $ECODE.CONDITION_NOT_SATISFIED
-  } else if ($patch_cmd | is-not-empty) and ($diff-file | is-empty) {
+  } else if ($patch_cmd | is-not-empty) {
     get-patch-diff $patch_cmd
   } else {
     git diff
