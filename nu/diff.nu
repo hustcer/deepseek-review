@@ -18,6 +18,7 @@ export def get-diff [
   --include: string,    # Comma separated file patterns to include in the code review
   --exclude: string,    # Comma separated file patterns to exclude in the code review
   --patch-cmd: string,  # The `git show` or `git diff` command to get the diff content
+  --diff-file: string,  # Location of the diff file to review
 ] {
   let content = (
     get-diff-content --repo $repo --pr-number $pr_number --patch-cmd $patch_cmd
@@ -40,6 +41,7 @@ def get-diff-content [
   --include: string,    # Comma separated file patterns to include in the code review
   --exclude: string,    # Comma separated file patterns to exclude in the code review
   --patch-cmd: string,  # The `git show` or `git diff` command to get the diff content
+  --diff-file: string,  # Location of the diff file to review
 ] {
   let local_repo = $env.PWD
 
@@ -50,7 +52,7 @@ def get-diff-content [
   } else if not (git-check $local_repo --check-repo=1) {
     print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
     exit $ECODE.CONDITION_NOT_SATISFIED
-  } else if ($patch_cmd | is-not-empty) {
+  } else if ($patch_cmd | is-not-empty) and ($diff-file | is-empty) {
     get-patch-diff $patch_cmd
   } else {
     git diff
