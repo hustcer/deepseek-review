@@ -127,7 +127,7 @@ export def --env deepseek-review [
   --diff-to(-t): string,    # Git diff ending commit SHA
   --diff-from(-f): string,  # Git diff starting commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
-  --diff-file: string,      # Location of the diff file to review
+  --diff-file(-D): string,  # Location of the diff file to review, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
