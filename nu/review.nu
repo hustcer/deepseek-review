@@ -193,7 +193,8 @@ export def --env deepseek-review [
 
   let content = (
     get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to
-             --diff-from $diff_from --include $include --exclude $exclude --patch-cmd $patch_cmd)
+             --diff-from $diff_from --include $include --exclude $exclude --patch-cmd $patch_cmd
+             --diff-file $diff_file)
   let length = $content | str stats | get unicode-width
   if ($max_length != 0) and ($length > $max_length) {
     print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
