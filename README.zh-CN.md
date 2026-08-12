@@ -210,6 +210,8 @@ DeepSeek 接口调用入参:
   model: $model,
   stream: false,
   temperature: $temperature,
+  // 只有传入 `--log-thinking` 时才启用 thinking, 默认关闭
+  thinking: { type: 'disabled' },
   messages: [
     // `$sys_prompt` default value: You are a professional code review assistant responsible for
     // analyzing code changes in GitHub Pull Requests. Identify potential issues such as code
@@ -261,6 +263,7 @@ Flags:
   -i, --include <string>: Comma separated file patterns to include in the code review
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
   -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `0.3`
+  --log-thinking: 启用模型的思考并将思考内容写入日志文件，默认关闭
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command

@@ -19,6 +19,10 @@ settings:
   max-length: 0
   # The temperature of the model, The value should be between 0 and 2, with default value 0.3
   temperature: 0.3
+  # Whether to enable the thinking of the model and write it to a log file
+  # Default value is false, thinking/reasoning is disabled by default
+  # When enabled, the reasoning content goes to a `<output>.thinking.log` file instead of the review result
+  log-thinking: false
   # The user prompt name to use for DeepSeek API select from 'prompts.user'
   user-prompt: 'default'
   # The system prompt name to use for DeepSeek API select from 'prompts.system'

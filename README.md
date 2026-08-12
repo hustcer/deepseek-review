@@ -212,6 +212,8 @@ jobs:
   model: $model,
   stream: false,
   temperature: $temperature,
+  // `thinking` is enabled only when `--log-thinking` is passed, disabled by default
+  thinking: { type: 'disabled' },
   messages: [
     // `$sys_prompt` default value: You are a professional code review assistant responsible for
     // analyzing code changes in GitHub Pull Requests. Identify potential issues such as code
@@ -264,6 +266,7 @@ Flags:
   -i, --include <string>: Comma separated file patterns to include in the code review
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
   -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `0.3`
+  --log-thinking: Enable the model thinking and write it to a log file, disabled by default
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command

@@ -136,6 +136,7 @@ export def --env deepseek-review [
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
+  --log-thinking: bool,     # Enable the model thinking and write it to a log file, disabled by default
   --comment: string,       # Additional comment text from a PR comment mention trigger
 ]: nothing -> nothing {
 
@@ -152,6 +153,7 @@ export def --env deepseek-review [
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
   let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
+  let log_thinking = try { $log_thinking | default $env.LOG_THINKING? | default false | into bool } catch { false }
   # Determine output mode
   let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }
 
@@ -213,11 +215,11 @@ export def --env deepseek-review [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $user_content }
     ],
-    thinking: { type: 'disabled' }
+    thinking: { type: (if $log_thinking { 'enabled' } else { 'disabled' }) }
   }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
-  if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
+  if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug --log-thinking=$log_thinking; return }
 
   let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
   if ($response | is-empty) {
@@ -232,12 +234,16 @@ export def --env deepseek-review [
   let message = $response | get -o choices.0.message
   let reason = $message | coalesce-reasoning
   let review = $message.content? | default ($response | get -o message.content)
-  let result = ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
   if ($review | is-empty) {
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
     exit $ECODE.SERVER_ERROR
   }
-  let result = if ($reason | is-empty) { $review } else { $result }
+  let result = if $log_thinking {
+    if ($reason | is-not-empty) { write-thinking-log $reason $output }
+    $review
+  } else if ($reason | is-empty) { $review } else {
+    ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
+  }
 
   match $output_mode {
     'action' => {
@@ -306,11 +312,13 @@ def streaming-output [
   url: string,        # The Full DeepSeek API URL
   payload: record,    # The payload to send to DeepSeek API
   --debug,            # Debug mode
+  --log-thinking: bool, # Whether to write the thinking/reasoning content to a log file
   --headers: list,    # The headers to send to DeepSeek API
 ] {
   print -n (char nl)
   kv set content 0
   kv set reasoning 0
+  if $log_thinking { kv set reasoning-content '' }
   http post -e -H $headers -t application/json $url $payload
     | tee {
         let res = $in
@@ -330,14 +338,27 @@ def streaming-output [
         if $debug { $last | to json | kv set last-reply }
         $last | get -o choices.0.delta | default ($last | get -o message) | if ($in | is-not-empty) {
           let delta = $in
-          if ($delta | coalesce-reasoning | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
-          if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
-          if ($delta.content? | is-not-empty) { kv set content ((kv get content) + 1) }
+          let reason = $delta | coalesce-reasoning
+          let content = $delta.content? | default ''
+          if $log_thinking {
+            if ($reason | is-not-empty) { kv set reasoning-content ((kv get reasoning-content) + $reason) }
+          } else {
+            if ($reason | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
+            if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
+          }
+          if ($content | is-not-empty) { kv set content ((kv get content) + 1) }
           if (kv get content) == 1 { print $'(char nl)Review Details:'; hr-line }
-          print -n ($delta | coalesce-reasoning | default ($delta.content? | default ''))
+          if $log_thinking {
+            if ($content | is-not-empty) { print -n $content }
+          } else {
+            print -n ($reason | default $content)
+          }
         }
       }
 
+  if $log_thinking and ((kv get reasoning-content | default '') | is-not-empty) {
+    write-thinking-log (kv get reasoning-content) ''
+  }
   if $debug and (kv get last-reply | is-not-empty) {
     print $'(char nl)(char nl)Model & Token Usage:'; hr-line
     kv get last-reply | from json | select -o model usage | table -e | print
@@ -364,6 +385,28 @@ def parse-line [] {
 def coalesce-reasoning [] {
   let msg = $in
   $msg.reasoning_content? | default $msg.reasoning?
+}
+
+# Write the thinking/reasoning content to a log file
+def write-thinking-log [content: string, output: string] {
+  let log_file = if ($output | is-not-empty) {
+    let stem = $output | str replace -r '\.md$' ''
+    $'($stem).thinking.log'
+  } else {
+    'thinking.log'
+  }
+  let sections = [
+    '# DeepSeek Thinking Log', ''
+    $"Generated at: (date now | format date '%Y/%m/%d %H:%M:%S')", ''
+    $content
+  ]
+  try {
+    ($sections | str join (char nl)) | save --force $log_file
+    print $'Thinking details saved to (ansi g)($log_file)(ansi reset)'
+  } catch {|err|
+    print $'(ansi r)Failed to save thinking log: (ansi reset)'
+    $err | table -e | print
+  }
 }
 
 alias main = deepseek-review

@@ -26,6 +26,7 @@ def main [
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
+  --log-thinking: bool,     # Enable the model thinking and write it to a log file, disabled by default
   --config(-C): string      # Config file path, default to `config.yml`
   --output(-o): string,     # Output file path
 ] {
@@ -50,6 +51,7 @@ def main [
       --sys-prompt=$sys_prompt
       --user-prompt=$user_prompt
       --temperature=$temperature
+      --log-thinking=$log_thinking
       --include=($include | default $env.INCLUDE_PATTERNS?)
       --exclude=($exclude | default $env.EXCLUDE_PATTERNS?)
   )

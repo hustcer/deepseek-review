@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Features
+
+- Add `--log-thinking` option to enable the model thinking and write it to a log file, disabled by default
+
 ## [1.21] - 2026-07-20
 
 ### Bug Fixes
