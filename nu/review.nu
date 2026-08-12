@@ -110,7 +110,6 @@ def is-pr-locked [
 
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-v4-flash',
-  TEMPERATURE: 0.3,
   BASE_URL: 'https://api.deepseek.com',
   USER_PROMPT: 'Please review the following code changes:',
   SYS_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.',
@@ -135,7 +134,7 @@ export def --env deepseek-review [
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
-  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
+  --temperature(-T): float, # Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   --comment: string,       # Additional comment text from a PR comment mention trigger
 ]: nothing -> nothing {
 
@@ -151,7 +150,9 @@ export def --env deepseek-review [
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
-  let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
+  # temperature is only set when explicitly specified via flag / TEMPERATURE env / config.yml,
+  # otherwise the payload omits the field and the provider's default applies
+  let temperature = try { $temperature | default $env.TEMPERATURE? | into float } catch { null }
   # Determine output mode
   let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }
 
@@ -208,13 +209,13 @@ export def --env deepseek-review [
   let payload = {
     model: $model,
     stream: $stream,
-    temperature: $temperature,
     messages: [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $user_content }
     ],
     thinking: { type: 'disabled' }
   }
+  let payload = if $temperature == null { $payload } else { $payload | insert temperature $temperature }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
   if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
@@ -293,7 +294,8 @@ def validate-token [token?: string, --pr-number: string, --repo: string] {
 }
 
 # Validate the temperature value
-def validate-temperature [temp: float] {
+def validate-temperature [temp?: float] {
+  if $temp == null { return }
   if ($temp < 0) or ($temp > 2) {
     print $'(ansi r)Invalid temperature value, should be in the range of 0 to 2.(ansi reset)'
     exit $ECODE.INVALID_PARAMETER

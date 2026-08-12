@@ -197,7 +197,7 @@ jobs:
 | max-length           | Int    | Optional, Maximum length (Unicode width) of the content for review. If the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
 | sys-prompt           | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below                                                                   |
 | user-prompt          | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below                                                                    |
-| temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. Default value is `0.3`                                                         |
+| temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. If not set, the temperature parameter is omitted and the provider's default is used                                    |
 | include-patterns     | String | Optional, Comma-separated file patterns to include in the code review. No default                                                                                     |
 | exclude-patterns     | String | Optional, Comma-separated file patterns to exclude from the code review. Defaults to `pnpm-lock.yaml,package-lock.json,*.lock`                                        |
 | github-token         | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`.                                                      |
@@ -211,6 +211,7 @@ jobs:
   // `$model` default value: deepseek-v4-flash
   model: $model,
   stream: false,
+  // `temperature` is omitted unless explicitly set (flag / TEMPERATURE env / config.yml); the provider default applies
   temperature: $temperature,
   messages: [
     // `$sys_prompt` default value: You are a professional code review assistant responsible for
@@ -263,7 +264,7 @@ Flags:
   -u, --user-prompt <string>: Default to $DEFAULT_OPTIONS.USER_PROMPT,
   -i, --include <string>: Comma separated file patterns to include in the code review
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
-  -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `0.3`
+  -T, --temperature <float>: Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command
