@@ -3,6 +3,7 @@ use std/assert
 use std/testing *
 use ../nu/diff.nu [get-diff]
 use ../nu/util.nu [is-safe-git, prepare-awk, generate-include-regex, generate-exclude-regex]
+use ../nu/review.nu [deepseek-review]
 
 # Get the unicode width of the input string
 def get-uw [] { $in | str stats | get unicode-width }
@@ -176,4 +177,24 @@ def 'get-diff：get patch from remote PR with exclude & include should work' [] 
   if ($env.GH_TOKEN | is-empty) { print '$env.GH_TOKEN is empty'; return }
   let patch = get-diff --pr-number 93 --repo $repo --exclude **/*.yaml,*.md --include **/*.nu
   assert equal ($patch | get-uw) 2576
+}
+
+# Smoke test: both entry points must parse. The module import above already
+# fails this file's load when nu/review.nu breaks (exit 1 even without --fail);
+# the subprocess assert below covers `cr`, whose parse error would otherwise be
+# invisible because nothing in the suite imports it. Guards against regressions
+# like `--flag: bool` annotations (see PR #261).
+@test
+def 'deepseek-review：module parses and registers entry command with expected flags' [] {
+  let entry = scope commands | where name == 'deepseek-review' | get -o 0
+  assert ($entry | is-not-empty)
+  let flags = $entry.signatures.nothing | where parameter_type == 'named' | get -o parameter_name
+  assert ('temperature' in $flags)
+}
+
+@test
+def 'cr：entry script must parse' [] {
+  let result = (^$nu.current-exe -n -c 'source cr; print PARSE-OK' | complete)
+  assert equal $result.exit_code 0
+  assert ($result.stdout | str contains 'PARSE-OK')
 }
