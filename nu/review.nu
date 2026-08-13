@@ -324,32 +324,54 @@ def streaming-output [
   print -n (char nl)
   kv set content 0
   kv set reasoning 0
-  http post -e -H $headers -t application/json $url $payload
-    | tee {
-        let res = $in
-        let type = $res | describe
-        let record_error = $type =~ '^record'
-        let other_error  = $type =~ '^string' and $res !~ 'data: ' and $res !~ 'done'
-        if $record_error or $other_error {
-          $res | table -e | print
-          exit $ECODE.SERVER_ERROR
+  # `for`, not `| each` — `parse-line` aborts the review with `exit` on a
+  # malformed chunk, and Nushell does not propagate `exit` out of a closure
+  # ("Exit doesn't catch internally"): the process ended up with a bare exit
+  # code 1 plus an internal error dump instead of SERVER_ERROR. `for` iterates
+  # the response stream just as lazily, so output still appears as it arrives.
+  for line in (
+    http post -e -H $headers -t application/json $url $payload
+      | tee {
+          let res = $in
+          let type = $res | describe
+          let record_error = $type =~ '^record'
+          let other_error  = $type =~ '^string' and $res !~ 'data: ' and $res !~ 'done'
+          if $record_error or $other_error {
+            $res | table -e | print
+            exit $ECODE.SERVER_ERROR
+          }
         }
+      | try { lines } catch { print $'(ansi r)Error Happened ...(ansi reset)'; exit $ECODE.SERVER_ERROR }
+  ) {
+    if ($line | is-empty) { continue }
+    # An SSE line starting with `:` is a comment — heartbeats such as
+    # `: keep-alive` or `: OPENROUTER PROCESSING`. They carry no payload and
+    # must be dropped before `parse-line`, which would otherwise abort the whole
+    # review with SERVER_ERROR. The `$IGNORED_MESSAGES` lookup below is an exact
+    # whole line match, so it never caught the ones whose text varies.
+    if ($line | str starts-with ':') { continue }
+    if ($IGNORED_MESSAGES | get -o $line | default false) { continue }
+    let last = $line | parse-line
+    if $debug { $last | to json | kv set last-reply }
+    let delta = $last | get -o choices.0.delta | default ($last | get -o message)
+    if ($delta | is-not-empty) {
+      let reason = $delta | coalesce-reasoning
+      let text = $delta.content? | default ''
+      # Print each banner once, when its counter first reaches 1. Testing the
+      # counter outside the increment re-printed the banner on every later
+      # chunk whenever the count stayed at exactly 1 — which is what happens
+      # when a provider sends its reasoning as a single chunk.
+      if ($reason | is-not-empty) {
+        kv set reasoning ((kv get reasoning) + 1)
+        if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
       }
-    | try { lines } catch { print $'(ansi r)Error Happened ...(ansi reset)'; exit $ECODE.SERVER_ERROR }
-    | each {|line|
-        if ($line | is-empty) { return }
-        if ($IGNORED_MESSAGES | get -o $line | default false) { return }
-        let $last = $line | parse-line
-        if $debug { $last | to json | kv set last-reply }
-        $last | get -o choices.0.delta | default ($last | get -o message) | if ($in | is-not-empty) {
-          let delta = $in
-          if ($delta | coalesce-reasoning | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
-          if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
-          if ($delta.content? | is-not-empty) { kv set content ((kv get content) + 1) }
-          if (kv get content) == 1 { print $'(char nl)Review Details:'; hr-line }
-          print -n ($delta | coalesce-reasoning | default ($delta.content? | default ''))
-        }
+      if ($text | is-not-empty) {
+        kv set content ((kv get content) + 1)
+        if (kv get content) == 1 { print $'(char nl)Review Details:'; hr-line }
       }
+      print -n ($reason | default $text)
+    }
+  }
 
   if $debug and (kv get last-reply | is-not-empty) {
     print $'(char nl)(char nl)Model & Token Usage:'; hr-line
