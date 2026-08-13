@@ -9,6 +9,16 @@ use ../nu/common.nu [is-installed]
 
 const MOCK = 'tests/resources/mock-chat-server.mjs'
 
+# Run the e2e tests one at a time: every test spawns a node mock plus a
+# `deepseek-review` subprocess, and on the GitHub Windows runners concurrent
+# `job spawn`s of node intermittently fail to start — the log never gets its
+# `PORT=` line, the review then hits an empty port and fails downstream. The
+# suite is short enough that serial execution costs little.
+# [strategy]
+def e2e-serial []: nothing -> record {
+  { threads: 1 }
+}
+
 # Start the mock in the requested mode and wait for it to publish its port
 def start-mock [dir: string, mode: string, dump?: string] {
   let log = $dir | path join $'($mode)-(random chars -l 6).log'
@@ -23,6 +33,13 @@ def start-mock [dir: string, mode: string, dump?: string] {
       $port = ($text | parse -r 'PORT=(?<p>\d+)' | get 0.p)
       break
     }
+  }
+  if ($port | is-empty) {
+    # Fail with the mock's own output instead of a mysterious downstream
+    # connection error — an empty log means the job never started, anything
+    # else shows what node printed before dying.
+    let tail = try { open -r $log | str trim } catch { '(log unreadable)' }
+    error make { msg: $'mock server ($mode) did not publish PORT= in 10s; log: ($tail)' }
   }
   { job: $job, port: $port, log: $log }
 }
