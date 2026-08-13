@@ -217,11 +217,15 @@ def 'constants：GitHub API base and no-token tip are well formed' [] {
 @test
 def 'has-ref：resolves branches, short SHAs and rejects garbage' [] {
   # CI checks out a single branch at depth 1, so a hardcoded branch name would
-  # fail there: resolve the branch actually checked out instead.
-  let branch = git branch --show-current | str trim
+  # fail there. PR checkouts are DETACHED (the merge commit), where no branch
+  # is checked out at all — so the branch assertion only runs when HEAD is
+  # actually attached to one.
+  let branch = (do { git symbolic-ref -q --short HEAD | complete } | get stdout | str trim)
   assert equal (has-ref HEAD) true
-  assert equal (has-ref $"refs/heads/($branch)") true
   assert equal (has-ref (git rev-parse --short HEAD | str trim)) true
+  if ($branch | is-not-empty) {
+    assert equal (has-ref $"refs/heads/($branch)") true
+  }
   assert equal (has-ref 'no/such/ref') false
   assert equal (has-ref '') false
 }
