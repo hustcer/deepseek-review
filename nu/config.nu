@@ -27,13 +27,16 @@ def check-prompts [options: record] {
 }
 
 # Check if the specified type of prompt key exists in the config.yml file
+# NOTE: every top level key is read optionally (`?`), a config file that omits
+# `settings` or `prompts` entirely should get the friendly hint below instead of
+# a raw `Cannot find column` error from Nushell.
 def check-prompt [options: record, type: string] {
-  let prompt_key = $options.settings | get -o $'($type)-prompt' | default ''
+  let prompt_key = $options.settings? | default {} | get -o $'($type)-prompt' | default ''
   if ($prompt_key | is-empty) {
     print $'(ansi r)The ($type) prompt key is missing in `settings.($type)-prompt` config.yml file.(ansi reset)'
     exit $ECODE.INVALID_PARAMETER
   }
-  let prompt = $options.prompts | get -o $type
+  let prompt = $options.prompts? | default {} | get -o $type
     | default []
     | where name == $prompt_key
     | get -o 0.prompt
@@ -46,12 +49,13 @@ def check-prompt [options: record, type: string] {
 # Check if the model providers and models are correctly configured in config.yml
 def check-providers [options: record] {
   # settings.provider correctly configured and related provider exists
-  let provider_name = $options.settings.provider
+  let provider_name = $options.settings?.provider?
   if ($provider_name | is-empty) {
     print $'(ansi r)The provider name is missing in `settings.provider` of config.yml file.(ansi reset)'
     exit $ECODE.INVALID_PARAMETER
   }
-  let provider_exists = $options.providers
+  let providers = $options.providers? | default []
+  let provider_exists = $providers
     | where name == $provider_name
     | is-not-empty
   if not $provider_exists {
@@ -59,7 +63,11 @@ def check-providers [options: record] {
     exit $ECODE.INVALID_PARAMETER
   }
   # Each provider should have name, token and models field
-  $options.providers | each {|p|
+  # NOTE: `for`, not `each` — `exit` inside a closure is not propagated by
+  # Nushell ("Exit doesn't catch internally"), which turned every failure below
+  # into a bare exit code 1 plus an internal error dump instead of the
+  # documented INVALID_PARAMETER.
+  for p in $providers {
     let empties = [name token models] | where { |field| $p | get -o $field | is-empty }
     if ($empties | is-not-empty) {
       print $'Field (ansi r)`($empties | str join ,)`(ansi reset) should not be empty for provider:'
@@ -71,8 +79,9 @@ def check-providers [options: record] {
 
 # Check if the models are correctly configured in config.yml
 def check-models [options: record] {
+  let providers = $options.providers? | default []
   # Each model group should have one and only one enabled model
-  $options.providers | each {|provider|
+  for provider in $providers {
     let enabled_models = $provider.models | default false enabled | where enabled | length
     if ($enabled_models != 1) {
       print $'Model group (ansi r)`($provider.name)`(ansi reset) should have one and only one enabled model.'
@@ -80,8 +89,8 @@ def check-models [options: record] {
     }
   }
   # All models should have a name field
-  $options.providers | each {|provider|
-    $provider.models | enumerate | each {|e|
+  for provider in $providers {
+    for e in ($provider.models | enumerate) {
       if ($e.item.name? | is-empty) {
         print $'Model name is missing for provider (ansi r)`($provider.name)` model #($e.index)(ansi reset)...'
         exit $ECODE.INVALID_PARAMETER
@@ -103,12 +112,12 @@ export def config-check [--config: string] {
 # Get model config information
 def get-model-envs [settings: record, model?: string = ''] {
   let name = $settings.settings?.provider? | default ''
-  let provider = $settings.providers
+  let provider = $settings.providers?
     | default []
     | where name == $name
     | get -o 0
     | default {}
-  let model_name = $provider.models
+  let model_name = $provider.models?
     | default []
     | where {|it| if ($model | is-empty) {
         $it.enabled? | default false
@@ -142,16 +151,19 @@ export def --env config-load [
 
   let model_envs = get-model-envs $all_settings $model
 
+  # Every `settings.*` key is optional: a hand trimmed config.yml that drops a
+  # key it does not need must not blow up with `Cannot find column`. A missing
+  # key becomes `null`, which the `default` chains in `deepseek-review` handle.
   let env_vars = {
     ...$model_envs,
     USER_PROMPT: $user_prompt,
     SYSTEM_PROMPT: $system_prompt,
-    MAX_LENGTH: $settings.max-length,
-    TEMPERATURE: $settings.temperature,
-    GITHUB_TOKEN: $settings.github-token,
-    EXCLUDE_PATTERNS: $settings.exclude-patterns,
-    INCLUDE_PATTERNS: $settings.include-patterns,
-    DEFAULT_GITHUB_REPO: $settings.default-github-repo,
+    MAX_LENGTH: $settings.max-length?,
+    TEMPERATURE: $settings.temperature?,
+    GITHUB_TOKEN: $settings.github-token?,
+    EXCLUDE_PATTERNS: $settings.exclude-patterns?,
+    INCLUDE_PATTERNS: $settings.include-patterns?,
+    DEFAULT_GITHUB_REPO: $settings.default-github-repo?,
   }
   load-env $env_vars
   if $debug {
