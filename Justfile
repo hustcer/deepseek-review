@@ -51,7 +51,7 @@ code-review *OPTIONS:
 
 # Run the test cases locally by nutest
 test:
-  @use $'($nu.default-config-dir)/lib/nutest' *; run-tests
+  @use $'($nu.default-config-dir)/lib/nutest' *; run-tests --fail
 
 # Plugins need to be registered only once after nu v0.61
 _setup:
