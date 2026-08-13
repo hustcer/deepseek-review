@@ -21,6 +21,7 @@ def run-in-repo [dir: string, snippet: string] {
   let root = $env.PWD
   (
     ^$nu.current-exe -n -c $"
+      $env.GITHUB_ACTIONS = null
       $env.GIT_CONFIG_GLOBAL = '($dir | path join 'no-such-gitconfig')'
       $env.GIT_CONFIG_SYSTEM = '($dir | path join 'no-such-gitconfig')'
       cd '($root)'

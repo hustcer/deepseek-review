@@ -215,9 +215,13 @@ def 'constants：GitHub API base and no-token tip are well formed' [] {
 }
 
 @test
-def 'has-ref：resolves tags and short SHAs, rejects garbage' [] {
+def 'has-ref：resolves branches, short SHAs and rejects garbage' [] {
+  # CI checks out a single branch at depth 1, so a hardcoded branch name would
+  # fail there: resolve the branch actually checked out instead.
+  let branch = git branch --show-current | str trim
   assert equal (has-ref HEAD) true
-  assert equal (has-ref 'refs/heads/main') true
+  assert equal (has-ref $"refs/heads/($branch)") true
+  assert equal (has-ref (git rev-parse --short HEAD | str trim)) true
   assert equal (has-ref 'no/such/ref') false
   assert equal (has-ref '') false
 }

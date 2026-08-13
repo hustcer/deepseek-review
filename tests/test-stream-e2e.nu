@@ -32,6 +32,11 @@ def run-review [port: string, args: string] {
   let url = $'http://127.0.0.1:($port)/v1/chat/completions'
   (
     ^$nu.current-exe -n -c $"
+      # GitHub hosted runners set GITHUB_ACTIONS=true, which flips
+      # deepseek-review into action mode: stream forced false and the
+      # output mode becomes 'action', breaking every streaming assertion
+      # below. Scrub it so the tested path is the local console one.
+      $env.GITHUB_ACTIONS = null
       use nu/review.nu [deepseek-review]
       deepseek-review sk-mock-token --patch-cmd 'git show HEAD' --chat-url '($url)' ($args)
     " | complete
