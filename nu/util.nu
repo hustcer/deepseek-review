@@ -86,7 +86,7 @@ def glob-to-regex [patterns: list<string>] {
     '/': '\/',
   }
 
-  $patterns
+  let alternation = $patterns
     | each { |pat|
         let double_star_prefix = '__DOUBLE_STAR_SLASH__'
         let normalized = $pat | str replace -a '**/' $double_star_prefix
@@ -95,6 +95,15 @@ def glob-to-regex [patterns: list<string>] {
         } | str replace -a $double_star_prefix '(.*\/)?'
       }
     | str join '|'
+
+  # The caller embeds this between the `^diff --git a/` prefix and the ` b/`
+  # suffix, so the alternation MUST be grouped: `a\/x|y b\/` parses as
+  # `(a\/x)|(y b\/)`, which drops the ` b/` anchor from every branch but the
+  # last and the `^diff --git a/` anchor from every branch but the first. That
+  # let `nu/*` match `vendor/nu/lib.rs` and `*.nu` match `foo.nu.txt` whenever
+  # more than one pattern was passed — silently pulling in unwanted files with
+  # `--include`, and silently dropping wanted ones with `--exclude`.
+  $"\(($alternation)\)"
 }
 
 # Generate the awk include regex pattern string for the specified patterns

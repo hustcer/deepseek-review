@@ -55,7 +55,7 @@ test:
     print 'Cloning nutest ...'; \
     git clone --depth 1 https://github.com/vyadh/nutest.git '{{ join(DEEPSEEK_REVIEW_PATH, "nutest") }}' \
   }
-  @use '{{ join(DEEPSEEK_REVIEW_PATH, "nutest", "nutest") }}' *; run-tests --path tests
+  @use $'($nu.default-config-dir)/lib/nutest' *; run-tests --fail
 
 # Plugins need to be registered only once after nu v0.61
 _setup:

@@ -42,7 +42,10 @@ export def compare-ver [v1: string, v2: string] {
   # Parse the version number: remove pre-release and build information,
   # only take the main version part, and convert it to a list of numbers
   def parse-ver [v: string] {
-    $v | str lowercase | str trim -c v | str trim
+    # Trim whitespace BEFORE stripping the `v` prefix: `str trim -c v` only
+    # looks at the very first/last char, so on ` v1.2.3 ` it would find a space,
+    # strip nothing, and leave `v1` for `into int` to choke on.
+    $v | str lowercase | str trim | str trim -c v
        | split row - | first | split row . | each { into int }
   }
   let a = parse-ver $v1
