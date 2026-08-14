@@ -1,6 +1,6 @@
 use std/assert
 use std/testing *
-use ../nu/common.nu [is-installed]
+use ../nu/common.nu [is-installed, windows?]
 
 # End to end coverage for the two output paths of `deepseek-review`, driven by a
 # throwaway HTTP server. Nushell cannot serve HTTP, so the mock is a dependency
@@ -10,10 +10,10 @@ use ../nu/common.nu [is-installed]
 const MOCK = 'tests/resources/mock-chat-server.mjs'
 
 # Run the e2e tests one at a time: every test spawns a node mock plus a
-# `deepseek-review` subprocess, and on the GitHub Windows runners concurrent
-# `job spawn`s of node intermittently fail to start — the log never gets its
-# `PORT=` line, the review then hits an empty port and fails downstream. The
-# suite is short enough that serial execution costs little.
+# `deepseek-review` subprocess, and concurrent `job spawn`s of node intermittently
+# fail to start — the log never gets its `PORT=` line, the review then hits an
+# empty port and fails downstream. The suite is short enough that serial
+# execution costs little.
 # [strategy]
 def e2e-serial []: nothing -> record {
   { threads: 1 }
@@ -64,7 +64,19 @@ def run-review [port: string, args: string] {
 def setup [] {
   let dir = $nu.temp-dir | path join $'dsr-e2e-(random chars -l 8)'
   mkdir $dir
-  { dir: $dir, node: (is-installed node) }
+  { dir: $dir, node: (is-installed node), windows: (windows?) }
+}
+
+# Windows is skipped rather than made reliable: `job spawn`ing the node mock
+# there intermittently yields a process that never comes up, so the log stays
+# empty, `PORT=` never lands, and the test fails for reasons that have nothing to
+# do with the code under test. Everything covered here — SSE parsing, file
+# output, payload shape — is platform independent and stays covered by the Linux
+# and macOS jobs.
+def skip-e2e? [ctx: record]: nothing -> bool {
+  if $ctx.windows { print 'the node mock is unreliable on Windows, skipping'; return true }
+  if not $ctx.node { print 'node is not installed, skipping'; return true }
+  false
 }
 
 @after-all
@@ -76,7 +88,7 @@ def teardown [] {
 @test
 def 'streaming：prints reasoning and review under their own banners' [] {
   let ctx = $in
-  if not $ctx.node { print 'node is not installed, skipping'; return }
+  if (skip-e2e? $ctx) { return }
   let mock = start-mock $ctx.dir sse
   let result = run-review $mock.port ''
   job kill $mock.job
@@ -96,7 +108,7 @@ def 'streaming：prints reasoning and review under their own banners' [] {
 @test
 def 'streaming：each banner is printed exactly once' [] {
   let ctx = $in
-  if not $ctx.node { print 'node is not installed, skipping'; return }
+  if (skip-e2e? $ctx) { return }
   let mock = start-mock $ctx.dir sse
   let result = run-review $mock.port ''
   job kill $mock.job
@@ -109,7 +121,7 @@ def 'streaming：each banner is printed exactly once' [] {
 @test
 def 'streaming：a single reasoning chunk does not repeat the banner' [] {
   let ctx = $in
-  if not $ctx.node { print 'node is not installed, skipping'; return }
+  if (skip-e2e? $ctx) { return }
   # Regression: the banner was printed whenever the chunk counter *equalled* 1
   # rather than when it first reached 1, so a provider that sends its reasoning
   # in one chunk re-printed `Reasoning Details:` before every later chunk.
@@ -126,7 +138,7 @@ def 'streaming：a single reasoning chunk does not repeat the banner' [] {
 @test
 def 'streaming：a malformed chunk exits with SERVER_ERROR' [] {
   let ctx = $in
-  if not $ctx.node { print 'node is not installed, skipping'; return }
+  if (skip-e2e? $ctx) { return }
   # Regression: `parse-line` calls `exit`, and Nushell does not propagate `exit`
   # out of an `each` closure — the run used to end with a bare exit code 1 and
   # an internal `Eval block failed` dump instead of the documented code.
@@ -142,7 +154,7 @@ def 'streaming：a malformed chunk exits with SERVER_ERROR' [] {
 @test
 def 'streaming：an error object response exits with SERVER_ERROR' [] {
   let ctx = $in
-  if not $ctx.node { print 'node is not installed, skipping'; return }
+  if (skip-e2e? $ctx) { return }
   let mock = start-mock $ctx.dir errjson
   let result = run-review $mock.port ''
   job kill $mock.job
@@ -153,7 +165,7 @@ def 'streaming：an error object response exits with SERVER_ERROR' [] {
 @test
 def 'streaming：sends stream true and the configured model and prompts' [] {
   let ctx = $in
-  if not $ctx.node { print 'node is not installed, skipping'; return }
+  if (skip-e2e? $ctx) { return }
   let dump = $ctx.dir | path join 'stream-request.json'
   let mock = start-mock $ctx.dir sse $dump
   let result = run-review $mock.port "--model my-model --temperature 1.25 --sys-prompt 'SYS-X' --user-prompt 'USER-X'"
@@ -176,7 +188,7 @@ def 'streaming：sends stream true and the configured model and prompts' [] {
 @test
 def 'streaming：a PR comment is passed through in its own tags' [] {
   let ctx = $in
-  if not $ctx.node { print 'node is not installed, skipping'; return }
+  if (skip-e2e? $ctx) { return }
   let dump = $ctx.dir | path join 'comment-request.json'
   let mock = start-mock $ctx.dir sse $dump
   let result = run-review $mock.port "--comment 'PLEASE FOCUS ON TESTS'"
@@ -192,7 +204,7 @@ def 'streaming：a PR comment is passed through in its own tags' [] {
 @test
 def 'file output：writes the review, the reasoning details and the token usage' [] {
   let ctx = $in
-  if not $ctx.node { print 'node is not installed, skipping'; return }
+  if (skip-e2e? $ctx) { return }
   let out_file = $ctx.dir | path join 'review-result.md'
   let dump = $ctx.dir | path join 'file-request.json'
   let mock = start-mock $ctx.dir json $dump

@@ -53,7 +53,14 @@ def get-diff-content [
   } else if ($patch_file | is-not-empty) {
     if not ($patch_file | path exists) {
       print $'(ansi r)The patch file ($patch_file) does not exist, bye...(ansi reset)(char nl)'
-      exit $ECODE.CONDITION_NOT_SATISFIED
+      exit $ECODE.INVALID_PARAMETER
+    }
+    # `path exists` is also true for a directory, and `open --raw` on one throws a
+    # raw IO error instead of our message. `path expand` resolves symlinks first,
+    # so a symlinked patch file still reads as `file`.
+    if ($patch_file | path expand | path type) != 'file' {
+      print $'(ansi r)The patch file ($patch_file) is not a regular file, bye...(ansi reset)(char nl)'
+      exit $ECODE.INVALID_PARAMETER
     }
     open --raw $patch_file
   } else if not (git-check $local_repo --check-repo=1) {
