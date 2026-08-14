@@ -169,8 +169,10 @@ def 'streaming：sends stream true and the configured model and prompts' [] {
   assert equal $payload.messages.0.content 'SYS-X'
   assert equal $payload.messages.1.role 'user'
   assert ($payload.messages.1.content | str starts-with 'USER-X')
-  # The diff itself has to reach the model, not just the prompt.
-  assert ($payload.messages.1.content | str contains 'diff --git')
+  # The diff itself has to reach the model, not just the prompt. `git show
+  # HEAD` emits a `diff --git` header for a normal commit but a combined
+  # `diff --cc` header when HEAD is a merge commit, so accept either.
+  assert (($payload.messages.1.content | str contains 'diff --git') or ($payload.messages.1.content | str contains 'diff --cc'))
 }
 
 @test

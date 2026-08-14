@@ -55,7 +55,7 @@ test:
     print 'Cloning nutest ...'; \
     git clone --depth 1 https://github.com/vyadh/nutest.git '{{ join(DEEPSEEK_REVIEW_PATH, "nutest") }}' \
   }
-  @use $'($nu.default-config-dir)/lib/nutest' *; run-tests --fail
+  @use '{{ join(DEEPSEEK_REVIEW_PATH, "nutest", "nutest") }}' *; run-tests --path '{{ join(DEEPSEEK_REVIEW_PATH, "tests") }}' --fail
 
 # Plugins need to be added only once; run `just _setup` to add nu_plugin_query
 _setup:
