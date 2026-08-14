@@ -179,6 +179,19 @@ def 'get-diff：get patch from remote PR with exclude & include should work' [] 
   assert equal ($patch | get-uw) 2576
 }
 
+@test
+def 'get-diff：should read patch from file with --patch-file' [] {
+  let content = get-diff --patch-file tests/resources/diff.patch
+  assert ($content | is-not-empty)
+  assert ($content | str contains 'diff --git')
+}
+
+@test
+def 'get-diff：--patch-file takes priority over --patch-cmd' [] {
+  let content = get-diff --patch-file tests/resources/diff.patch --patch-cmd 'git show HEAD'
+  assert ($content | is-not-empty)
+  assert ($content | str contains 'diff --git')
+}
 # Smoke test: both entry points must parse. The module import above already
 # fails this file's load when nu/review.nu breaks (exit 1 even without --fail);
 # the subprocess assert below covers `cr`, whose parse error would otherwise be
