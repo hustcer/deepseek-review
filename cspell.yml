@@ -12,14 +12,21 @@ words:
 - mpsc
 - nuons
 - ECODE
+- mygit
 - vyadh
 - nutest
 - endfor
 - dotenv
 - Ollama
+- gawks
+- gitdiff
+- gpgsign
+- errjson
 - hustcer
 - Nushell
 - creatio
+- pathspec
+- pathspecs
 - pipefail
 - justfile
 - lefthook
@@ -34,6 +41,7 @@ words:
 - USERPROFILE
 - Unsanitized
 - Unvalidated
+- metacharacters
 - monomorphization
 ignorePaths:
 - config.yml
