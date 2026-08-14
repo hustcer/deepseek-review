@@ -185,6 +185,38 @@ def 'streaming：sends stream true and the configured model and prompts' [] {
   assert ($payload.messages.1.content | str contains 'diff --git')
 }
 
+# An unset temperature must not reach the wire at all, so the provider's own
+# default applies. Only the key's absence proves it: a null-valued key would
+# still serialize as `"temperature": null` and be rejected by strict providers.
+@test
+def 'streaming：temperature is omitted from the payload when not set' [] {
+  let ctx = $in
+  if (skip-e2e? $ctx) { return }
+  let dump = $ctx.dir | path join 'no-temperature-request.json'
+  let mock = start-mock $ctx.dir sse $dump
+  let result = run-review $mock.port ''
+  job kill $mock.job
+
+  assert equal $result.exit_code 0
+  assert equal ('temperature' in (open $dump | columns)) false
+}
+
+# 0 is a legitimate temperature, not an "unset" marker — the omission above keys
+# off `== null` precisely so an explicit 0.0 still reaches the provider. Pin it,
+# because a rewrite that keys off falsiness instead would silently drop it.
+@test
+def 'streaming：an explicit temperature of 0 is still sent' [] {
+  let ctx = $in
+  if (skip-e2e? $ctx) { return }
+  let dump = $ctx.dir | path join 'zero-temperature-request.json'
+  let mock = start-mock $ctx.dir sse $dump
+  let result = run-review $mock.port '--temperature 0.0'
+  job kill $mock.job
+
+  assert equal $result.exit_code 0
+  assert equal (open $dump | get temperature) 0.0
+}
+
 @test
 def 'streaming：a PR comment is passed through in its own tags' [] {
   let ctx = $in
