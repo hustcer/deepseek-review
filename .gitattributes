@@ -1,0 +1,8 @@
+# Store text files with LF in the repository. `text=auto` deliberately skips any
+# file that was already committed with CRLF, so the legacy CRLF files in this
+# repo stay byte-stable and only new or converted content is normalized — no
+# surprise whole-file diffs in unrelated PRs.
+* text=auto eol=lf
+
+# Patch fixtures are asserted byte-for-byte by the test suite, never convert them.
+*.patch -text

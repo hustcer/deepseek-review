@@ -18,10 +18,12 @@ export def get-diff [
   --include: string,    # Comma separated file patterns to include in the code review
   --exclude: string,    # Comma separated file patterns to exclude in the code review
   --patch-cmd: string,  # The `git show` or `git diff` command to get the diff content
+  --patch-file: string,  # Location of the patch file to review
 ] {
   let content = (
     get-diff-content --repo $repo --pr-number $pr_number --patch-cmd $patch_cmd
-      --diff-to $diff_to --diff-from $diff_from --include $include --exclude $exclude)
+      --diff-to $diff_to --diff-from $diff_from --include $include --exclude $exclude
+      --patch-file $patch_file)
 
   if ($content | is-empty) {
     print $'(ansi g)Nothing to review.(ansi reset)'
@@ -40,6 +42,7 @@ def get-diff-content [
   --include: string,    # Comma separated file patterns to include in the code review
   --exclude: string,    # Comma separated file patterns to exclude in the code review
   --patch-cmd: string,  # The `git show` or `git diff` command to get the diff content
+  --patch-file: string,  # Location of the patch file to review
 ] {
   let local_repo = $env.PWD
 
@@ -47,6 +50,19 @@ def get-diff-content [
     get-pr-diff --repo $repo $pr_number
   } else if ($diff_from | is-not-empty) {
     get-ref-diff $diff_from --diff-to $diff_to
+  } else if ($patch_file | is-not-empty) {
+    if not ($patch_file | path exists) {
+      print $'(ansi r)The patch file ($patch_file) does not exist, bye...(ansi reset)(char nl)'
+      exit $ECODE.INVALID_PARAMETER
+    }
+    # `path exists` is also true for a directory, and `open --raw` on one throws a
+    # raw IO error instead of our message. `path expand` resolves symlinks first,
+    # so a symlinked patch file still reads as `file`.
+    if ($patch_file | path expand | path type) != 'file' {
+      print $'(ansi r)The patch file ($patch_file) is not a regular file, bye...(ansi reset)(char nl)'
+      exit $ECODE.INVALID_PARAMETER
+    }
+    open --raw $patch_file
   } else if not (git-check $local_repo --check-repo=1) {
     print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
     exit $ECODE.CONDITION_NOT_SATISFIED

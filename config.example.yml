@@ -18,11 +18,13 @@ settings:
   # Note that it's unicode width not LLM token length
   max-length: 0
   # The temperature of the model, The value should be between 0 and 2, with default value 0.3
-  temperature: 0.3
+  thinking: 'false'
   # Enable thinking/reasoning for DeepSeek models, default: false
   # Only works with DeepSeek API and compatible providers (e.g. SiliconFlow)
   # Disable when using OpenAI, Github Models, or other non-DeepSeek endpoints
-  thinking: 'false'
+  # The temperature of the model, The value should be between 0 and 2
+  # If not set, the temperature parameter is omitted and the provider's default is used
+  # temperature: 1.0
   # The user prompt name to use for DeepSeek API select from 'prompts.user'
   user-prompt: 'default'
   # The system prompt name to use for DeepSeek API select from 'prompts.system'
