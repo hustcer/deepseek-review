@@ -26,7 +26,7 @@ def main [
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
-  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
+  --temperature(-T): float, # Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   --config(-C): string      # Config file path, default to `config.yml`
   --output(-o): string,     # Output file path
 ] {

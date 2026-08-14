@@ -28,8 +28,7 @@ inputs:
     description: 'The DeepSeek model to choose for code review.'
   temperature:
     required: false
-    default: 0.3
-    description: 'The temperature of the model.'
+    description: 'The temperature of the model. If not set, the temperature parameter is omitted and the provider default is used.'
   base-url:
     required: false
     default: 'https://api.deepseek.com'
@@ -133,7 +132,7 @@ runs:
             --max-length (try { $env.MAX_LENGTH_INPUT | into int } catch { 0 })
             --sys-prompt $env.SYS_PROMPT_INPUT
             --user-prompt $env.USER_PROMPT_INPUT
-            --temperature (try { $env.TEMPERATURE_INPUT | into float } catch { 0.3 })
+            --temperature (try { $env.TEMPERATURE_INPUT | into float } catch { null })
             --include $env.INCLUDE_PATTERNS_INPUT
             --exclude $env.EXCLUDE_PATTERNS_INPUT
             --comment $env.COMMENT_BODY_INPUT

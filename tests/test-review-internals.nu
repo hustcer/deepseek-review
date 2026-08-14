@@ -179,7 +179,6 @@ def 'DEFAULT_OPTIONS：defaults stay in sync with action.yaml' [] {
   let inputs = open action.yaml | get inputs
   assert equal $DEFAULT_OPTIONS.MODEL $inputs.model.default
   assert equal $DEFAULT_OPTIONS.BASE_URL $inputs.base-url.default
-  assert equal $DEFAULT_OPTIONS.TEMPERATURE ($inputs.temperature.default | into float)
   assert equal $DEFAULT_OPTIONS.SYS_PROMPT $inputs.sys-prompt.default
 }
 
