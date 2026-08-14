@@ -17,6 +17,7 @@ def main [
   --diff-from(-f): string,  # Git diff starting commit SHA
   --diff-to(-t): string,    # Git diff ending commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
+  --patch-file(-F): string,  # Location of the patch file to review, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --max-tokens(-K): int,    # Maximum amount of tokens allowed for the model in a single code review.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
@@ -26,7 +27,7 @@ def main [
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
-  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
+  --temperature(-T): float, # Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   --config(-C): string      # Config file path, default to `config.yml`
   --output(-o): string,     # Output file path
 ] {
@@ -46,6 +47,7 @@ def main [
       --diff-to=$diff_to
       --diff-from=$diff_from
       --patch-cmd=$patch_cmd
+      --patch-file=$patch_file
       --pr-number=$pr_number
       --max-length=$max_length
       --max-tokens=$max_tokens

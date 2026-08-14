@@ -110,7 +110,6 @@ def is-pr-locked [
 
 const DEFAULT_OPTIONS = {
   MODEL: 'deepseek-v4-flash',
-  TEMPERATURE: 0.3,
   BASE_URL: 'https://api.deepseek.com',
   USER_PROMPT: 'Please review the following code changes:',
   SYS_PROMPT: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.',
@@ -127,6 +126,7 @@ export def --env deepseek-review [
   --diff-to(-t): string,    # Git diff ending commit SHA
   --diff-from(-f): string,  # Git diff starting commit SHA
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
+  --patch-file(-F): string,  # Location of the patch file to review, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
   --max-tokens(-K): int     # Maximum amount of tokens allowed for the model to use in a single review, 4096 by default.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
@@ -136,7 +136,7 @@ export def --env deepseek-review [
   --user-prompt(-u): string # Default to $DEFAULT_OPTIONS.USER_PROMPT,
   --include(-i): string,    # Comma separated file patterns to include in the code review
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
-  --temperature(-T): float, # Temperature for the model, between `0` and `2`, default value `0.3`
+  --temperature(-T): float, # Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   --comment: string,       # Additional comment text from a PR comment mention trigger
 ]: nothing -> nothing {
 
@@ -153,7 +153,9 @@ export def --env deepseek-review [
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
   let max_tokens = try { ($max_tokens | default $env.MAX_TOKENS? | into int) | default 4096 } catch { 4096 }
-  let temperature = try { $temperature | default $env.TEMPERATURE? | default $DEFAULT_OPTIONS.TEMPERATURE | into float } catch { $DEFAULT_OPTIONS.TEMPERATURE }
+  # temperature is only set when explicitly specified via flag / TEMPERATURE env / config.yml,
+  # otherwise the payload omits the field and the provider's default applies
+  let temperature = try { $temperature | default $env.TEMPERATURE? | into float } catch { null }
   # Determine output mode
   let output_mode = if $is_action { 'action' } else if ($output | is-not-empty) { 'file' } else { 'console' }
 
@@ -167,6 +169,7 @@ export def --env deepseek-review [
     diff_to: $diff_to,
     diff_from: $diff_from,
     patch_cmd: $patch_cmd,
+    patch_file: $patch_file,
     pr_number: $pr_number,
     max_length: $max_length,
     max_tokens: $max_tokens,
@@ -194,7 +197,8 @@ export def --env deepseek-review [
 
   let content = (
     get-diff --pr-number $pr_number --repo $repo --diff-to $diff_to
-             --diff-from $diff_from --include $include --exclude $exclude --patch-cmd $patch_cmd)
+             --diff-from $diff_from --include $include --exclude $exclude --patch-cmd $patch_cmd
+             --patch-file $patch_file)
   let length = $content | str stats | get unicode-width
   if ($max_length != 0) and ($length > $max_length) {
     print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
@@ -204,14 +208,13 @@ export def --env deepseek-review [
   let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
   let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
   let user_content = if ($comment | is-not-empty) {
-    $"($user_prompt):\n($content)\n\nAdditional context from PR comment (char lp)enclosed in <comment> tags(char rp):\n<comment>\n($comment)\n</comment>"
+    $"($user_prompt):\n($content)\n\nAdditional context from PR comment \(enclosed in <comment> tags\):\n<comment>\n($comment)\n</comment>"
   } else {
     $"($user_prompt):\n($content)"
   }
   let payload = {
     model: $model,
     stream: $stream,
-    temperature: $temperature,
     messages: [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $user_content }
@@ -223,6 +226,7 @@ export def --env deepseek-review [
   } else {
     $payload
   }
+  let payload = if $temperature == null { $payload } else { $payload | insert temperature $temperature }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
   print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
   if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
@@ -301,7 +305,8 @@ def validate-token [token?: string, --pr-number: string, --repo: string] {
 }
 
 # Validate the temperature value
-def validate-temperature [temp: float] {
+def validate-temperature [temp?: float] {
+  if $temp == null { return }
   if ($temp < 0) or ($temp > 2) {
     print $'(ansi r)Invalid temperature value, should be in the range of 0 to 2.(ansi reset)'
     exit $ECODE.INVALID_PARAMETER
@@ -319,32 +324,54 @@ def streaming-output [
   print -n (char nl)
   kv set content 0
   kv set reasoning 0
-  http post -e -H $headers -t application/json $url $payload
-    | tee {
-        let res = $in
-        let type = $res | describe
-        let record_error = $type =~ '^record'
-        let other_error  = $type =~ '^string' and $res !~ 'data: ' and $res !~ 'done'
-        if $record_error or $other_error {
-          $res | table -e | print
-          exit $ECODE.SERVER_ERROR
+  # `for`, not `| each` — `parse-line` aborts the review with `exit` on a
+  # malformed chunk, and Nushell does not propagate `exit` out of a closure
+  # ("Exit doesn't catch internally"): the process ended up with a bare exit
+  # code 1 plus an internal error dump instead of SERVER_ERROR. `for` iterates
+  # the response stream just as lazily, so output still appears as it arrives.
+  for line in (
+    http post -e -H $headers -t application/json $url $payload
+      | tee {
+          let res = $in
+          let type = $res | describe
+          let record_error = $type =~ '^record'
+          let other_error  = $type =~ '^string' and $res !~ 'data: ' and $res !~ 'done'
+          if $record_error or $other_error {
+            $res | table -e | print
+            exit $ECODE.SERVER_ERROR
+          }
         }
+      | try { lines } catch { print $'(ansi r)Error Happened ...(ansi reset)'; exit $ECODE.SERVER_ERROR }
+  ) {
+    if ($line | is-empty) { continue }
+    # An SSE line starting with `:` is a comment — heartbeats such as
+    # `: keep-alive` or `: OPENROUTER PROCESSING`. They carry no payload and
+    # must be dropped before `parse-line`, which would otherwise abort the whole
+    # review with SERVER_ERROR. The `$IGNORED_MESSAGES` lookup below is an exact
+    # whole line match, so it never caught the ones whose text varies.
+    if ($line | str starts-with ':') { continue }
+    if ($IGNORED_MESSAGES | get -o $line | default false) { continue }
+    let last = $line | parse-line
+    if $debug { $last | to json | kv set last-reply }
+    let delta = $last | get -o choices.0.delta | default ($last | get -o message)
+    if ($delta | is-not-empty) {
+      let reason = $delta | coalesce-reasoning
+      let text = $delta.content? | default ''
+      # Print each banner once, when its counter first reaches 1. Testing the
+      # counter outside the increment re-printed the banner on every later
+      # chunk whenever the count stayed at exactly 1 — which is what happens
+      # when a provider sends its reasoning as a single chunk.
+      if ($reason | is-not-empty) {
+        kv set reasoning ((kv get reasoning) + 1)
+        if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
       }
-    | try { lines } catch { print $'(ansi r)Error Happened ...(ansi reset)'; exit $ECODE.SERVER_ERROR }
-    | each {|line|
-        if ($line | is-empty) { return }
-        if ($IGNORED_MESSAGES | get -o $line | default false) { return }
-        let $last = $line | parse-line
-        if $debug { $last | to json | kv set last-reply }
-        $last | get -o choices.0.delta | default ($last | get -o message) | if ($in | is-not-empty) {
-          let delta = $in
-          if ($delta | coalesce-reasoning | is-not-empty) { kv set reasoning ((kv get reasoning) + 1) }
-          if (kv get reasoning) == 1 { print $'(char nl)Reasoning Details:'; hr-line }
-          if ($delta.content? | is-not-empty) { kv set content ((kv get content) + 1) }
-          if (kv get content) == 1 { print $'(char nl)Review Details:'; hr-line }
-          print -n ($delta | coalesce-reasoning | default ($delta.content? | default ''))
-        }
+      if ($text | is-not-empty) {
+        kv set content ((kv get content) + 1)
+        if (kv get content) == 1 { print $'(char nl)Review Details:'; hr-line }
       }
+      print -n ($reason | default $text)
+    }
+  }
 
   if $debug and (kv get last-reply | is-not-empty) {
     print $'(char nl)(char nl)Model & Token Usage:'; hr-line

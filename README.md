@@ -245,7 +245,7 @@ cr -K 16384
 | max-tokens           | Int    | Optional, The maximum amount of tokens allowed for the model to use in a single review, 4096 by default.        |
 | sys-prompt           | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below                                                                   |
 | user-prompt          | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below                                                                    |
-| temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. Default value is `0.3`                                                         |
+| temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. If not set, the temperature parameter is omitted and the provider's default is used                                    |
 | include-patterns     | String | Optional, Comma-separated file patterns to include in the code review. No default                                                                                     |
 | exclude-patterns     | String | Optional, Comma-separated file patterns to exclude from the code review. Defaults to `pnpm-lock.yaml,package-lock.json,*.lock`                                        |
 | github-token         | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`.                                                      |
@@ -259,6 +259,7 @@ cr -K 16384
   // `$model` default value: deepseek-v4-flash
   model: $model,
   stream: false,
+  // `temperature` is omitted unless explicitly set (flag / TEMPERATURE env / config.yml); the provider default applies
   temperature: $temperature,
   messages: [
     // `$sys_prompt` default value: You are a professional code review assistant responsible for
@@ -303,7 +304,8 @@ Flags:
   -f, --diff-from <string>: Git diff starting commit SHA
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
-  -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.  
+  -F, --patch-file <string>: Location of the patch file to review, for local CR only
+  -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -K, --max-tokens <int>: Maximum amount of tokens allowed for the model in a single code review, 4096 by default.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
@@ -312,7 +314,7 @@ Flags:
   -u, --user-prompt <string>: Default to $DEFAULT_OPTIONS.USER_PROMPT,
   -i, --include <string>: Comma separated file patterns to include in the code review
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
-  -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `0.3`
+  -T, --temperature <float>: Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command

@@ -243,7 +243,7 @@ cr -K 16384
 | max-tokens           | Int    | 可选，模型在单次评论中可使用的最大 Token 数量，默认值是4096。                                                   |
 | sys-prompt           | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释                                                      |
 | user-prompt          | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释                                                     |
-| temperature          | Number | 可选，采样温度，介于 `0` 和 `2` 之间, 默认值 `0.3`                                                                |
+| temperature          | Number | 可选，采样温度，介于 `0` 和 `2` 之间；未设置时不传该参数，使用服务端默认值                                                                |
 | include-patterns     | String | 可选，代码审查中要包含的以逗号分隔的文件模式，无默认值                                                            |
 | exclude-patterns     | String | 可选，代码审查中要排除的以逗号分隔的文件模式，默认值为 `pnpm-lock.yaml,package-lock.json,*.lock`                  |
 | github-token         | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}`                                      |
@@ -257,6 +257,7 @@ DeepSeek 接口调用入参:
   // `$model` default value: deepseek-v4-flash
   model: $model,
   stream: false,
+  // 未显式设置（flag / TEMPERATURE 环境变量 / config.yml）时不传 `temperature`, 使用服务端默认值
   temperature: $temperature,
   messages: [
     // `$sys_prompt` default value: You are a professional code review assistant responsible for
@@ -300,6 +301,7 @@ Flags:
   -f, --diff-from <string>: Git diff starting commit SHA
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
+  -F, --patch-file <string>: Location of the patch file to review, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -K, --max-tokens <int>: Maximum amount of tokens allowed for the model in a single code review, 4096 by default.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
@@ -309,7 +311,7 @@ Flags:
   -u, --user-prompt <string>: Default to $DEFAULT_OPTIONS.USER_PROMPT,
   -i, --include <string>: Comma separated file patterns to include in the code review
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
-  -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `0.3`
+  -T, --temperature <float>: Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command
