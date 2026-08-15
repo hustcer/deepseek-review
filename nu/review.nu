@@ -72,6 +72,20 @@ def submit-review-to-pr [
 
     if $status >= 200 and $status < 300 {
       print $'Review submitted successfully! HTTP (ansi g)($status)(ansi reset)'
+      let raw_review = $response | get -o body | default {}
+      let review = if ($raw_review | describe) == 'string' {
+        if ($raw_review | is-empty) { {} } else { $raw_review | from json }
+      } else {
+        $raw_review
+      }
+      let review_id = $review | get -o id | default ''
+      let raw_html_url = $review | get -o html_url | default ''
+      let html_url = if ($raw_html_url | is-empty) and ($review_id | is-not-empty) {
+        $'https://github.com/($repo)/pull/($pr_number)#pullrequestreview-($review_id)'
+      } else {
+        $raw_html_url
+      }
+      { id: $review_id, html_url: $html_url }
     } else {
       print $'(ansi r)Failed to submit review. HTTP Status: ($status)(ansi reset)'
       let err_body = $response | get -o body | default ''
@@ -174,6 +188,7 @@ export def --env deepseek-review [
 
   if $is_action and ($pr_number | is-not-empty) and ($repo | is-not-empty) and (is-pr-locked $repo $pr_number) {
     print $'(ansi y)PR #($pr_number) is locked, skipping review.(ansi reset)'
+    set-action-outputs --model $model --length 0 --status 'skipped' --response {} --pr-number $pr_number --repo $repo
     exit $ECODE.SUCCESS
   }
 
@@ -194,7 +209,7 @@ export def --env deepseek-review [
              --diff-from $diff_from --include $include --exclude $exclude --patch-cmd $patch_cmd)
   let length = $content | str stats | get unicode-width
   if ($max_length != 0) and ($length > $max_length) {
-    set-action-outputs --model $model --length $length --status 'skipped' --response {}
+    set-action-outputs --model $model --length $length --status 'skipped' --response {} --pr-number $pr_number --repo $repo
     print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
     exit $ECODE.SUCCESS
   }
@@ -222,13 +237,13 @@ export def --env deepseek-review [
 
   let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
   if ($response | is-empty) {
-    set-action-outputs --model $model --length $length --status 'failed' --response {}
+    set-action-outputs --model $model --length $length --status 'failed' --response {} --pr-number $pr_number --repo $repo
     print $'(ansi r)Oops, No response returned from ($url) ...(ansi reset)'
     exit $ECODE.SERVER_ERROR
   }
   if $debug { print $'DeepSeek Model Response:'; hr-line; $response | table -e | print }
   if ($response | describe) == 'string' {
-    set-action-outputs --model $model --length $length --status 'failed' --response {}
+    set-action-outputs --model $model --length $length --status 'failed' --response {} --pr-number $pr_number --repo $repo
     print $'✖️ Code review failed！Error: '; hr-line; print $response
     exit $ECODE.SERVER_ERROR
   }
@@ -237,22 +252,29 @@ export def --env deepseek-review [
   let review = $message.content? | default ($response | get -o message.content)
   let result = ['<details>' '<summary> Reasoning Details</summary>' $reason "</details>\n" $review] | str join "\n"
   if ($review | is-empty) {
-    set-action-outputs --model $model --length $length --status 'failed' --response $response
+    set-action-outputs --model $model --length $length --status 'failed' --response $response --pr-number $pr_number --repo $repo
     print $'✖️ Code review failed！No review result returned from ($base_url) ...'
     exit $ECODE.SERVER_ERROR
   }
   let result = if ($reason | is-empty) { $review } else { $result }
 
-  match $output_mode {
+  let review_meta = match $output_mode {
     'action' => {
-      submit-review-to-pr $repo $pr_number $result
+      let submitted = submit-review-to-pr $repo $pr_number $result
       print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was submitted as a review.'
+      $submitted
     }
-    'file' => { write-review-to-file $output $setting $result $response }
-    _ => { print $'Code Review Result:'; hr-line; print $result }
+    'file' => {
+      write-review-to-file $output $setting $result $response
+      { id: '', html_url: '' }
+    }
+    _ => {
+      print $'Code Review Result:'; hr-line; print $result
+      { id: '', html_url: '' }
+    }
   }
 
-  set-action-outputs --result $result --model $model --length $length --status 'success' --response $response
+  set-action-outputs --result $result --model $model --length $length --status 'success' --response $response --pr-number $pr_number --repo $repo --review-id $review_meta.id --review-url $review_meta.html_url
 
   if ($response.usage? | is-not-empty) {
     print $'(char nl)Token Usage:'; hr-line
@@ -314,26 +336,34 @@ def set-action-outputs [
   --length: int,          # Content length
   --status: string,       # 'success', 'skipped', or 'failed'
   --response: record,     # API response (for token usage)
+  --pr-number: string,    # PR number being reviewed
+  --repo: string,         # Repo being reviewed
+  --review-id: string,    # GitHub review ID after successful submission
+  --review-url: string,   # GitHub HTML URL of the submitted review
 ] {
   if ($env.GITHUB_OUTPUT? | is-empty) { return }
 
-  echo $"review_status=($status)" | save --append $env.GITHUB_OUTPUT
-  echo $"model=($model)" | save --append $env.GITHUB_OUTPUT
-  echo $"content_length=($length | into string)" | save --append $env.GITHUB_OUTPUT
+  echo $"review_status=($status)(char nl)" | save --append $env.GITHUB_OUTPUT
+  echo $"model=($model)(char nl)" | save --append $env.GITHUB_OUTPUT
+  echo $"content_length=($length | into string)(char nl)" | save --append $env.GITHUB_OUTPUT
+  if ($pr_number | is-not-empty) { echo $"pr_number=($pr_number)(char nl)" | save --append $env.GITHUB_OUTPUT }
+  if ($repo | is-not-empty) { echo $"repo=($repo)(char nl)" | save --append $env.GITHUB_OUTPUT }
+  if ($review_id | is-not-empty) { echo $"review_id=($review_id)(char nl)" | save --append $env.GITHUB_OUTPUT }
+  if ($review_url | is-not-empty) { echo $"review_url=($review_url)(char nl)" | save --append $env.GITHUB_OUTPUT }
 
   if ($result | is-not-empty) {
     # Use heredoc syntax for multiline output values
     let delimiter = 'REVIEW_RESULT_EOF'
-    echo $"review_result<<($delimiter)" | save --append $env.GITHUB_OUTPUT
-    echo $result | save --append $env.GITHUB_OUTPUT
-    echo $delimiter | save --append $env.GITHUB_OUTPUT
+    echo $"review_result<<($delimiter)(char nl)" | save --append $env.GITHUB_OUTPUT
+    echo $'($result)(char nl)' | save --append $env.GITHUB_OUTPUT
+    echo $'($delimiter)(char nl)' | save --append $env.GITHUB_OUTPUT
   }
 
   let usage = $response.usage? | default {}
   if ($usage | is-not-empty) {
-    echo $"usage_prompt_tokens=($usage.prompt_tokens? | default 0 | into string)" | save --append $env.GITHUB_OUTPUT
-    echo $"usage_completion_tokens=($usage.completion_tokens? | default 0 | into string)" | save --append $env.GITHUB_OUTPUT
-    echo $"usage_total_tokens=($usage.total_tokens? | default 0 | into string)" | save --append $env.GITHUB_OUTPUT
+    echo $"usage_prompt_tokens=($usage.prompt_tokens? | default 0 | into string)(char nl)" | save --append $env.GITHUB_OUTPUT
+    echo $"usage_completion_tokens=($usage.completion_tokens? | default 0 | into string)(char nl)" | save --append $env.GITHUB_OUTPUT
+    echo $"usage_total_tokens=($usage.total_tokens? | default 0 | into string)(char nl)" | save --append $env.GITHUB_OUTPUT
   }
 }
 

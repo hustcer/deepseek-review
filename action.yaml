@@ -19,6 +19,14 @@ outputs:
     description: 'The status of the code review: success, skipped, or failed.'
   review_result:
     description: 'The code review result text. Only set when review_status is success.'
+  pr_number:
+    description: 'The pull request number being reviewed, if applicable.'
+  repo:
+    description: 'The repository being reviewed, e.g. owner/repo.'
+  review_id:
+    description: 'The GitHub review ID returned after successfully submitting the review.'
+  review_url:
+    description: 'The GitHub HTML URL of the submitted review.'
   model:
     description: 'The model used for code review.'
   content_length:
