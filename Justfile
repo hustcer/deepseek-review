@@ -51,6 +51,10 @@ code-review *OPTIONS:
 
 # Run the test cases locally by nutest
 test:
+  @if not ('{{ join(DEEPSEEK_REVIEW_PATH, "nutest", "nutest", "mod.nu") }}' | path exists) { \
+    print 'Cloning nutest ...'; \
+    git clone --depth 1 https://github.com/vyadh/nutest.git '{{ join(DEEPSEEK_REVIEW_PATH, "nutest") }}' \
+  }
   @use $'($nu.default-config-dir)/lib/nutest' *; run-tests --fail
 
 # Plugins need to be registered only once after nu v0.61
