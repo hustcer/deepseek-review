@@ -204,6 +204,24 @@ jobs:
 | watch-mention        | String | Optional, Trigger code review when this string is mentioned in a PR comment, e.g. `@github-actions`. Requires `issue_comment` event in the workflow.                  |
 | allowed-associations | String | Optional, Comma-separated `author_association` values allowed to trigger review via PR comment. Defaults to `OWNER,MEMBER,COLLABORATOR`.                              |
 
+## Action Outputs
+
+The action writes the following outputs to `$GITHUB_OUTPUT` so downstream steps can consume them:
+
+| Name                   | Type   | Description                                                                                                        |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
+| review_status          | String | The status of the code review: `success`, `skipped`, or `failed`.                                                   |
+| review_result          | String | The code review result text. Only set when `review_status` is `success`.                                            |
+| pr_number              | String | The pull request number being reviewed, if applicable.                                                               |
+| repo                   | String | The repository being reviewed, for example `hustcer/deepseek-review`.                                               |
+| review_id              | String | The GitHub review ID returned after successfully submitting the review.                                             |
+| review_url             | String | The GitHub HTML URL of the submitted review.                                                                        |
+| model                  | String | The model used for code review.                                                                                      |
+| content_length         | Int    | The Unicode width of the diff content that was reviewed.                                                             |
+| usage_prompt_tokens    | Int    | Number of prompt tokens consumed, if reported by the API.                                                            |
+| usage_completion_tokens | Int    | Number of completion tokens consumed, if reported by the API.                                                       |
+| usage_total_tokens     | Int    | Total tokens consumed, if reported by the API.                                                                       |
+
 **DeepSeek API Call Payload**:
 
 ```js
