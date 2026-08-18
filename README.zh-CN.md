@@ -30,7 +30,7 @@
 ### 本地或 GH Action
 
 - 支持 DeepSeek `V4` 和 `R1` 模型
-- 完全可定制：选择模型、基础 URL 和提示词
+- 完全可定制：选择模型、基础 URL、Token限制和提示词
 - 支持自托管 DeepSeek 模型，提供更强的灵活性
 - 对指定文件变更进行包含/排除式代码审查
 
@@ -185,6 +185,53 @@ jobs:
           base-url: 'https://models.github.ai/inference'       # Github Models的API端点
 ```
 
+## 设置 Token 限额
+
+你可以设置单次代码审查允许的最大 token 数量。这在 GitHub Actions 和本地环境中都可以使用，并且与大多数兼容 OpenAI 格式的 API 提供商兼容，比如 _Deepseek_ 和 _硅基流动_。
+
+### 在 GitHub Actions 中
+
+```yaml
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          max-tokens: 4096
+          model: "deepseek-ai/DeepSeek-R1"
+          base-url: "https://api.siliconflow.cn/v1"
+          watch-mention: "@github-actions"
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+          allowed-associations: "OWNER,MEMBER,COLLABORATOR"
+```
+
+> [!NOTE]
+> 如果模型提供商不允许在其请求体中使用 `$max-tokens`，或者你只是想关闭 Token 限制，可以将 `$max-tokens` 设置为 `-1`。
+> 小于或等于 0 的值会禁用 API 请求体中的 `$max-tokens` 字段。如果适用的话，会回退到提供商的默认限制。
+
+### 本地使用
+
+在 `config.yml` 中设置 `max-tokens`：
+
+```yaml
+settings:
+  max-tokens: 4096
+```
+
+或者通过 CLI 参数传入：
+
+```sh
+cr --max-tokens 8192
+cr -K 16384
+```
+
 ## 输入参数
 
 | 名称                 | 类型   | 描述                                                                                                              |
@@ -193,6 +240,7 @@ jobs:
 | model                | String | 可选，配置代码审查选用的模型，默认为 `deepseek-v4-flash`                                                          |
 | base-url             | String | 可选，DeepSeek API Base URL, 默认为 `https://api.deepseek.com`                                                    |
 | max-length           | Int    | 可选，待审查内容的最大 Unicode 长度, 默认 `0` 表示没有限制，超过非零值则跳过审查                                  |
+| max-tokens           | Int    | 可选，模型在单次评论中可使用的最大 Token 数量，默认值是4096。                                                   |
 | sys-prompt           | String | 可选，系统提示词对应入参中的 `$sys_prompt`, 默认值见后文注释                                                      |
 | user-prompt          | String | 可选，用户提示词对应入参中的 `$user_prompt`, 默认值见后文注释                                                     |
 | temperature          | Number | 可选，采样温度，介于 `0` 和 `2` 之间；未设置时不传该参数，使用服务端默认值                                                                |
@@ -255,6 +303,7 @@ Flags:
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -F, --patch-file <string>: Location of the patch file to review, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
+  -K, --max-tokens <int>: Maximum amount of tokens allowed for the model in a single code review, 4096 by default.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
   -U, --chat-url <string>: DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat

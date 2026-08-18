@@ -32,7 +32,7 @@
 ### Both GH Action & Local
 
 - Support both DeepSeek's `V4` and `R1` models
-- Fully customizable: Choose models, base URLs, and prompts
+- Fully customizable: Choose models, base URLs, token limits, and prompts
 - Support self-hosted DeepSeek models for enhanced flexibility
 - Perform code reviews for changes that either include or exclude specific files
 
@@ -187,6 +187,53 @@ jobs:
           base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
 ```
 
+## Set a Limit for Token Usage:
+
+You can set a limit for the amount of tokens allowed in a single code review. This works in both GitHub Actions and local environments, and is compatible with most OpenAI-compatible API providers, such as Deepseek and SiliconFlow.
+
+### In GitHub Actions
+
+```yaml
+permissions:
+  pull-requests: write
+
+jobs:
+  setup-deepseek-review:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@v1
+        with:
+          max-tokens: 4096
+          model: "deepseek-ai/DeepSeek-R1"
+          base-url: "https://api.siliconflow.cn/v1"
+          watch-mention: "@github-actions"
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+          allowed-associations: "OWNER,MEMBER,COLLABORATOR"
+```
+
+> [!NOTE]
+> If the model provider does not allow `$max-tokens` in its payload, or you just want to turn off the token limit, set `$max-tokens` to `-1`.
+> Values less than or equal to 0 will leave the `$max-tokens` field disabled in the API payload, and falls back to the provider's default limit if applicable.
+
+### Locally
+
+Set `max-tokens` in your `config.yml`:
+
+```yaml
+settings:
+  max-tokens: 4096
+```
+
+Or pass it via the CLI flag:
+
+```sh
+cr --max-tokens 8192
+cr -K 16384
+```
+
 ## Input Parameters
 
 | Name                 | Type   | Description                                                                                                                                                           |
@@ -195,6 +242,7 @@ jobs:
 | model                | String | Optional, The model used for code review, defaults to `deepseek-v4-flash`                                                                                             |
 | base-url             | String | Optional, DeepSeek API Base URL, defaults to `https://api.deepseek.com`                                                                                               |
 | max-length           | Int    | Optional, Maximum length (Unicode width) of the content for review. If the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
+| max-tokens           | Int    | Optional, The maximum amount of tokens allowed for the model to use in a single review, 4096 by default.        |
 | sys-prompt           | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below                                                                   |
 | user-prompt          | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below                                                                    |
 | temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. If not set, the temperature parameter is omitted and the provider's default is used                                    |
@@ -258,6 +306,7 @@ Flags:
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
   -F, --patch-file <string>: Location of the patch file to review, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
+  -K, --max-tokens <int>: Maximum amount of tokens allowed for the model in a single code review, 4096 by default.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
   -U, --chat-url <string>: DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat

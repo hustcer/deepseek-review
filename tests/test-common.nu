@@ -42,6 +42,7 @@ def 'from-env：.env load should work' [] {
   assert equal $env.BASE_URL https://api.deepseek.com
   assert equal $env.TEMPERATURE '1.0'
   assert equal $env.MAX_LENGTH '0'
+  assert equal $env.MAX_TOKENS '4096'
   assert equal $env.USER_PROMPT 'Please review the following code changes'
 }
 
