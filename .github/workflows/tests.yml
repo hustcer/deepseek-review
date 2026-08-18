@@ -56,6 +56,21 @@ jobs:
         uses: hustcer/setup-nu@v3
         with:
           version: ${{ matrix.version }}
+        
+      - name: Setup Just
+        if: matrix.platform != 'macos-latest'
+        uses: extractions/setup-just@v4
+        with:
+          github-token: ${{ github.token }}
+          just-version: '*'
+
+      - name: Test Justfile
+        if: matrix.platform != 'macos-latest'
+        run: |
+          just --list
+          just cr --help
+          just release --help
+          just test
 
       - name: Test DeepSeek Review
         shell: nu {0}
