@@ -137,6 +137,7 @@ export def --env deepseek-review [
   --exclude(-x): string,    # Comma separated file patterns to exclude in the code review
   --temperature(-T): float, # Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   --comment: string,       # Additional comment text from a PR comment mention trigger
+  --thinking(-g): string,  # Enable thinking/reasoning: "true" or "false"
 ]: nothing -> nothing {
 
   $env.config.table.mode = 'psql'
@@ -151,6 +152,7 @@ export def --env deepseek-review [
   let base_url = $base_url | default $env.BASE_URL? | default $DEFAULT_OPTIONS.BASE_URL
   let url = $chat_url | default $env.CHAT_URL? | default $'($base_url)/chat/completions'
   let max_length = try { $max_length | default ($env.MAX_LENGTH? | default 0 | into int) } catch { 0 }
+  let thinking = $thinking | default ($env.THINKING? | default "false") | into bool
   # temperature is only set when explicitly specified via flag / TEMPERATURE env / config.yml,
   # otherwise the payload omits the field and the provider's default applies
   let temperature = try { $temperature | default $env.TEMPERATURE? | into float } catch { null }
@@ -172,6 +174,7 @@ export def --env deepseek-review [
     max_length: $max_length,
     local_repo: $local_repo,
     temperature: $temperature,
+    thinking: $thinking,
   }
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
 
@@ -209,6 +212,7 @@ export def --env deepseek-review [
   } else {
     $"($user_prompt):\n($content)"
   }
+  let thinking_type = if $thinking { 'enabled' } else { 'disabled' }
   let payload = {
     model: $model,
     stream: $stream,
@@ -216,7 +220,7 @@ export def --env deepseek-review [
       { role: 'system', content: $sys_prompt },
       { role: 'user', content: $user_content }
     ],
-    thinking: { type: 'disabled' }
+    thinking: { type: $thinking_type }
   }
   let payload = if $temperature == null { $payload } else { $payload | insert temperature $temperature }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }

@@ -181,6 +181,81 @@ def 'get-diff：get patch from remote PR with exclude & include should work' [] 
 }
 
 @test
+def 'thinking：flag "true" overrides env "false"' [] {
+  with-env { THINKING: "false" } {
+    let flag = "true"
+    let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+    assert equal $thinking true
+  }
+}
+
+@test
+def 'thinking：flag "false" overrides env "true"' [] {
+  with-env { THINKING: "true" } {
+    let flag = "false"
+    let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+    assert equal $thinking false
+  }
+}
+
+@test
+def 'thinking：null flag falls back to env "true"' [] {
+  with-env { THINKING: "true" } {
+    let flag = null
+    let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+    assert equal $thinking true
+  }
+}
+
+@test
+def 'thinking：null flag and no env defaults to false' [] {
+  let flag = null
+  let thinking = $flag | default (null | default "false") | into bool
+  assert equal $thinking false
+}
+
+@test
+def 'thinking：native bool true passes through into bool' [] {
+  let flag = true
+  let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+  assert equal $thinking true
+}
+
+@test
+def 'thinking：native bool false passes through into bool' [] {
+  let flag = false
+  let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+  assert equal $thinking false
+}
+
+@test
+def 'thinking：payload includes thinking.type when enabled' [] {
+  let thinking = true
+  let payload = {} | if $thinking { merge { thinking: { type: 'enabled' } } } else { $in }
+  assert equal $payload.thinking.type 'enabled'
+}
+
+@test
+def 'thinking：payload sets thinking type disabled when disabled' [] {
+  let thinking = false
+  let thinking_type = if $thinking { 'enabled' } else { 'disabled' }
+  let payload = { model: 'test', stream: false, thinking: { type: $thinking_type } }
+  assert equal $payload.thinking.type 'disabled'
+  assert equal $payload.model 'test'
+}
+
+@test
+def 'thinking：payload includes thinking while preserving other fields' [] {
+  let thinking = true
+  let payload = { model: 'test', stream: false, temperature: 0.3 }
+    | if $thinking { merge { thinking: { type: 'enabled' } } } else { $in }
+  assert equal $payload.thinking.type 'enabled'
+  assert equal $payload.model 'test'
+  assert equal $payload.stream false
+  assert equal $payload.temperature 0.3
+}
+# Smoke test: both entry points must parse. The module import above already
+@test
 def 'get-diff：should read patch from file with --patch-file' [] {
   let expected = open --raw tests/resources/diff.patch
   let content = get-diff --patch-file tests/resources/diff.patch
