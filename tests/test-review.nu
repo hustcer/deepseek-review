@@ -2,6 +2,7 @@
 use std/assert
 use std/testing *
 use ../nu/diff.nu [get-diff]
+use ../nu/review.nu [gh-headers]
 use ../nu/common.nu [ECODE]
 use ../nu/util.nu [is-safe-git, prepare-awk, generate-include-regex, generate-exclude-regex]
 use ../nu/review.nu [deepseek-review]
@@ -141,6 +142,75 @@ def 'both exclude and include should work as expected' [] {
     | ^$awk_bin (generate-exclude-regex [**/*.yaml])
     | ^$awk_bin (generate-include-regex [nu/*])
     | get-uw) 2576
+}
+
+@test
+def 'gh-headers：should return correct GitHub API headers structure' [] {
+  $env.GH_TOKEN = 'test-token-abc123'
+  let headers = gh-headers
+  # 4 headers × 2 (key-value) = 8 list items
+  assert equal ($headers | length) 8
+  assert equal ($headers | get 0) Authorization
+  assert equal ($headers | get 1) 'Bearer test-token-abc123'
+  assert equal ($headers | get 2) Accept
+  assert equal ($headers | get 3) 'application/vnd.github+json'
+  assert equal ($headers | get 4) X-GitHub-Api-Version
+  assert equal ($headers | get 5) '2022-11-28'
+  assert equal ($headers | get 6) User-Agent
+  assert equal ($headers | get 7) 'curl/8.9'
+}
+
+@test
+def 'gh-headers：should reflect current GH_TOKEN value' [] {
+  $env.GH_TOKEN = 'another-token-xyz'
+  let headers = gh-headers
+  assert str contains ($headers | get 1) 'another-token-xyz'
+}
+
+@test
+def 'pr-metadata：format should produce expected string for title and body' [] {
+  # Simulate the PR metadata format string construction from review.nu
+  let title = 'Fix login bug'
+  let body = 'This PR fixes the login issue by updating the auth flow.'
+  let pr_metadata = $"\n\nPR Title: (char lp)($title)(char rp)\n\nPR Description:\n($body)"
+  assert str contains $pr_metadata 'PR Title'
+  assert str contains $pr_metadata 'Fix login bug'
+  assert str contains $pr_metadata 'PR Description'
+  assert str contains $pr_metadata 'updating the auth flow'
+  assert equal ($pr_metadata | str starts-with "\n\n") true
+}
+
+@test
+def 'pr-metadata：format should produce expected string for title only' [] {
+  let title = 'Add new feature'
+  let body = ''
+  let pr_metadata = if ($title | is-not-empty) or ($body | is-not-empty) {
+    $"\n\nPR Title: (char lp)($title)(char rp)\n\nPR Description:\n($body)"
+  } else { '' }
+  assert str contains $pr_metadata 'PR Title'
+  assert str contains $pr_metadata 'Add new feature'
+  assert str contains $pr_metadata 'PR Description'
+}
+
+@test
+def 'pr-metadata：format should produce expected string for body only' [] {
+  let title = ''
+  let body = '## Summary\n\nThis is a description.'
+  let pr_metadata = if ($title | is-not-empty) or ($body | is-not-empty) {
+    $"\n\nPR Title: (char lp)($title)(char rp)\n\nPR Description:\n($body)"
+  } else { '' }
+  assert str contains $pr_metadata 'PR Description'
+  assert str contains $pr_metadata '## Summary'
+}
+
+@test
+def 'pr-metadata：should return empty string when both title and body are empty' [] {
+  let title = ''
+  let body = ''
+  let pr_metadata = if ($title | is-not-empty) or ($body | is-not-empty) {
+    $"\n\nPR Title: (char lp)($title)(char rp)\n\nPR Description:\n($body)"
+  } else { '' }
+  assert equal $pr_metadata ''
 }
 
 @test

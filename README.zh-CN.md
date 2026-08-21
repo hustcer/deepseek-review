@@ -33,6 +33,7 @@
 - 完全可定制：选择模型、基础 URL 和提示词
 - 支持自托管 DeepSeek 模型，提供更强的灵活性
 - 对指定文件变更进行包含/排除式代码审查
+- 通过获取元数据更好地理解PR的更改
 
 ## 通过 GitHub Action 进行代码审查
 
@@ -218,8 +219,9 @@ DeepSeek 接口调用入参:
     // suggestions. Clearly list the problems and recommendations in a concise manner.
     { role: 'system', content: $sys_prompt },
     // `$user_prompt` default value: Please review the following code changes
+    // `pr_title` and `pr_body` are fetched from the PR metadata (only when reviewing a GitHub PR)
     // `diff_content` will be the code changes of current PR
-    { role: 'user', content: $"($user_prompt):\n($diff_content)" }
+    { role: 'user', content: $"($user_prompt):\n\nPR Title: ($pr_title)\n\nPR Description:\n($pr_body)\n($diff_content)" }
   ]
 }
 ```
