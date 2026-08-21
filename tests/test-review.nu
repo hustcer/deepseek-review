@@ -3,6 +3,7 @@ use std/assert
 use std/testing *
 use ../nu/diff.nu [get-diff]
 use ../nu/review.nu [gh-headers]
+use ../nu/common.nu [ECODE]
 use ../nu/util.nu [is-safe-git, prepare-awk, generate-include-regex, generate-exclude-regex]
 use ../nu/review.nu [deepseek-review]
 
@@ -247,6 +248,46 @@ def 'get-diff：get patch from remote PR with exclude & include should work' [] 
   if ($env.GH_TOKEN | is-empty) { print '$env.GH_TOKEN is empty'; return }
   let patch = get-diff --pr-number 93 --repo $repo --exclude **/*.yaml,*.md --include **/*.nu
   assert equal ($patch | get-uw) 2576
+}
+
+@test
+def 'get-diff：should read patch from file with --patch-file' [] {
+  let expected = open --raw tests/resources/diff.patch
+  let content = get-diff --patch-file tests/resources/diff.patch
+  # Compare sizes first so a wrong source fails with two readable numbers rather
+  # than dumping both 8KB blobs; the equality below is what actually pins it down.
+  assert equal ($content | get-uw) ($expected | get-uw)
+  assert equal $content $expected
+}
+
+@test
+def 'get-diff：--patch-file takes priority over --patch-cmd' [] {
+  # Assert on the exact content, not on a `diff --git` substring: `git show HEAD`
+  # emits that marker too, so a `str contains` check passes even when --patch-cmd
+  # wins, which is precisely the regression this test exists to catch.
+  let expected = open --raw tests/resources/diff.patch
+  let content = get-diff --patch-file tests/resources/diff.patch --patch-cmd 'git show HEAD'
+  assert equal ($content | get-uw) ($expected | get-uw)
+  assert equal $content $expected
+}
+
+# Both rejections run in a subprocess because they end in `exit`, which would
+# otherwise take the whole test run with them.
+@test
+def 'get-diff：--patch-file rejects a missing path and a directory' [] {
+  let run = {|path: string|
+    ^$nu.current-exe -n -c $"use nu/diff.nu [get-diff]; get-diff --patch-file '($path)'" | complete
+  }
+
+  let missing = do $run 'tests/resources/no-such-file.patch'
+  assert equal $missing.exit_code $ECODE.INVALID_PARAMETER
+  assert ($missing.stdout | str contains 'does not exist')
+
+  # `path exists` is true for a directory, so without the `path type` guard this
+  # one escapes as a raw `nu::shell::io::is_a_directory` error instead.
+  let dir = do $run 'tests/resources'
+  assert equal $dir.exit_code $ECODE.INVALID_PARAMETER
+  assert ($dir.stdout | str contains 'not a regular file')
 }
 
 # Smoke test: both entry points must parse. The module import above already

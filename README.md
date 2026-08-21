@@ -198,7 +198,7 @@ jobs:
 | max-length           | Int    | Optional, Maximum length (Unicode width) of the content for review. If the content length exceeds this value, the review will be skipped. Default `0` means no limit. |
 | sys-prompt           | String | Optional, System prompt corresponding to `$sys_prompt` in the payload, default value see note below                                                                   |
 | user-prompt          | String | Optional, User prompt corresponding to `$user_prompt` in the payload, default value see note below                                                                    |
-| temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. Default value is `0.3`                                                         |
+| temperature          | Number | Optional, The temperature for the model to generate the response, between `0` and `2`. If not set, the temperature parameter is omitted and the provider's default is used                                    |
 | include-patterns     | String | Optional, Comma-separated file patterns to include in the code review. No default                                                                                     |
 | exclude-patterns     | String | Optional, Comma-separated file patterns to exclude from the code review. Defaults to `pnpm-lock.yaml,package-lock.json,*.lock`                                        |
 | github-token         | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`.                                                      |
@@ -212,6 +212,7 @@ jobs:
   // `$model` default value: deepseek-v4-flash
   model: $model,
   stream: false,
+  // `temperature` is omitted unless explicitly set (flag / TEMPERATURE env / config.yml); the provider default applies
   temperature: $temperature,
   messages: [
     // `$sys_prompt` default value: You are a professional code review assistant responsible for
@@ -239,7 +240,7 @@ jobs:
 
 To perform code reviews locally (works on `macOS`, `Ubuntu`, and `Windows`), you need to install the following tools:
 
-- [`Nushell`](https://www.nushell.sh/book/installation.html). It is recommended to install the latest version (minimum version required: `0.114.1`).
+- [`Nushell`](https://www.nushell.sh/book/installation.html). It is recommended to install the latest version (minimum version required: `0.115.0`).
 - The latest version of [`awk`](https://github.com/onetrueawk/awk) or [`gawk`](https://www.gnu.org/software/gawk/) is required, with `gawk` being preferred.
 - Clone this repository to your local machine, navigate to the repository directory, and run `nu cr -h`. You should see an output similar to the following:
 
@@ -257,6 +258,7 @@ Flags:
   -f, --diff-from <string>: Git diff starting commit SHA
   -t, --diff-to <string>: Git diff ending commit SHA
   -c, --patch-cmd <string>: The `git show` or `git diff` command to get the diff content, for local CR only
+  -F, --patch-file <string>: Location of the patch file to review, for local CR only
   -l, --max-length <int>: Maximum length of the content for review, 0 means no limit.
   -m, --model <string>: Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   -b, --base-url <string>: DeepSeek API base URL, fallback to BASE_URL env var
@@ -265,7 +267,7 @@ Flags:
   -u, --user-prompt <string>: Default to $DEFAULT_OPTIONS.USER_PROMPT,
   -i, --include <string>: Comma separated file patterns to include in the code review
   -x, --exclude <string>: Comma separated file patterns to exclude in the code review
-  -T, --temperature <float>: Temperature for the model, between `0` and `2`, default value `0.3`
+  -T, --temperature <float>: Temperature for the model, between `0` and `2`, omitted and provider default is used when not set
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command
