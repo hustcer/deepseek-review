@@ -48,7 +48,7 @@ def submit-review-to-pr [
   review_body: string,
 ] {
   if ($repo | is-empty) or ($pr_number | is-empty) {
-    print $'(ansi r)Repo or PR number is empty, cannot submit review.(ansi reset)'
+    print $'(ansi r)Repo or PR number is empty, cannot submit review.(ansi rst)'
     exit $ECODE.INVALID_PARAMETER
   }
 
@@ -60,7 +60,7 @@ def submit-review-to-pr [
     ...$HTTP_HEADERS
   ]
 
-  print $'Posting review to: (ansi g)($review_url)(ansi reset)'
+  print $'Posting review to: (ansi g)($review_url)(ansi rst)'
 
   try {
     let response = http post -e -f -t application/json -H $headers $review_url {
@@ -71,18 +71,18 @@ def submit-review-to-pr [
     let status = $response | get -o status | default 0
 
     if $status >= 200 and $status < 300 {
-      print $'Review submitted successfully! HTTP (ansi g)($status)(ansi reset)'
+      print $'Review submitted successfully! HTTP (ansi g)($status)(ansi rst)'
     } else {
-      print $'(ansi r)Failed to submit review. HTTP Status: ($status)(ansi reset)'
+      print $'(ansi r)Failed to submit review. HTTP Status: ($status)(ansi rst)'
       let err_body = $response | get -o body | default ''
       if ($err_body | is-not-empty) {
-        print $'(ansi r)Response body:(ansi reset)'
+        print $'(ansi r)Response body:(ansi rst)'
         print $err_body
       }
       exit $ECODE.SERVER_ERROR
     }
   } catch {|err|
-    print $'(ansi r)Failed to submit review to PR — network or connection error:(ansi reset)'
+    print $'(ansi r)Failed to submit review to PR — network or connection error:(ansi rst)'
     $err | table -e | print
     exit $ECODE.SERVER_ERROR
   }
@@ -176,7 +176,7 @@ export def --env deepseek-review [
   $env.GH_TOKEN = $gh_token | default $env.GITHUB_TOKEN?
 
   if $is_action and ($pr_number | is-not-empty) and ($repo | is-not-empty) and (is-pr-locked $repo $pr_number) {
-    print $'(ansi y)PR #($pr_number) is locked, skipping review.(ansi reset)'
+    print $'(ansi y)PR #($pr_number) is locked, skipping review.(ansi rst)'
     exit $ECODE.SUCCESS
   }
 
@@ -184,7 +184,7 @@ export def --env deepseek-review [
   let hint = if not $is_action and ($pr_number | is-empty) {
     $'🚀 Initiate the code review by DeepSeek AI for local changes ...'
   } else {
-    $'🚀 Initiate the code review by DeepSeek AI for PR (ansi g)#($pr_number)(ansi reset) in (ansi g)($repo)(ansi reset) ...'
+    $'🚀 Initiate the code review by DeepSeek AI for PR (ansi g)#($pr_number)(ansi rst) in (ansi g)($repo)(ansi rst) ...'
   }
   print $hint; print -n (char nl)
   if ($pr_number | is-empty) {
@@ -198,7 +198,7 @@ export def --env deepseek-review [
              --patch-file $patch_file)
   let length = $content | str stats | get unicode-width
   if ($max_length != 0) and ($length > $max_length) {
-    print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
+    print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi rst)'
     exit $ECODE.SUCCESS
   }
 
@@ -207,17 +207,17 @@ export def --env deepseek-review [
     let response = try {
       http get -H $CHAT_HEADER 'https://api.deepseek.com/user/balance'
     } catch {
-      print $'(ansi r)Error fetching deepseek balance(ansi reset)'
+      print $'(ansi r)Error fetching deepseek balance(ansi rst)'
       exit $ECODE.SERVER_ERROR
     }
     let is_available = $response | get is_available? | default false
     if not $is_available {
-      print $'(ansi r)DeepSeek API balance is not available. ($response)(ansi reset)'
+      print $'(ansi r)DeepSeek API balance is not available. ($response)(ansi rst)'
       exit $ECODE.CONDITION_NOT_SATISFIED
     }
   }
 
-  print $'Review content length: (ansi g)($length)(ansi reset), current max length: (ansi g)($max_length)(ansi reset)'
+  print $'Review content length: (ansi g)($length)(ansi rst), current max length: (ansi g)($max_length)(ansi rst)'
   let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
   let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
   let user_content = if ($comment | is-not-empty) {
@@ -236,12 +236,12 @@ export def --env deepseek-review [
   }
   let payload = if $temperature == null { $payload } else { $payload | insert temperature $temperature }
   if $debug { print $'(char nl)Code Changes:'; hr-line; print $content }
-  print $'(char nl)Waiting for response from (ansi g)($url)(ansi reset) ...'
+  print $'(char nl)Waiting for response from (ansi g)($url)(ansi rst) ...'
   if $stream { streaming-output $url $payload --headers $CHAT_HEADER --debug=$debug; return }
 
   let response = http post -e -H $CHAT_HEADER -t application/json $url $payload
   if ($response | is-empty) {
-    print $'(ansi r)Oops, No response returned from ($url) ...(ansi reset)'
+    print $'(ansi r)Oops, No response returned from ($url) ...(ansi rst)'
     exit $ECODE.SERVER_ERROR
   }
   if $debug { print $'DeepSeek Model Response:'; hr-line; $response | table -e | print }
@@ -262,7 +262,7 @@ export def --env deepseek-review [
   match $output_mode {
     'action' => {
       submit-review-to-pr $repo $pr_number $result
-      print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi reset) review result was submitted as a review.'
+      print $'✅ Code review finished！PR (ansi g)#($pr_number)(ansi rst) review result was submitted as a review.'
     }
     'file' => { write-review-to-file $output $setting $result $response }
     _ => { print $'Code Review Result:'; hr-line; print $result }
@@ -295,9 +295,9 @@ def write-review-to-file [
   ]
   try {
     $content_sections | str join (char nl) | save --force $file
-    print $'Code Review Result saved to (ansi g)($file)(ansi reset)'
+    print $'Code Review Result saved to (ansi g)($file)(ansi rst)'
   } catch {|err|
-    print $'(ansi r)Failed to save review result: (ansi reset)'
+    print $'(ansi r)Failed to save review result: (ansi rst)'
     $err | table -e | print
   }
 }
@@ -305,7 +305,7 @@ def write-review-to-file [
 # Validate the DeepSeek API token
 def validate-token [token?: string, --pr-number: string, --repo: string] {
   if ($token | is-empty) {
-    print $'(ansi r)Please provide your DeepSeek API token by setting `CHAT_TOKEN` or passing it as an argument.(ansi reset)'
+    print $'(ansi r)Please provide your DeepSeek API token by setting `CHAT_TOKEN` or passing it as an argument.(ansi rst)'
     if ($pr_number | is-not-empty) { submit-review-to-pr $repo $pr_number $NO_TOKEN_TIP }
     exit $ECODE.INVALID_PARAMETER
   }
@@ -316,7 +316,7 @@ def validate-token [token?: string, --pr-number: string, --repo: string] {
 def validate-temperature [temp?: float] {
   if $temp == null { return }
   if ($temp < 0) or ($temp > 2) {
-    print $'(ansi r)Invalid temperature value, should be in the range of 0 to 2.(ansi reset)'
+    print $'(ansi r)Invalid temperature value, should be in the range of 0 to 2.(ansi rst)'
     exit $ECODE.INVALID_PARAMETER
   }
   $temp
@@ -349,7 +349,7 @@ def streaming-output [
             exit $ECODE.SERVER_ERROR
           }
         }
-      | try { lines } catch { print $'(ansi r)Error Happened ...(ansi reset)'; exit $ECODE.SERVER_ERROR }
+      | try { lines } catch { print $'(ansi r)Error Happened ...(ansi rst)'; exit $ECODE.SERVER_ERROR }
   ) {
     if ($line | is-empty) { continue }
     # An SSE line starting with `:` is a comment — heartbeats such as
@@ -398,7 +398,7 @@ def parse-line [] {
       $line | from json
     }
   } catch {
-    print -e $'(ansi r)Unrecognized content:(ansi reset) ($line)'
+    print -e $'(ansi r)Unrecognized content:(ansi rst) ($line)'
     exit $ECODE.SERVER_ERROR
   }
 }

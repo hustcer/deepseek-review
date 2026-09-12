@@ -43,7 +43,7 @@ export def prepare-awk [] {
     return 'gawk'
   }
   if (not $awk_installed) and (not $gawk_installed) {
-    print $'(ansi r)Neither `awk` nor `gawk` is installed, please install the latest version of `gawk`.(ansi reset)'
+    print $'(ansi r)Neither `awk` nor `gawk` is installed, please install the latest version of `gawk`.(ansi rst)'
     exit $ECODE.MISSING_BINARY
   }
   print $'Current awk version: (get-awk-ver awk)'
@@ -132,7 +132,7 @@ export def is-safe-git [cmd: string] {
   # Reject embedded newlines/CR outright. `nu -c`/a shell would treat a second
   # line as its own command, and line-oriented matchers (see below) can mask it.
   if ($normalized_cmd =~ r#'[\r\n]'#) {
-    print $'(ansi r)Invalid git command: it must not contain newline characters.(ansi reset)'
+    print $'(ansi r)Invalid git command: it must not contain newline characters.(ansi rst)'
     return false
   }
 
@@ -143,13 +143,13 @@ export def is-safe-git [cmd: string] {
   let git_cmd_pattern = '^git +(show|diff)(?: +(?:[a-zA-Z0-9_\-\.~/]+(?::[a-zA-Z0-9_\-\.\*\/]+)?)){0,3}(?: +(?::[!]?)?[a-zA-Z0-9_\-\.\*\/]+){0,2}$'
 
   if ($normalized_cmd !~ $git_cmd_pattern) {
-    print $'(ansi r)Invalid git command format. (ansi g)Only simple `git show` or `git diff` commands are allowed.(ansi reset)'
+    print $'(ansi r)Invalid git command format. (ansi g)Only simple `git show` or `git diff` commands are allowed.(ansi rst)'
     return false
   }
 
   let argv = $normalized_cmd | split row -r ' +'
   if ($argv | skip 2 | any {|arg| $arg | str starts-with '-' }) {
-    print $'(ansi r)Invalid git command: git options are not allowed in patch commands.(ansi reset)'
+    print $'(ansi r)Invalid git command: git options are not allowed in patch commands.(ansi rst)'
     return false
   }
   true
