@@ -141,6 +141,15 @@ def get-patch-diff [
   # no spaces, quotes, metacharacters, or control characters, so splitting on
   # spaces is safe here. Pathspecs like `nu/*` / `:!nu/*` reach git verbatim.
   let argv = $cmd | str trim | split row -r ' +'
+  # `git show` on a merge commit emits `diff --cc` (or no patch at all) instead
+  # of a normal `diff --git` patch. `-m` asks git to show one diff per parent,
+  # which keeps local review of merge commits useful and makes the e2e suite
+  # deterministic on feature branches whose checked-out HEAD is a merge commit.
+  let argv = if ($argv | get 1) == 'show' {
+    [$argv.0 $argv.1 '-m'] ++ ($argv | skip 2)
+  } else {
+    $argv
+  }
   ^($argv | first) ...($argv | skip 1)
 }
 

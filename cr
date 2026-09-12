@@ -19,6 +19,7 @@ def main [
   --patch-cmd(-c): string,  # The `git show` or `git diff` command to get the diff content, for local CR only
   --patch-file(-F): string,  # Location of the patch file to review, for local CR only
   --max-length(-l): int,    # Maximum length of the content for review, 0 means no limit.
+  --max-tokens(-K): int,    # Maximum amount of tokens allowed for the model in a single code review.
   --model(-m): string,      # Model name, or read from CHAT_MODEL env var, `deepseek-v4-flash` by default
   --base-url(-b): string,   # DeepSeek API base URL, fallback to BASE_URL env var
   --chat-url(-U): string,   # DeepSeek Model chat full API URL, e.g. http://localhost:11535/api/chat
@@ -49,6 +50,7 @@ def main [
       --patch-file=$patch_file
       --pr-number=$pr_number
       --max-length=$max_length
+      --max-tokens=$max_tokens
       --sys-prompt=$sys_prompt
       --user-prompt=$user_prompt
       --temperature=$temperature
