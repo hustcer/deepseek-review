@@ -1,5 +1,5 @@
 use std/assert
-use std/testing *
+use utils.nu [run_tests]
 
 # Project level consistency checks: things that are not any single command's
 # behavior but silently rot when one file is updated and its twin is not.
@@ -9,7 +9,6 @@ def parse-check [snippet: string] {
   ^$nu.current-exe -n -c $"($snippet); print PARSE-OK" | complete
 }
 
-@test
 def 'modules：every nu module parses on its own' [] {
   # `nu/release.nu` is imported by the Justfile only, so nothing else in the
   # suite would notice a parse error in it until someone tried to cut a release.
@@ -22,7 +21,6 @@ def 'modules：every nu module parses on its own' [] {
   }
 }
 
-@test
 def 'flags：every cr flag is documented in both READMEs' [] {
   # Read the signature out of a subprocess so `main` is not defined into this
   # suite's scope; cwd is the repo root, same as the other entry point checks.
@@ -42,7 +40,6 @@ def 'flags：every cr flag is documented in both READMEs' [] {
   }
 }
 
-@test
 def 'action：every declared input is consumed by the composite step' [] {
   # An input that nothing reads is a silently ignored option for every user of
   # the action.
@@ -52,7 +49,6 @@ def 'action：every declared input is consumed by the composite step' [] {
   assert equal $unused [] $'unused action inputs: ($unused | str join ", ")'
 }
 
-@test
 def 'action：required inputs and branding stay declared' [] {
   let action = open action.yaml
   assert equal $action.inputs.chat-token.required true
@@ -64,7 +60,6 @@ def 'action：required inputs and branding stay declared' [] {
   for step in $nu_steps { assert equal $step.shell 'nu {0}' }
 }
 
-@test
 def 'meta：the action tag matches the package version' [] {
   # `make-release` tags with `actionVer` and derives the floating major tag from
   # it, so a mismatch here ships a release under the wrong tag.
@@ -74,7 +69,6 @@ def 'meta：the action tag matches the package version' [] {
   assert equal $meta.name 'deepseek-review'
 }
 
-@test
 def 'meta：the READMEs point at the current major tag' [] {
   let meta = open meta.json
   let major = $meta.actionVer | split row '.' | first
@@ -82,4 +76,16 @@ def 'meta：the READMEs point at the current major tag' [] {
     let content = open -r $readme
     assert ($content | str contains $'hustcer/deepseek-review@($major)') $'($readme) does not reference ($major)'
   }
+}
+
+def main [] {
+  cd ($env.FILE_PWD | path dirname)
+  run_tests $env.PROCESS_PATH [
+    { name: "modules：every nu module parses on its own", execute: { modules：every nu module parses on its own } }
+    { name: "flags：every cr flag is documented in both READMEs", execute: { flags：every cr flag is documented in both READMEs } }
+    { name: "action：every declared input is consumed by the composite step", execute: { action：every declared input is consumed by the composite step } }
+    { name: "action：required inputs and branding stay declared", execute: { action：required inputs and branding stay declared } }
+    { name: "meta：the action tag matches the package version", execute: { meta：the action tag matches the package version } }
+    { name: "meta：the READMEs point at the current major tag", execute: { meta：the READMEs point at the current major tag } }
+  ]
 }

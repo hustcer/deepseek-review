@@ -1,5 +1,5 @@
 use std/assert
-use std/testing *
+use utils.nu [run_tests]
 use ../nu/common.nu [is-installed, windows?]
 
 # End to end coverage for the two output paths of `deepseek-review`, driven by a
@@ -14,10 +14,7 @@ const MOCK = 'tests/resources/mock-chat-server.mjs'
 # fail to start — the log never gets its `PORT=` line, the review then hits an
 # empty port and fails downstream. The suite is short enough that serial
 # execution costs little.
-# [strategy]
-def e2e-serial []: nothing -> record {
-  { threads: 1 }
-}
+# The shared runner executes the explicit test list sequentially.
 
 # Start the mock in the requested mode and wait for it to publish its port
 def start-mock [dir: string, mode: string, dump?: string] {
@@ -60,7 +57,6 @@ def run-review [port: string, args: string] {
   )
 }
 
-@before-all
 def setup [] {
   let dir = $nu.temp-dir | path join $'dsr-e2e-(random chars -l 8)'
   mkdir $dir
@@ -79,13 +75,11 @@ def skip-e2e? [ctx: record]: nothing -> bool {
   false
 }
 
-@after-all
 def teardown [] {
   let dir = $in.dir
   if ($dir | path exists) { rm -rf $dir }
 }
 
-@test
 def 'streaming：prints reasoning and review under their own banners' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -105,7 +99,6 @@ def 'streaming：prints reasoning and review under their own banners' [] {
   assert equal ($out | str contains '[DONE]') false
 }
 
-@test
 def 'streaming：each banner is printed exactly once' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -118,7 +111,6 @@ def 'streaming：each banner is printed exactly once' [] {
   assert equal ($lines | where $it =~ 'Review Details:' | length) 1
 }
 
-@test
 def 'streaming：a single reasoning chunk does not repeat the banner' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -135,7 +127,6 @@ def 'streaming：a single reasoning chunk does not repeat the banner' [] {
   assert ($result.stdout | ansi strip | str contains 'REASON-ONLY-CHUNK')
 }
 
-@test
 def 'streaming：a malformed chunk exits with SERVER_ERROR' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -151,7 +142,6 @@ def 'streaming：a malformed chunk exits with SERVER_ERROR' [] {
   assert equal ($result.stderr | str contains 'Eval block failed') false
 }
 
-@test
 def 'streaming：an error object response exits with SERVER_ERROR' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -162,7 +152,6 @@ def 'streaming：an error object response exits with SERVER_ERROR' [] {
   assert equal $result.exit_code 3
 }
 
-@test
 def 'streaming：sends stream true and the configured model and prompts' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -188,7 +177,6 @@ def 'streaming：sends stream true and the configured model and prompts' [] {
 # An unset temperature must not reach the wire at all, so the provider's own
 # default applies. Only the key's absence proves it: a null-valued key would
 # still serialize as `"temperature": null` and be rejected by strict providers.
-@test
 def 'streaming：temperature is omitted from the payload when not set' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -204,7 +192,6 @@ def 'streaming：temperature is omitted from the payload when not set' [] {
 # 0 is a legitimate temperature, not an "unset" marker — the omission above keys
 # off `== null` precisely so an explicit 0.0 still reaches the provider. Pin it,
 # because a rewrite that keys off falsiness instead would silently drop it.
-@test
 def 'streaming：an explicit temperature of 0 is still sent' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -217,7 +204,6 @@ def 'streaming：an explicit temperature of 0 is still sent' [] {
   assert equal (open $dump | get temperature) 0.0
 }
 
-@test
 def 'streaming：a PR comment is passed through in its own tags' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -233,7 +219,6 @@ def 'streaming：a PR comment is passed through in its own tags' [] {
   assert ($content | str contains '</comment>')
 }
 
-@test
 def 'file output：writes the review, the reasoning details and the token usage' [] {
   let ctx = $in
   if (skip-e2e? $ctx) { return }
@@ -255,4 +240,21 @@ def 'file output：writes the review, the reasoning details and the token usage'
 
   # Writing to a file must switch the request out of streaming mode.
   assert equal (open $dump | get stream) false
+}
+
+def main [] {
+  cd ($env.FILE_PWD | path dirname)
+  let ctx = setup
+  run_tests $env.PROCESS_PATH [
+    { name: "streaming：prints reasoning and review under their own banners", execute: { $ctx | streaming：prints reasoning and review under their own banners } }
+    { name: "streaming：each banner is printed exactly once", execute: { $ctx | streaming：each banner is printed exactly once } }
+    { name: "streaming：a single reasoning chunk does not repeat the banner", execute: { $ctx | streaming：a single reasoning chunk does not repeat the banner } }
+    { name: "streaming：a malformed chunk exits with SERVER_ERROR", execute: { $ctx | streaming：a malformed chunk exits with SERVER_ERROR } }
+    { name: "streaming：an error object response exits with SERVER_ERROR", execute: { $ctx | streaming：an error object response exits with SERVER_ERROR } }
+    { name: "streaming：sends stream true and the configured model and prompts", execute: { $ctx | streaming：sends stream true and the configured model and prompts } }
+    { name: "streaming：temperature is omitted from the payload when not set", execute: { $ctx | streaming：temperature is omitted from the payload when not set } }
+    { name: "streaming：an explicit temperature of 0 is still sent", execute: { $ctx | streaming：an explicit temperature of 0 is still sent } }
+    { name: "streaming：a PR comment is passed through in its own tags", execute: { $ctx | streaming：a PR comment is passed through in its own tags } }
+    { name: "file output：writes the review, the reasoning details and the token usage", execute: { $ctx | file output：writes the review, the reasoning details and the token usage } }
+  ] --cleanup { $ctx | teardown } --skip=(skip-e2e? $ctx)
 }
