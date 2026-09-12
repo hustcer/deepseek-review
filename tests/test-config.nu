@@ -1,5 +1,5 @@
 use std/assert
-use std/testing *
+use utils.nu [run_tests]
 use ../nu/config.nu [config-check, config-load]
 
 # `config-check` reports every problem by printing a hint and calling `exit`, so
@@ -46,7 +46,6 @@ def valid-config [] {
   }
 }
 
-@before-all
 def setup [] {
   let dir = $nu.temp-dir | path join $'dsr-config-(random chars -l 8)'
   mkdir $dir
@@ -78,18 +77,15 @@ def setup [] {
   }
 }
 
-@after-all
 def teardown [] {
   let dir = $in.dir
   if ($dir | path exists) { rm -rf $dir }
 }
 
-@test
 def 'config-check：accepts a fully populated config' [] {
   assert equal (check-config $in.valid | get exit_code) 0
 }
 
-@test
 def 'config-check：the shipped config.example.yml is valid' [] {
   # Users are told to copy this file verbatim. If it ever drifts out of the
   # rules `config-check` enforces (two enabled models in a group, a renamed
@@ -97,14 +93,12 @@ def 'config-check：the shipped config.example.yml is valid' [] {
   assert equal (check-config 'config.example.yml' | get exit_code) 0
 }
 
-@test
 def 'config-check：a missing config file reports MISSING_DEPENDENCY' [] {
   let result = check-config ($in.dir | path join 'does-not-exist.yml')
   assert equal $result.exit_code 7
   assert ($result.stdout | str contains 'does not exist')
 }
 
-@test
 def 'config-check：rejects a missing or unknown prompt key' [] {
   let ctx = $in
   let missing = check-config $ctx.no_prompt_key
@@ -116,7 +110,6 @@ def 'config-check：rejects a missing or unknown prompt key' [] {
   assert ($unknown.stdout | str contains 'is missing in `prompts.user`')
 }
 
-@test
 def 'config-check：a config without a prompts section fails gracefully' [] {
   # Regression: `$options.prompts` used to be a hard cell path, so omitting the
   # section raised a raw `Cannot find column` instead of the intended hint.
@@ -126,7 +119,6 @@ def 'config-check：a config without a prompts section fails gracefully' [] {
   assert equal ($result.stderr | str contains 'Cannot find column') false
 }
 
-@test
 def 'config-check：rejects a missing or unknown provider' [] {
   let ctx = $in
   # Regression: `$options.settings.provider` was a hard cell path too.
@@ -140,7 +132,6 @@ def 'config-check：rejects a missing or unknown provider' [] {
   assert ($unknown.stdout | str contains 'does not exist in `providers`')
 }
 
-@test
 def 'config-check：a config without a providers section fails gracefully' [] {
   let result = check-config $in.no_providers
   assert equal $result.exit_code 6
@@ -148,14 +139,12 @@ def 'config-check：a config without a providers section fails gracefully' [] {
   assert equal ($result.stderr | str contains 'Cannot find column') false
 }
 
-@test
 def 'config-check：every provider needs a name, token and models' [] {
   let result = check-config $in.empty_token
   assert equal $result.exit_code 6
   assert ($result.stdout | str contains 'token')
 }
 
-@test
 def 'config-check：each model group needs exactly one enabled model' [] {
   let ctx = $in
   let none = check-config $ctx.no_enabled
@@ -167,14 +156,12 @@ def 'config-check：each model group needs exactly one enabled model' [] {
   assert ($two.stdout | str contains 'one and only one enabled model')
 }
 
-@test
 def 'config-check：every model needs a name' [] {
   let result = check-config $in.nameless_model
   assert equal $result.exit_code 6
   assert ($result.stdout | str contains 'Model name is missing')
 }
 
-@test
 def 'config-load：exports the settings as environment variables' [] {
   config-load --config $in.valid
   assert equal $env.CHAT_TOKEN 'ds-token'
@@ -189,7 +176,6 @@ def 'config-load：exports the settings as environment variables' [] {
   assert equal $env.DEFAULT_GITHUB_REPO 'hustcer/deepseek-review'
 }
 
-@test
 def 'config-load：picks the enabled model of the selected provider only' [] {
   # `ollama-local` also has an enabled model; only the provider named in
   # `settings.provider` may contribute one.
@@ -198,7 +184,6 @@ def 'config-load：picks the enabled model of the selected provider only' [] {
   assert equal $env.CHAT_URL null
 }
 
-@test
 def 'config-load：resolves a model by name or by alias' [] {
   let file = $in.valid
   config-load --config $file --model 'deepseek-reasoner'
@@ -211,14 +196,12 @@ def 'config-load：resolves a model by name or by alias' [] {
   assert equal $env.CHAT_MODEL 'deepseek-v4-flash'
 }
 
-@test
 def 'config-load：an unknown model name is passed through untouched' [] {
   # Lets users try a model that is not in their config without editing it first.
   config-load --config $in.valid --model 'some/brand-new-model'
   assert equal $env.CHAT_MODEL 'some/brand-new-model'
 }
 
-@test
 def 'config-load：optional settings keys may be omitted' [] {
   # Regression: `$settings.max-length` and friends were hard cell paths, so a
   # trimmed down config.yml crashed with `Cannot find column`. Missing keys must
@@ -233,7 +216,6 @@ def 'config-load：optional settings keys may be omitted' [] {
   assert equal $env.CHAT_MODEL 'deepseek-v4-flash'
 }
 
-@test
 def 'config-load：an unresolvable provider yields null model envs' [] {
   # `config-check` normally rejects this first, but `config-load` is callable on
   # its own and must not blow up on a record without a `models` column.
@@ -242,4 +224,27 @@ def 'config-load：an unresolvable provider yields null model envs' [] {
   assert equal $env.BASE_URL null
   # No `--model` was given, so there is nothing to fall back to either.
   assert equal $env.CHAT_MODEL null
+}
+
+def main [] {
+  cd ($env.FILE_PWD | path dirname)
+  let ctx = setup
+  run_tests $env.PROCESS_PATH [
+    { name: "config-check：accepts a fully populated config", execute: { $ctx | config-check：accepts a fully populated config } }
+    { name: "config-check：the shipped config.example.yml is valid", execute: { $ctx | config-check：the shipped config.example.yml is valid } }
+    { name: "config-check：a missing config file reports MISSING_DEPENDENCY", execute: { $ctx | config-check：a missing config file reports MISSING_DEPENDENCY } }
+    { name: "config-check：rejects a missing or unknown prompt key", execute: { $ctx | config-check：rejects a missing or unknown prompt key } }
+    { name: "config-check：a config without a prompts section fails gracefully", execute: { $ctx | config-check：a config without a prompts section fails gracefully } }
+    { name: "config-check：rejects a missing or unknown provider", execute: { $ctx | config-check：rejects a missing or unknown provider } }
+    { name: "config-check：a config without a providers section fails gracefully", execute: { $ctx | config-check：a config without a providers section fails gracefully } }
+    { name: "config-check：every provider needs a name, token and models", execute: { $ctx | config-check：every provider needs a name, token and models } }
+    { name: "config-check：each model group needs exactly one enabled model", execute: { $ctx | config-check：each model group needs exactly one enabled model } }
+    { name: "config-check：every model needs a name", execute: { $ctx | config-check：every model needs a name } }
+    { name: "config-load：exports the settings as environment variables", execute: { $ctx | config-load：exports the settings as environment variables } }
+    { name: "config-load：picks the enabled model of the selected provider only", execute: { $ctx | config-load：picks the enabled model of the selected provider only } }
+    { name: "config-load：resolves a model by name or by alias", execute: { $ctx | config-load：resolves a model by name or by alias } }
+    { name: "config-load：an unknown model name is passed through untouched", execute: { $ctx | config-load：an unknown model name is passed through untouched } }
+    { name: "config-load：optional settings keys may be omitted", execute: { $ctx | config-load：optional settings keys may be omitted } }
+    { name: "config-load：an unresolvable provider yields null model envs", execute: { $ctx | config-load：an unresolvable provider yields null model envs } }
+  ] --cleanup { $ctx | teardown }
 }

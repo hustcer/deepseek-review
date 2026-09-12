@@ -49,9 +49,9 @@ code-review *OPTIONS:
   @overlay use {{ join(DEEPSEEK_REVIEW_PATH, 'nu', 'review.nu') }}; \
     deepseek-review {{OPTIONS}}
 
-# Run the test cases locally by nutest
+# Run all standalone Nushell test suites
 test:
-  @use $'($nu.default-config-dir)/lib/nutest' *; run-tests --fail
+  @nu --no-config-file tests/run.nu
 
 # Plugins need to be registered only once after nu v0.61
 _setup:

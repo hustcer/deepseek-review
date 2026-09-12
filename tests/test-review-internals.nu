@@ -1,5 +1,5 @@
 use std/assert
-use std/testing *
+use utils.nu [run_tests]
 
 # `source` rather than `use`: parse-line / coalesce-reasoning / validate-* /
 # write-review-to-file are the real logic behind the streaming and file output
@@ -14,20 +14,17 @@ def run-review-snippet [snippet: string] {
   ^$nu.current-exe -n -c $"source nu/review.nu; ($snippet)" | complete
 }
 
-@before-all
 def setup [] {
   let dir = $nu.temp-dir | path join $'dsr-review-(random chars -l 8)'
   mkdir $dir
   { dir: $dir }
 }
 
-@after-all
 def teardown [] {
   let dir = $in.dir
   if ($dir | path exists) { rm -rf $dir }
 }
 
-@test
 def 'coalesce-reasoning：prefers reasoning_content over reasoning' [] {
   # Providers disagree on the field name: DeepSeek sends `reasoning_content`,
   # OpenRouter and friends send `reasoning`.
@@ -37,39 +34,33 @@ def 'coalesce-reasoning：prefers reasoning_content over reasoning' [] {
   assert equal ({ reasoning_content: null, reasoning: 'r' } | coalesce-reasoning) 'r'
 }
 
-@test
 def 'coalesce-reasoning：is null when neither field is present' [] {
   assert equal ({ content: 'c' } | coalesce-reasoning) null
   assert equal ({} | coalesce-reasoning) null
 }
 
-@test
 def 'coalesce-reasoning：an empty reasoning_content is not a fallback trigger' [] {
   # `default` only fires on null, so an explicit '' wins. The streaming loop
   # guards with `is-not-empty` afterwards, which is what makes this safe.
   assert equal ({ reasoning_content: '', reasoning: 'r' } | coalesce-reasoning) ''
 }
 
-@test
 def 'parse-line：strips the SSE data prefix' [] {
   assert equal ('data: {"a":1}' | parse-line) { a: 1 }
   assert equal ('data: {"choices":[{"delta":{"content":"hi"}}]}' | parse-line | get choices.0.delta.content) 'hi'
 }
 
-@test
 def 'parse-line：accepts bare JSON from local Ollama' [] {
   assert equal ('{"a":2}' | parse-line) { a: 2 }
   assert equal ('{"message":{"content":"hi"}}' | parse-line | get message.content) 'hi'
 }
 
-@test
 def 'parse-line：only a leading data prefix is stripped' [] {
   # `str substring 6..` is unconditional once the `^data: ` anchor matches, so
   # a `data: ` appearing inside the payload must not be touched.
   assert equal ('{"a":"data: x"}' | parse-line | get a) 'data: x'
 }
 
-@test
 def 'parse-line：unparsable content exits with SERVER_ERROR' [] {
   # A truncated SSE chunk is the realistic failure: the review must stop with a
   # diagnosable exit code rather than carry on against a half decoded payload.
@@ -81,7 +72,6 @@ def 'parse-line：unparsable content exits with SERVER_ERROR' [] {
   assert equal $bare.exit_code 3
 }
 
-@test
 def 'parse-line：from json is lenient about bare scalars' [] {
   # `from json` happily reads an unquoted word as a JSON string, so plain-text
   # error bodies come back as a string rather than raising. That is tolerable
@@ -91,7 +81,6 @@ def 'parse-line：from json is lenient about bare scalars' [] {
   assert equal (('not json at all' | parse-line) | describe) 'string'
 }
 
-@test
 def 'IGNORED_MESSAGES：the terminator line is filtered by exact match' [] {
   # The lookup in the streaming loop is an exact whole line match, so only a
   # line spelled exactly like a key is dropped here. Heartbeats whose text
@@ -104,14 +93,12 @@ def 'IGNORED_MESSAGES：the terminator line is filtered by exact match' [] {
   assert equal ($IGNORED_MESSAGES | get -o 'data: [DONE] ') null
 }
 
-@test
 def 'validate-temperature：accepts the whole documented range' [] {
   assert equal (validate-temperature 0.0) 0.0
   assert equal (validate-temperature 0.3) 0.3
   assert equal (validate-temperature 2.0) 2.0
 }
 
-@test
 def 'validate-temperature：rejects values outside 0..2' [] {
   assert equal (run-review-snippet 'validate-temperature (-0.1)' | get exit_code) 6
   assert equal (run-review-snippet 'validate-temperature 2.1' | get exit_code) 6
@@ -120,7 +107,6 @@ def 'validate-temperature：rejects values outside 0..2' [] {
   assert ($result.stdout | str contains 'Invalid temperature value')
 }
 
-@test
 def 'validate-token：passes the token through, rejects an empty one' [] {
   assert equal (validate-token 'sk-abc') 'sk-abc'
   # Without a PR number nothing is posted to GitHub, so this stays offline.
@@ -129,7 +115,6 @@ def 'validate-token：passes the token through, rejects an empty one' [] {
   assert ($result.stdout | str contains 'CHAT_TOKEN')
 }
 
-@test
 def 'write-review-to-file：appends .md only when it is missing' [] {
   let dir = $in.dir
   let plain = $dir | path join 'no-ext'
@@ -141,7 +126,6 @@ def 'write-review-to-file：appends .md only when it is missing' [] {
   assert equal ($'($with_ext).md' | path exists) false
 }
 
-@test
 def 'write-review-to-file：writes the review body and settings, hides the repo' [] {
   let dir = $in.dir
   let file = $dir | path join 'full.md'
@@ -161,7 +145,6 @@ def 'write-review-to-file：writes the review body and settings, hides the repo'
   assert equal ($content | str contains 'include') false
 }
 
-@test
 def 'write-review-to-file：omits the token usage section when usage is absent' [] {
   let dir = $in.dir
   let file = $dir | path join 'no-usage.md'
@@ -171,7 +154,6 @@ def 'write-review-to-file：omits the token usage section when usage is absent' 
   assert equal ($content | str contains '## Token Usage') false
 }
 
-@test
 def 'DEFAULT_OPTIONS：defaults stay in sync with action.yaml' [] {
   # `action.yaml` hard codes the same defaults for GitHub Action users. When one
   # side is bumped and the other is not, local and CI reviews silently run
@@ -188,14 +170,12 @@ def run-review [args: string] {
   ^$nu.current-exe -n -c $"use nu/review.nu [deepseek-review]; deepseek-review ($args)" | complete
 }
 
-@test
 def 'deepseek-review：refuses to start without a token' [] {
   let result = run-review ''
   assert equal $result.exit_code 6
   assert ($result.stdout | str contains 'CHAT_TOKEN')
 }
 
-@test
 def 'deepseek-review：validates the temperature before doing any work' [] {
   # Ordered ahead of `get-diff` so a typo is reported instantly rather than
   # after a PR download.
@@ -206,7 +186,6 @@ def 'deepseek-review：validates the temperature before doing any work' [] {
   assert equal (run-review 'tok --temperature (-1.0)' | get exit_code) 6
 }
 
-@test
 def 'deepseek-review：an env token satisfies the token check' [] {
   # The guard must accept `CHAT_TOKEN` as documented, not just the positional
   # argument — so this run has to get past it and fail later, on the temperature.
@@ -218,4 +197,30 @@ def 'deepseek-review：an env token satisfies the token check' [] {
   assert equal $result.exit_code 6
   assert ($result.stdout | str contains 'Invalid temperature value')
   assert equal ($result.stdout | str contains 'Please provide your DeepSeek API token') false
+}
+
+def main [] {
+  cd ($env.FILE_PWD | path dirname)
+  let ctx = setup
+  run_tests $env.PROCESS_PATH [
+    { name: "coalesce-reasoning：prefers reasoning_content over reasoning", execute: { $ctx | coalesce-reasoning：prefers reasoning_content over reasoning } }
+    { name: "coalesce-reasoning：is null when neither field is present", execute: { $ctx | coalesce-reasoning：is null when neither field is present } }
+    { name: "coalesce-reasoning：an empty reasoning_content is not a fallback trigger", execute: { $ctx | coalesce-reasoning：an empty reasoning_content is not a fallback trigger } }
+    { name: "parse-line：strips the SSE data prefix", execute: { $ctx | parse-line：strips the SSE data prefix } }
+    { name: "parse-line：accepts bare JSON from local Ollama", execute: { $ctx | parse-line：accepts bare JSON from local Ollama } }
+    { name: "parse-line：only a leading data prefix is stripped", execute: { $ctx | parse-line：only a leading data prefix is stripped } }
+    { name: "parse-line：unparsable content exits with SERVER_ERROR", execute: { $ctx | parse-line：unparsable content exits with SERVER_ERROR } }
+    { name: "parse-line：from json is lenient about bare scalars", execute: { $ctx | parse-line：from json is lenient about bare scalars } }
+    { name: "IGNORED_MESSAGES：the terminator line is filtered by exact match", execute: { $ctx | IGNORED_MESSAGES：the terminator line is filtered by exact match } }
+    { name: "validate-temperature：accepts the whole documented range", execute: { $ctx | validate-temperature：accepts the whole documented range } }
+    { name: "validate-temperature：rejects values outside 0..2", execute: { $ctx | validate-temperature：rejects values outside 0..2 } }
+    { name: "validate-token：passes the token through, rejects an empty one", execute: { $ctx | validate-token：passes the token through, rejects an empty one } }
+    { name: "write-review-to-file：appends .md only when it is missing", execute: { $ctx | write-review-to-file：appends .md only when it is missing } }
+    { name: "write-review-to-file：writes the review body and settings, hides the repo", execute: { $ctx | write-review-to-file：writes the review body and settings, hides the repo } }
+    { name: "write-review-to-file：omits the token usage section when usage is absent", execute: { $ctx | write-review-to-file：omits the token usage section when usage is absent } }
+    { name: "DEFAULT_OPTIONS：defaults stay in sync with action.yaml", execute: { $ctx | DEFAULT_OPTIONS：defaults stay in sync with action.yaml } }
+    { name: "deepseek-review：refuses to start without a token", execute: { $ctx | deepseek-review：refuses to start without a token } }
+    { name: "deepseek-review：validates the temperature before doing any work", execute: { $ctx | deepseek-review：validates the temperature before doing any work } }
+    { name: "deepseek-review：an env token satisfies the token check", execute: { $ctx | deepseek-review：an env token satisfies the token check } }
+  ] --cleanup { $ctx | teardown }
 }
