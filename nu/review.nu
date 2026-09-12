@@ -201,6 +201,22 @@ export def --env deepseek-review [
     print $'(char nl)(ansi r)The content length ($length) exceeds the maximum limit ($max_length), review skipped.(ansi reset)'
     exit $ECODE.SUCCESS
   }
+
+  let parsed_url = try { $url | url parse } catch { null }
+  if ($parsed_url | is-not-empty) and ($parsed_url.host? | default '') == 'api.deepseek.com' {
+    let response = try {
+      http get -H $CHAT_HEADER 'https://api.deepseek.com/user/balance'
+    } catch {
+      print $'(ansi r)Error fetching deepseek balance(ansi reset)'
+      exit $ECODE.SERVER_ERROR
+    }
+    let is_available = $response | get is_available? | default false
+    if not $is_available {
+      print $'(ansi r)DeepSeek API balance is not available. ($response)(ansi reset)'
+      exit $ECODE.CONDITION_NOT_SATISFIED
+    }
+  }
+
   print $'Review content length: (ansi g)($length)(ansi reset), current max length: (ansi g)($max_length)(ansi reset)'
   let sys_prompt = $sys_prompt | default $env.SYSTEM_PROMPT? | default $DEFAULT_OPTIONS.SYS_PROMPT
   let user_prompt = $user_prompt | default $env.USER_PROMPT? | default $DEFAULT_OPTIONS.USER_PROMPT
