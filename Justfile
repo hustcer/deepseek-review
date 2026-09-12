@@ -53,6 +53,6 @@ code-review *OPTIONS:
 test:
   @nu --no-config-file tests/run.nu
 
-# Plugins need to be registered only once after nu v0.61
+# Plugins need to be registered only once
 _setup:
-  @register -e json {{ join(NU_DIR, _query_plugin) }}
+  @plugin add {{ join(NU_DIR, _query_plugin) }}

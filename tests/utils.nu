@@ -42,9 +42,9 @@ export def print_summary [results: list<record<name: string, result: string>>] {
   let skipped = $results | where result == 'SKIP' | length
 
   if ($failure == 0) {
-    print $"\n(ansi g)Testing completed: ($success) of ($count) were successful(ansi reset)\n"
+    print $"\n(ansi g)Testing completed: ($success) of ($count) were successful(ansi rst)\n"
   } else {
-    print $"\n(ansi r)Testing completed: ($failure) of ($count) failed(ansi reset)\n"
+    print $"\n(ansi r)Testing completed: ($failure) of ($count) failed(ansi rst)\n"
   }
   if $skipped > 0 { print $'Skipped: ($skipped)' }
 }
