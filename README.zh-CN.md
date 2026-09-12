@@ -202,6 +202,24 @@ jobs:
 | watch-mention        | String | 可选，当 PR 评论中提及此字符串时触发代码审查，例如 `@github-actions`。需要在 workflow 中启用 `issue_comment` 事件 |
 | allowed-associations | String | 可选，允许通过 PR 评论触发审查的 `author_association` 列表（逗号分隔），默认为 `OWNER,MEMBER,COLLABORATOR`        |
 
+## 动作输出
+
+该动作会将以下输出写入 `$GITHUB_OUTPUT`，供后续步骤使用：
+
+| 名称                   | 类型   | 描述                                                                                                 |
+| ---------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| review_status          | String | 代码审查状态：`success`、`skipped` 或 `failed`。                                                      |
+| review_result          | String | 代码审查结果文本，仅在 `review_status` 为 `success` 时输出。                                          |
+| pr_number              | String | 正在审查的 Pull Request 编号（如果适用）。                                                            |
+| repo                   | String | 正在审查的仓库，例如 `hustcer/deepseek-review`。                                                      |
+| review_id              | String | 成功提交审查后返回的 GitHub Review ID。                                                               |
+| review_url             | String | 已提交审查的 GitHub HTML URL。                                                                        |
+| model                  | String | 代码审查使用的模型。                                                                                  |
+| content_length         | Int    | 被审查 diff 内容的 Unicode 宽度。                                                                     |
+| usage_prompt_tokens    | Int    | API 上报的提示词 token 消耗（如果有）。                                                               |
+| usage_completion_tokens | Int    | API 上报的补全 token 消耗（如果有）。                                                                 |
+| usage_total_tokens     | Int    | API 上报的总 token 消耗（如果有）。                                                                   |
+
 DeepSeek 接口调用入参:
 
 ```js
