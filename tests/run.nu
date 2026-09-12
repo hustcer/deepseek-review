@@ -17,7 +17,11 @@ def main [--summary: path] {
       $failed_suites = $failed_suites | append ($suite | path basename)
     }
   }
-  let results = glob ($report_dir | path join '*.json') | each { open $in } | flatten
+  # Keep native path separators and glob metacharacters out of the pattern.
+  let results = do {
+    cd $report_dir
+    glob '*.json' | each { open $in } | flatten
+  }
   let totals = {
     total: ($results | length),
     passed: ($results | where result == 'PASS' | length),
