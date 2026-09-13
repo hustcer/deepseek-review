@@ -1,6 +1,6 @@
 
 use std/assert
-use std/testing *
+use utils.nu [run_tests]
 use ../nu/diff.nu [get-diff]
 use ../nu/review.nu [gh-headers]
 use ../nu/common.nu [ECODE]
@@ -10,7 +10,6 @@ use ../nu/review.nu [deepseek-review]
 # Get the unicode width of the input string
 def get-uw [] { $in | str stats | get unicode-width }
 
-@before-all
 def setup [] {
   let awk_bin = (prepare-awk)
   let patch = open -r tests/resources/diff.patch
@@ -18,7 +17,6 @@ def setup [] {
   { patch: $patch, awk: $awk_bin, SHA: 22e7b71 }
 }
 
-@test
 def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git 'git diff') true
   assert equal (is-safe-git 'git show') true
@@ -66,7 +64,6 @@ def 'is-safe-git：should work as expected' [] {
   assert equal (is-safe-git $'git diff(char tab)HEAD') false
 }
 
-@test
 def 'generate-include-regex：should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
@@ -76,7 +73,6 @@ def 'generate-include-regex：should work as expected' [] {
   assert equal ($patch | ^$awk_bin (generate-include-regex [.env*, *.md, nu/*]) | get-uw) 6871
 }
 
-@test
 def 'generate-include-regex：escapes regex metacharacters' [] {
   # C1: metacharacters in patterns must be escaped so they match literally; `*`
   # expands to `.*`. Previously the escape map never fired (keys had a spurious
@@ -86,7 +82,6 @@ def 'generate-include-regex：escapes regex metacharacters' [] {
   assert equal (generate-exclude-regex ['*.nu']) '/^diff --git/{p=/^diff --git a\/(.*\.nu) b\//}!p'
 }
 
-@test
 def 'generate-include-regex：matches complete diff header path' [] {
   let awk_bin = $in.awk
   let nu_patch = "diff --git a/foo.nu b/foo.nu\nindex 000..111 100644\n--- a/foo.nu\n+++ b/foo.nu\n@@ -1 +1 @@\n-a\n+b\n"
@@ -96,7 +91,6 @@ def 'generate-include-regex：matches complete diff header path' [] {
   assert equal ($nux_patch | ^$awk_bin (generate-include-regex ['*.nu']) | is-empty) true
 }
 
-@test
 def 'generate-include-regex：double-star matches root and nested paths' [] {
   let awk_bin = $in.awk
   let root_patch = "diff --git a/action.yaml b/action.yaml\nindex 000..111 100644\n--- a/action.yaml\n+++ b/action.yaml\n@@ -1 +1 @@\n-a\n+b\n"
@@ -106,7 +100,6 @@ def 'generate-include-regex：double-star matches root and nested paths' [] {
   assert equal ($nested_patch | ^$awk_bin (generate-include-regex ['**/*.yaml']) | is-not-empty) true
 }
 
-@test
 def 'generate-exclude-regex：double-star excludes root and nested paths' [] {
   let awk_bin = $in.awk
   let root_patch = "diff --git a/action.yaml b/action.yaml\nindex 000..111 100644\n--- a/action.yaml\n+++ b/action.yaml\n@@ -1 +1 @@\n-a\n+b\n"
@@ -116,7 +109,6 @@ def 'generate-exclude-regex：double-star excludes root and nested paths' [] {
   assert equal ($nested_patch | ^$awk_bin (generate-exclude-regex ['**/*.yaml']) | is-empty) true
 }
 
-@test
 def 'generate-exclude-regex：should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
@@ -124,7 +116,6 @@ def 'generate-exclude-regex：should work as expected' [] {
   assert equal ($patch | ^$awk_bin (generate-exclude-regex [.env*, *.md, nu/*]) | get-uw) (1350 + 99)
 }
 
-@test
 def 'both include and exclude should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
@@ -134,7 +125,6 @@ def 'both include and exclude should work as expected' [] {
     | get-uw) 2576
 }
 
-@test
 def 'both exclude and include should work as expected' [] {
   let patch = $in.patch
   let awk_bin = $in.awk
@@ -223,7 +213,6 @@ def 'get-diff：get patch from remote PR should work' [] {
                   | str join "\n" | get-uw) 7923
 }
 
-@test
 def 'get-diff：get patch from remote PR with include should work' [] {
   $env.GH_TOKEN = $env.GITHUB_TOKEN?
   const repo = 'hustcer/deepseek-review'
@@ -232,7 +221,6 @@ def 'get-diff：get patch from remote PR with include should work' [] {
   assert equal ($patch | get-uw) 2576
 }
 
-@test
 def 'get-diff：get patch from remote PR with exclude should work' [] {
   $env.GH_TOKEN = $env.GITHUB_TOKEN?
   const repo = 'hustcer/deepseek-review'
@@ -241,7 +229,6 @@ def 'get-diff：get patch from remote PR with exclude should work' [] {
   assert equal ($patch | get-uw) 555
 }
 
-@test
 def 'get-diff：get patch from remote PR with exclude & include should work' [] {
   $env.GH_TOKEN = $env.GITHUB_TOKEN?
   const repo = 'hustcer/deepseek-review'
@@ -250,7 +237,6 @@ def 'get-diff：get patch from remote PR with exclude & include should work' [] 
   assert equal ($patch | get-uw) 2576
 }
 
-@test
 def 'get-diff：should read patch from file with --patch-file' [] {
   let expected = open --raw tests/resources/diff.patch
   let content = get-diff --patch-file tests/resources/diff.patch
@@ -260,7 +246,6 @@ def 'get-diff：should read patch from file with --patch-file' [] {
   assert equal $content $expected
 }
 
-@test
 def 'get-diff：--patch-file takes priority over --patch-cmd' [] {
   # Assert on the exact content, not on a `diff --git` substring: `git show HEAD`
   # emits that marker too, so a `str contains` check passes even when --patch-cmd
@@ -273,7 +258,6 @@ def 'get-diff：--patch-file takes priority over --patch-cmd' [] {
 
 # Both rejections run in a subprocess because they end in `exit`, which would
 # otherwise take the whole test run with them.
-@test
 def 'get-diff：--patch-file rejects a missing path and a directory' [] {
   let run = {|path: string|
     ^$nu.current-exe -n -c $"use nu/diff.nu [get-diff]; get-diff --patch-file '($path)'" | complete
@@ -295,7 +279,6 @@ def 'get-diff：--patch-file rejects a missing path and a directory' [] {
 # the subprocess assert below covers `cr`, whose parse error would otherwise be
 # invisible because nothing in the suite imports it. Guards against regressions
 # like `--flag: bool` annotations (see PR #261).
-@test
 def 'deepseek-review：module parses and registers entry command with expected flags' [] {
   let entry = scope commands | where name == 'deepseek-review' | get -o 0
   assert ($entry | is-not-empty)
@@ -303,14 +286,12 @@ def 'deepseek-review：module parses and registers entry command with expected f
   assert ('temperature' in $flags)
 }
 
-@test
 def 'cr：entry script must parse' [] {
   let result = (^$nu.current-exe -n -c 'source cr; print PARSE-OK' | complete)
   assert equal $result.exit_code 0
   assert ($result.stdout | str contains 'PARSE-OK')
 }
 
-@test
 def 'glob-to-regex：alternation is grouped so every pattern stays anchored' [] {
   # Regression: the alternation used to be spliced in ungrouped, so
   # `a\/x|y b\/` parsed as `(a\/x)|(y b\/)`. Every branch but the last lost the
@@ -336,7 +317,6 @@ def 'glob-to-regex：alternation is grouped so every pattern stays anchored' [] 
   assert equal (hdr 'nu/lib.rs' | ^$awk_bin (generate-include-regex ['*.md', 'nu/*']) | is-not-empty) true
 }
 
-@test
 def 'glob-to-regex：single char wildcard and empty pattern list' [] {
   assert equal (generate-include-regex ['a?.nu']) '/^diff --git/{p=/^diff --git a\/(a.\.nu) b\//}p'
   # An empty list yields the bare prefix/suffix, which matches no diff header —
@@ -344,7 +324,6 @@ def 'glob-to-regex：single char wildcard and empty pattern list' [] {
   assert equal (generate-include-regex []) '/^diff --git/{p=/^diff --git a\/ b\//}p'
 }
 
-@test
 def 'glob-to-regex：double star prefix is optional, not required' [] {
   let awk_bin = $in.awk
   def hdr [path: string] {
@@ -356,7 +335,6 @@ def 'glob-to-regex：double star prefix is optional, not required' [] {
   assert equal (hdr 'a.yml' | ^$awk_bin (generate-include-regex ['**/*.yaml']) | is-empty) true
 }
 
-@test
 def 'is-safe-git：rejects command substitution and expansion syntax' [] {
   # None of `$ ( ) { } ` ' "` are in the allowed token character class, so the
   # grammar match is what stops these — keep it that way.
@@ -368,7 +346,6 @@ def 'is-safe-git：rejects command substitution and expansion syntax' [] {
   assert equal (is-safe-git 'git diff HEAD & rm -rf x') false
 }
 
-@test
 def 'is-safe-git：only show and diff subcommands are allowed' [] {
   assert equal (is-safe-git '') false
   assert equal (is-safe-git 'git') false
@@ -381,17 +358,47 @@ def 'is-safe-git：only show and diff subcommands are allowed' [] {
   assert equal (is-safe-git 'rm -rf / git diff') false
 }
 
-@test
 def 'is-safe-git：normalizes case and surrounding whitespace' [] {
   assert equal (is-safe-git '  git diff HEAD  ') true
   assert equal (is-safe-git 'GIT DIFF HEAD') true
   assert equal (is-safe-git 'git  diff   HEAD') true
 }
 
-@test
 def 'is-safe-git：caps the number of accepted arguments' [] {
   # The grammar allows at most 3 ref-ish tokens plus 2 pathspecs.
   assert equal (is-safe-git 'git diff a b c') true
   assert equal (is-safe-git 'git diff a b c nu/* :!tests/*') true
   assert equal (is-safe-git 'git diff a b c d e f') false
+}
+
+def main [] {
+  cd ($env.FILE_PWD | path dirname)
+  let ctx = setup
+  run_tests $env.PROCESS_PATH [
+    { name: "is-safe-git：should work as expected", execute: { $ctx | is-safe-git：should work as expected } }
+    { name: "generate-include-regex：should work as expected", execute: { $ctx | generate-include-regex：should work as expected } }
+    { name: "generate-include-regex：escapes regex metacharacters", execute: { $ctx | generate-include-regex：escapes regex metacharacters } }
+    { name: "generate-include-regex：matches complete diff header path", execute: { $ctx | generate-include-regex：matches complete diff header path } }
+    { name: "generate-include-regex：double-star matches root and nested paths", execute: { $ctx | generate-include-regex：double-star matches root and nested paths } }
+    { name: "generate-exclude-regex：double-star excludes root and nested paths", execute: { $ctx | generate-exclude-regex：double-star excludes root and nested paths } }
+    { name: "generate-exclude-regex：should work as expected", execute: { $ctx | generate-exclude-regex：should work as expected } }
+    { name: "both include and exclude should work as expected", execute: { $ctx | both include and exclude should work as expected } }
+    { name: "both exclude and include should work as expected", execute: { $ctx | both exclude and include should work as expected } }
+    { name: "get-diff：get patch from remote PR should work", execute: { $ctx | get-diff：get patch from remote PR should work } }
+    { name: "get-diff：get patch from remote PR with include should work", execute: { $ctx | get-diff：get patch from remote PR with include should work } }
+    { name: "get-diff：get patch from remote PR with exclude should work", execute: { $ctx | get-diff：get patch from remote PR with exclude should work } }
+    { name: "get-diff：get patch from remote PR with exclude & include should work", execute: { $ctx | get-diff：get patch from remote PR with exclude & include should work } }
+    { name: "get-diff：should read patch from file with --patch-file", execute: { $ctx | get-diff：should read patch from file with --patch-file } }
+    { name: "get-diff：--patch-file takes priority over --patch-cmd", execute: { $ctx | get-diff：--patch-file takes priority over --patch-cmd } }
+    { name: "get-diff：--patch-file rejects a missing path and a directory", execute: { $ctx | get-diff：--patch-file rejects a missing path and a directory } }
+    { name: "deepseek-review：module parses and registers entry command with expected flags", execute: { $ctx | deepseek-review：module parses and registers entry command with expected flags } }
+    { name: "cr：entry script must parse", execute: { $ctx | cr：entry script must parse } }
+    { name: "glob-to-regex：alternation is grouped so every pattern stays anchored", execute: { $ctx | glob-to-regex：alternation is grouped so every pattern stays anchored } }
+    { name: "glob-to-regex：single char wildcard and empty pattern list", execute: { $ctx | glob-to-regex：single char wildcard and empty pattern list } }
+    { name: "glob-to-regex：double star prefix is optional, not required", execute: { $ctx | glob-to-regex：double star prefix is optional, not required } }
+    { name: "is-safe-git：rejects command substitution and expansion syntax", execute: { $ctx | is-safe-git：rejects command substitution and expansion syntax } }
+    { name: "is-safe-git：only show and diff subcommands are allowed", execute: { $ctx | is-safe-git：only show and diff subcommands are allowed } }
+    { name: "is-safe-git：normalizes case and surrounding whitespace", execute: { $ctx | is-safe-git：normalizes case and surrounding whitespace } }
+    { name: "is-safe-git：caps the number of accepted arguments", execute: { $ctx | is-safe-git：caps the number of accepted arguments } }
+  ]
 }

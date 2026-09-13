@@ -78,8 +78,8 @@ export def check-nushell [--debug] {
   }
   # If the current version is the latest after user upgrade, return
   if $check.current or (compare-ver $check.latest (version).version) == 0 { return }
-  print $'(char nl)                      (ansi yr) WARNING: (ansi reset) Your Nushell is (ansi r)OUTDATED(ansi reset)'
-  print $' ------------> Please upgrade Nushell to the latest version: (ansi g)($check.latest)(ansi reset) <------------'
+  print $'(char nl)                      (ansi yr) WARNING: (ansi rst) Your Nushell is (ansi r)OUTDATED(ansi rst)'
+  print $' ------------> Please upgrade Nushell to the latest version: (ansi g)($check.latest)(ansi rst) <------------'
   print -n (char nl)
 }
 
@@ -169,7 +169,7 @@ export def hr-line [
     0..<$times | reduce -f '' { |i, acc| $unit + $acc }
   }
 
-  print $'(ansi $color)(build-line $width)(if $with_arrow {'>'})(ansi reset)'
+  print $'(ansi $color)(build-line $width)(if $with_arrow {'>'})(ansi rst)'
   if $blank_line { char nl | print -n }
 }
 
@@ -180,13 +180,13 @@ export def git-check [
 ] {
   cd $dest
   if not (is-installed git) {
-    print $'You should (ansi r)INSTALL git(ansi reset) first to run this command, bye...'
+    print $'You should (ansi r)INSTALL git(ansi rst) first to run this command, bye...'
     exit $ECODE.MISSING_BINARY
   }
   # If we don't need repo check just quit now
   if ($check_repo != 0) {
     if not (is-repo) {
-      print $'Current directory is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
+      print $'Current directory is (ansi r)NOT(ansi rst) a git repo, bye...(char nl)'
       exit $ECODE.CONDITION_NOT_SATISFIED
     }
   }

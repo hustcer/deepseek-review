@@ -15,8 +15,8 @@ const SETTING_FILE = 'config.yml'
 # Check if the config.yml file exists.
 def file-exists [file: string] {
   if ($file | path exists) { return true }
-  print $'The config file (ansi r)($file)(ansi reset) does not exist. '
-  print $'Please copy the (ansi g)config.example.yml(ansi reset) file to create a new one.'
+  print $'The config file (ansi r)($file)(ansi rst) does not exist. '
+  print $'Please copy the (ansi g)config.example.yml(ansi rst) file to create a new one.'
   exit $ECODE.MISSING_DEPENDENCY
 }
 
@@ -33,7 +33,7 @@ def check-prompts [options: record] {
 def check-prompt [options: record, type: string] {
   let prompt_key = $options.settings? | default {} | get -o $'($type)-prompt' | default ''
   if ($prompt_key | is-empty) {
-    print $'(ansi r)The ($type) prompt key is missing in `settings.($type)-prompt` config.yml file.(ansi reset)'
+    print $'(ansi r)The ($type) prompt key is missing in `settings.($type)-prompt` config.yml file.(ansi rst)'
     exit $ECODE.INVALID_PARAMETER
   }
   let prompt = $options.prompts? | default {} | get -o $type
@@ -41,7 +41,7 @@ def check-prompt [options: record, type: string] {
     | where name == $prompt_key
     | get -o 0.prompt
   if ($prompt | is-empty) {
-    print $'The ($type) prompt (ansi r)($prompt_key)(ansi reset) is missing in `prompts.($type)` of config.yml file.'
+    print $'The ($type) prompt (ansi r)($prompt_key)(ansi rst) is missing in `prompts.($type)` of config.yml file.'
     exit $ECODE.INVALID_PARAMETER
   }
 }
@@ -51,7 +51,7 @@ def check-providers [options: record] {
   # settings.provider correctly configured and related provider exists
   let provider_name = $options.settings?.provider?
   if ($provider_name | is-empty) {
-    print $'(ansi r)The provider name is missing in `settings.provider` of config.yml file.(ansi reset)'
+    print $'(ansi r)The provider name is missing in `settings.provider` of config.yml file.(ansi rst)'
     exit $ECODE.INVALID_PARAMETER
   }
   let providers = $options.providers? | default []
@@ -59,7 +59,7 @@ def check-providers [options: record] {
     | where name == $provider_name
     | is-not-empty
   if not $provider_exists {
-    print $'(ansi r)The provider ($provider_name) does not exist in `providers` of config.yml file.(ansi reset)'
+    print $'(ansi r)The provider ($provider_name) does not exist in `providers` of config.yml file.(ansi rst)'
     exit $ECODE.INVALID_PARAMETER
   }
   # Each provider should have name, token and models field
@@ -70,7 +70,7 @@ def check-providers [options: record] {
   for p in $providers {
     let empties = [name token models] | where { |field| $p | get -o $field | is-empty }
     if ($empties | is-not-empty) {
-      print $'Field (ansi r)`($empties | str join ,)`(ansi reset) should not be empty for provider:'
+      print $'Field (ansi r)`($empties | str join ,)`(ansi rst) should not be empty for provider:'
       $p | table -e -t psql | print
       exit $ECODE.INVALID_PARAMETER
     }
@@ -84,7 +84,7 @@ def check-models [options: record] {
   for provider in $providers {
     let enabled_models = $provider.models | default false enabled | where enabled | length
     if ($enabled_models != 1) {
-      print $'Model group (ansi r)`($provider.name)`(ansi reset) should have one and only one enabled model.'
+      print $'Model group (ansi r)`($provider.name)`(ansi rst) should have one and only one enabled model.'
       exit $ECODE.INVALID_PARAMETER
     }
   }
@@ -92,7 +92,7 @@ def check-models [options: record] {
   for provider in $providers {
     for e in ($provider.models | enumerate) {
       if ($e.item.name? | is-empty) {
-        print $'Model name is missing for provider (ansi r)`($provider.name)` model #($e.index)(ansi reset)...'
+        print $'Model name is missing for provider (ansi r)`($provider.name)` model #($e.index)(ansi rst)...'
         exit $ECODE.INVALID_PARAMETER
       }
     }

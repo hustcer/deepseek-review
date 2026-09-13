@@ -1,5 +1,5 @@
 use std/assert
-use std/testing *
+use utils.nu [run_tests]
 use ../nu/diff.nu [get-diff]
 use ../nu/util.nu [prepare-awk]
 
@@ -32,7 +32,6 @@ def run-in-repo [dir: string, snippet: string] {
   )
 }
 
-@before-all
 def setup [] {
   let dir = $nu.temp-dir | path join $'dsr-diff-(random chars -l 8)'
   mkdir $dir
@@ -64,7 +63,6 @@ def setup [] {
   { dir: $dir, awk: $awk_bin, first: $first, second: $second }
 }
 
-@after-all
 def teardown [] {
   let dir = $in.dir
   if ($dir | path exists) { rm -rf $dir }
@@ -77,7 +75,6 @@ def diff-paths []: string -> list<string> {
   } | sort
 }
 
-@test
 def 'get-diff：diffs two local refs' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -85,7 +82,6 @@ def 'get-diff：diffs two local refs' [] {
   assert equal $paths ['action.yaml', 'docs/readme.md', 'nu/lib.nu', 'vendor/nu/deep.rs']
 }
 
-@test
 def 'get-diff：diff-to defaults to HEAD' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -94,7 +90,6 @@ def 'get-diff：diff-to defaults to HEAD' [] {
   assert equal ($without | diff-paths) ($with_to | diff-paths)
 }
 
-@test
 def 'get-diff：include keeps only the matching files' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -103,7 +98,6 @@ def 'get-diff：include keeps only the matching files' [] {
   assert equal $paths ['nu/lib.nu']
 }
 
-@test
 def 'get-diff：exclude drops only the matching files' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -111,7 +105,6 @@ def 'get-diff：exclude drops only the matching files' [] {
   assert equal $paths ['nu/lib.nu', 'vendor/nu/deep.rs']
 }
 
-@test
 def 'get-diff：include and exclude compose' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -120,7 +113,6 @@ def 'get-diff：include and exclude compose' [] {
   assert equal $paths ['nu/lib.nu', 'vendor/nu/deep.rs']
 }
 
-@test
 def 'get-diff：multi pattern includes stay anchored per pattern' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -131,7 +123,6 @@ def 'get-diff：multi pattern includes stay anchored per pattern' [] {
   assert equal $paths ['action.yaml', 'nu/lib.nu']
 }
 
-@test
 def 'get-diff：patch-cmd runs an allow listed git command' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -139,7 +130,6 @@ def 'get-diff：patch-cmd runs an allow listed git command' [] {
   assert equal $paths ['action.yaml', 'docs/readme.md', 'nu/lib.nu', 'vendor/nu/deep.rs']
 }
 
-@test
 def 'get-diff：patch-cmd arguments reach git verbatim' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -149,7 +139,6 @@ def 'get-diff：patch-cmd arguments reach git verbatim' [] {
   assert equal $paths ['nu/lib.nu']
 }
 
-@test
 def 'get-diff：falls back to the working tree diff' [] {
   let ctx = $in
   enter-repo $ctx.dir
@@ -159,7 +148,6 @@ def 'get-diff：falls back to the working tree diff' [] {
   assert equal $paths ['nu/lib.nu']
 }
 
-@test
 def 'get-diff：an unknown ref exits with INVALID_PARAMETER' [] {
   let ctx = $in
   let from = run-in-repo $ctx.dir 'get-diff --diff-from 0123456789abcdef'
@@ -170,7 +158,6 @@ def 'get-diff：an unknown ref exits with INVALID_PARAMETER' [] {
   assert equal $to.exit_code 6
 }
 
-@test
 def 'get-diff：an unsafe patch-cmd exits with INVALID_PARAMETER' [] {
   let ctx = $in
   let result = run-in-repo $ctx.dir "get-diff --patch-cmd 'git log'"
@@ -183,7 +170,6 @@ def 'get-diff：an unsafe patch-cmd exits with INVALID_PARAMETER' [] {
   assert equal (($ctx.dir | path join 'pwned.txt') | path exists) false
 }
 
-@test
 def 'get-diff：an empty diff exits successfully with a notice' [] {
   let ctx = $in
   # `HEAD` against itself produces nothing — the review is skipped, not failed.
@@ -192,14 +178,12 @@ def 'get-diff：an empty diff exits successfully with a notice' [] {
   assert ($result.stdout | str contains 'Nothing to review')
 }
 
-@test
 def 'get-diff：filtering everything out also exits successfully' [] {
   let ctx = $in
   let result = run-in-repo $ctx.dir $'get-diff --diff-from ($ctx.first) --include "*.does-not-exist"'
   assert equal $result.exit_code 0
 }
 
-@test
 def 'deepseek-review：skips the review when the diff exceeds max-length' [] {
   let ctx = $in
   # The length guard must fire before the API call, so this needs no token
@@ -211,7 +195,6 @@ def 'deepseek-review：skips the review when the diff exceeds max-length' [] {
   assert ($result.stdout | str contains 'exceeds the maximum limit')
 }
 
-@test
 def 'deepseek-review：a max-length of 0 means no limit' [] {
   let ctx = $in
   # 0 must not be treated as "empty" and must not short circuit the review; the
@@ -221,4 +204,26 @@ def 'deepseek-review：a max-length of 0 means no limit' [] {
     deepseek-review sk-placeholder --diff-from ($ctx.first) --max-length 0 --chat-url http://127.0.0.1:1/nope'
   assert equal ($result.stdout | str contains 'exceeds the maximum limit') false
   assert ($result.stdout | str contains 'Waiting for response')
+}
+
+def main [] {
+  cd ($env.FILE_PWD | path dirname)
+  let ctx = setup
+  run_tests $env.PROCESS_PATH [
+    { name: "get-diff：diffs two local refs", execute: { $ctx | get-diff：diffs two local refs } }
+    { name: "get-diff：diff-to defaults to HEAD", execute: { $ctx | get-diff：diff-to defaults to HEAD } }
+    { name: "get-diff：include keeps only the matching files", execute: { $ctx | get-diff：include keeps only the matching files } }
+    { name: "get-diff：exclude drops only the matching files", execute: { $ctx | get-diff：exclude drops only the matching files } }
+    { name: "get-diff：include and exclude compose", execute: { $ctx | get-diff：include and exclude compose } }
+    { name: "get-diff：multi pattern includes stay anchored per pattern", execute: { $ctx | get-diff：multi pattern includes stay anchored per pattern } }
+    { name: "get-diff：patch-cmd runs an allow listed git command", execute: { $ctx | get-diff：patch-cmd runs an allow listed git command } }
+    { name: "get-diff：patch-cmd arguments reach git verbatim", execute: { $ctx | get-diff：patch-cmd arguments reach git verbatim } }
+    { name: "get-diff：falls back to the working tree diff", execute: { $ctx | get-diff：falls back to the working tree diff } }
+    { name: "get-diff：an unknown ref exits with INVALID_PARAMETER", execute: { $ctx | get-diff：an unknown ref exits with INVALID_PARAMETER } }
+    { name: "get-diff：an unsafe patch-cmd exits with INVALID_PARAMETER", execute: { $ctx | get-diff：an unsafe patch-cmd exits with INVALID_PARAMETER } }
+    { name: "get-diff：an empty diff exits successfully with a notice", execute: { $ctx | get-diff：an empty diff exits successfully with a notice } }
+    { name: "get-diff：filtering everything out also exits successfully", execute: { $ctx | get-diff：filtering everything out also exits successfully } }
+    { name: "deepseek-review：skips the review when the diff exceeds max-length", execute: { $ctx | deepseek-review：skips the review when the diff exceeds max-length } }
+    { name: "deepseek-review：a max-length of 0 means no limit", execute: { $ctx | deepseek-review：a max-length of 0 means no limit } }
+  ] --cleanup { $ctx | teardown }
 }

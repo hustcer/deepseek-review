@@ -26,7 +26,7 @@ export def get-diff [
       --patch-file $patch_file)
 
   if ($content | is-empty) {
-    print $'(ansi g)Nothing to review.(ansi reset)'
+    print $'(ansi g)Nothing to review.(ansi rst)'
     exit $ECODE.SUCCESS
   }
 
@@ -52,19 +52,19 @@ def get-diff-content [
     get-ref-diff $diff_from --diff-to $diff_to
   } else if ($patch_file | is-not-empty) {
     if not ($patch_file | path exists) {
-      print $'(ansi r)The patch file ($patch_file) does not exist, bye...(ansi reset)(char nl)'
+      print $'(ansi r)The patch file ($patch_file) does not exist, bye...(ansi rst)(char nl)'
       exit $ECODE.INVALID_PARAMETER
     }
     # `path exists` is also true for a directory, and `open --raw` on one throws a
     # raw IO error instead of our message. `path expand` resolves symlinks first,
     # so a symlinked patch file still reads as `file`.
     if ($patch_file | path expand | path type) != 'file' {
-      print $'(ansi r)The patch file ($patch_file) is not a regular file, bye...(ansi reset)(char nl)'
+      print $'(ansi r)The patch file ($patch_file) is not a regular file, bye...(ansi rst)(char nl)'
       exit $ECODE.INVALID_PARAMETER
     }
     open --raw $patch_file
   } else if not (git-check $local_repo --check-repo=1) {
-    print $'Current directory ($local_repo) is (ansi r)NOT(ansi reset) a git repo, bye...(char nl)'
+    print $'Current directory ($local_repo) is (ansi r)NOT(ansi rst) a git repo, bye...(char nl)'
     exit $ECODE.CONDITION_NOT_SATISFIED
   } else if ($patch_cmd | is-not-empty) {
     get-patch-diff $patch_cmd
@@ -83,7 +83,7 @@ def get-pr-diff [
   let DIFF_HEADER = [Authorization $'Bearer ($env.GH_TOKEN)' Accept application/vnd.github.v3.diff]
 
   if ($repo | is-empty) {
-    print $'(ansi r)Please provide the GitHub repository name by `--repo` option.(ansi reset)'
+    print $'(ansi r)Please provide the GitHub repository name by `--repo` option.(ansi rst)'
     exit $ECODE.INVALID_PARAMETER
   }
 
@@ -92,14 +92,14 @@ def get-pr-diff [
 
   # Check if the PR title or body contains keywords to skip the review
   if ($IGNORE_REVIEW_KEYWORDS | any {|it| $description =~ $it }) {
-    print $'(ansi r)The PR title or body contains keywords to skip the review, bye...(ansi reset)'
+    print $'(ansi r)The PR title or body contains keywords to skip the review, bye...(ansi rst)'
     exit $ECODE.SUCCESS
   }
 
   let commit_msg = http get -H $BASE_HEADER $'($GITHUB_API_BASE)/repos/($repo)/pulls/($pr_number)/commits'
                    | last | get commit.message
   if ($IGNORE_REVIEW_KEYWORDS | any {|it| $commit_msg =~ $it }) {
-    print $'(ansi r)The latest PR commit message contains keywords to skip the review, bye...(ansi reset)'
+    print $'(ansi r)The latest PR commit message contains keywords to skip the review, bye...(ansi rst)'
     exit $ECODE.SUCCESS
   }
 
@@ -114,12 +114,12 @@ def get-ref-diff [
 ] {
   # Validate the git refs
   if not (has-ref $diff_from) {
-    print $'(ansi r)The specified git ref ($diff_from) does not exist, please check it again.(ansi reset)'
+    print $'(ansi r)The specified git ref ($diff_from) does not exist, please check it again.(ansi rst)'
     exit $ECODE.INVALID_PARAMETER
   }
 
   if ($diff_to | is-not-empty) and not (has-ref $diff_to) {
-    print $'(ansi r)The specified git ref ($diff_to) does not exist, please check it again.(ansi reset)'
+    print $'(ansi r)The specified git ref ($diff_to) does not exist, please check it again.(ansi rst)'
     exit $ECODE.INVALID_PARAMETER
   }
 
@@ -152,7 +152,7 @@ def apply-file-filters [
 ] {
   mut filtered_content = $content
   let awk_bin = (prepare-awk)
-  let outdated_awk = $'If you are using an (ansi r)outdated awk version(ansi reset), please upgrade to the latest version or use gawk latest instead.'
+  let outdated_awk = $'If you are using an (ansi r)outdated awk version(ansi rst), please upgrade to the latest version or use gawk latest instead.'
 
   if ($include | is-not-empty) {
     let patterns = $include | split row ','
