@@ -32,6 +32,7 @@ jobs:
         uses: hustcer/deepseek-review@develop
         with:
           max-length: 50000
+          max-tokens: 4096
           model: 'deepseek-v4-pro'
           watch-mention: '/docker-cr'
           chat-token: ${{ secrets.CHAT_TOKEN }}
