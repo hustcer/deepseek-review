@@ -65,9 +65,9 @@ runs:
   using: 'composite'
   steps:
     - name: Setup Nu
-      uses: hustcer/setup-nu@v3.27
+      uses: hustcer/setup-nu@v3.28
       with:
-        version: 0.116.0
+        version: 0.116.1
 
     - name: DeepSeek Code Review
       shell: nu {0}
