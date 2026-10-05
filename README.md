@@ -187,6 +187,50 @@ jobs:
           base-url: 'https://models.github.ai/inference'      # Github Models API Endpoint
 ```
 
+## Enable _Thinking_ Mode for Your Model
+
+To enable thinking mode for your model, simply set `thinking` to true in your workflow or local configuration file.
+
+> [!WARNING]
+> _Thinking mode is disabled by default, because some models are not compatible with thinking mode._
+> Supported model providers are **Deepseek** and **SiliconFlow (Deepseek API)**.
+> Other providers are experimental and may produce unexpected outputs.
+
+### In Github Action
+
+```yaml
+jobs:
+  setup-deepseek-review:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@develop
+        with:
+          max-length: 50000
+          thinking: true
+          model: 'deepseek-v4-pro'
+          watch-mention: '@github-actions'
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+```
+
+### Locally
+
+Set `thinking` to true in your `config.yml`:
+
+```yaml
+settings:
+  thinking: true
+```
+
+Or pass it via the CLI flag:
+
+```sh
+cr --thinking true
+cr -g true
+```
+
 ## Input Parameters
 
 | Name                 | Type   | Description                                                                                                                                                           |
@@ -203,6 +247,7 @@ jobs:
 | github-token         | String | Optional, The `GITHUB_TOKEN` secret or personal access token to authenticate. Defaults to `${{ github.token }}`.                                                      |
 | watch-mention        | String | Optional, Trigger code review when this string is mentioned in a PR comment, e.g. `@github-actions`. Requires `issue_comment` event in the workflow.                  |
 | allowed-associations | String | Optional, Comma-separated `author_association` values allowed to trigger review via PR comment. Defaults to `OWNER,MEMBER,COLLABORATOR`.                              |
+| thinking             | String | Optional, Setting it to `true` enables thinking mode.        |
 
 **DeepSeek API Call Payload**:
 
@@ -269,6 +314,7 @@ Flags:
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command
+  -g, --thinking: Sets thinking mode for the model
 
 Parameters:
   token <string>: Your DeepSeek API token, fallback to CHAT_TOKEN env var (optional)

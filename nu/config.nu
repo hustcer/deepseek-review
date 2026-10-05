@@ -164,6 +164,7 @@ export def --env config-load [
     EXCLUDE_PATTERNS: $settings.exclude-patterns?,
     INCLUDE_PATTERNS: $settings.include-patterns?,
     DEFAULT_GITHUB_REPO: $settings.default-github-repo?,
+    THINKING: $settings.thinking?,
   }
   load-env $env_vars
   if $debug {
