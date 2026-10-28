@@ -30,6 +30,7 @@ jobs:
       - name: DeepSeek Code Review
         uses: hustcer/deepseek-review@develop
         with:
+          thinking: 'false'
           max-length: 50000
           model: 'DeepSeek-V4.1-Flash'             # Official DeepSeek flash model
           watch-mention: '@github-actions'

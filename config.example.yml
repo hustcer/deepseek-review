@@ -17,6 +17,10 @@ settings:
   # If the content length exceeds the non-zero limit, the review will be skipped
   # Note that it's unicode width not LLM token length
   max-length: 0
+  thinking: 'false'
+  # Enable thinking/reasoning for DeepSeek models, default: false
+  # Only works with DeepSeek API and compatible providers (e.g. SiliconFlow)
+  # Disable when using OpenAI, Github Models, or other non-DeepSeek endpoints
   # The temperature of the model, The value should be between 0 and 2
   # If not set, the temperature parameter is omitted and the provider's default is used
   # temperature: 1.0
