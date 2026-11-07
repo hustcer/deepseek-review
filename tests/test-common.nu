@@ -31,7 +31,8 @@ def 'compare-ver：v1.0.1 is lower than v1.1.0' [] {
 }
 
 def 'from-env：.env load should work' [] {
-  open tests/resources/.env.test | from env | load-env
+  # Read raw text so Nu's built-in dotenv parser does not parse it first.
+  open --raw tests/resources/.env.test | from env | load-env
   assert equal $env.CHAT_MODEL deepseek-v4-flash
   assert equal $env.BASE_URL https://api.deepseek.com
   assert equal $env.TEMPERATURE '1.0'

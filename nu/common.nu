@@ -84,7 +84,7 @@ export def check-nushell [--debug] {
 }
 
 # Converts a .env file into a record
-# May be used like this: open .env | load-env
+# May be used like this: open --raw .env | from env | load-env
 # Works with quoted and unquoted .env files
 export def "from env" []: string -> record {
   let input = $in
