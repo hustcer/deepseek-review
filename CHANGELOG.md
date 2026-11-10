@@ -1,6 +1,42 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.22] - 2026-11-10
+
+### Bug Fixes
+
+- Harden config parsing, streaming output, and glob regex grouping (#263)
+- Reject non-regular --patch-file paths and pin the priority test (#264)
+- Fail fast when DeepSeek API balance is unavailable (#267)
+- Replace obsolete plugin registration command
+- Fix tests for nu nightly
+
+### Features
+
+- Local code review for .patch files (#259)
+
+### Miscellaneous Tasks
+
+- Omit temperature parameter when not explicitly set (#262)
+- Use `ansi rst` instead of `ansi reset`
+- Bump nushell version to v0.116.0 (#269)
+- Bump hustcer/setup-nu to v3.28 and nushell to v0.116.1 (#273)
+- Bump hustcer/setup-nu to 3.29 (#275)
+
+### Testing
+
+- Add entry-point parse smoke tests
+- Pin the temperature omission contract from #262
+- Replace nutest with standalone Nushell runners (#268)
+
+### Deps
+
+- Bump hustcer/setup-nu to v3.26 (#260)
+- Upgrade hustcer/setup-nu to v3.27
+- Bump nushell version to 0.115.0 & bump hustcer/setup-nu to v3.27 (#265)
+- Bump nushell version to 0.115.1 (#266)
+- Upgrade nu to 0.117.0 & hustcer/setup-nu
+
 ## [1.21] - 2026-07-20
 
 ### Bug Fixes
