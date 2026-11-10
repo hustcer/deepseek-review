@@ -35,7 +35,7 @@ inputs:
     description: 'The base url of DeepSeek API.'
   sys-prompt:
     required: false
-    default: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, security vulnerabilities, and provide improvement suggestions. Clearly list the problems and recommendations in a concise manner.'
+    default: 'You are a professional code review assistant responsible for analyzing code changes in GitHub Pull Requests. Identify potential issues such as code style violations, logical errors, and security vulnerabilities, and provide actionable improvement suggestions. Keep reviews concise, clear, and focused. Avoid using `#` and `@` in ways that trigger GitHub-specific behavior. Use bold text instead of Markdown headings, and only use these symbols when required by code, syntax, file paths, or explicit references to issues, PRs, or users.'
     description: 'The system prompt for DeepSeek API.'
   user-prompt:
     required: false
