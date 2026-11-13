@@ -185,6 +185,50 @@ jobs:
           base-url: 'https://models.github.ai/inference'       # Github Models的API端点
 ```
 
+## 为你的模型启用 _思考模式_
+
+要启用模型的思考模式，只需在工作流或本地配置文件中将“thinking”设置为true。
+
+> [!WARNING]
+> _思考模式默认被禁用，因为有些模型与思考模式不兼容。_
+> 支持的模型提供商是 **Deepseek** 和 **硅基流动 （Deepseek API）**。
+> 其他模型提供商的思考模式仍是实验性的，并且可能会产生意外输出。
+
+### 在 Github Action 中
+
+```yaml
+jobs:
+  setup-deepseek-review:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    name: Code Review
+    steps:
+      - name: DeepSeek Code Review
+        uses: hustcer/deepseek-review@develop
+        with:
+          max-length: 50000
+          thinking: true
+          model: 'deepseek-v4-pro'
+          watch-mention: '@github-actions'
+          chat-token: ${{ secrets.CHAT_TOKEN }}
+```
+
+### 本地运行
+
+在你的`config.yml` 里将 `thinking` 设置为 true：
+
+```yaml
+settings:
+  thinking: true
+```
+
+或通过命令行标志传入：
+
+```sh
+cr --thinking true
+cr -g true
+```
+
 ## 输入参数
 
 | 名称                 | 类型   | 描述                                                                                                              |
@@ -201,6 +245,7 @@ jobs:
 | github-token         | String | 可选，用于访问 API 进行 PR 管理的 GitHub Token，默认为 `${{ github.token }}`                                      |
 | watch-mention        | String | 可选，当 PR 评论中提及此字符串时触发代码审查，例如 `@github-actions`。需要在 workflow 中启用 `issue_comment` 事件 |
 | allowed-associations | String | 可选，允许通过 PR 评论触发审查的 `author_association` 列表（逗号分隔），默认为 `OWNER,MEMBER,COLLABORATOR`        |
+| thinking             | String | 可选，设置为`true`启用模型的思考模式                                                                          |
 
 DeepSeek 接口调用入参:
 
@@ -266,6 +311,7 @@ Flags:
   -C, --config <string>: Config file path, default to `config.yml`
   -o, --output <string>: Output file path
   -h, --help: Display the help message for this command
+  -g, --thinking: Sets thinking mode for the model
 
 Parameters:
   token <string>: Your DeepSeek API token, fallback to CHAT_TOKEN env var (optional)

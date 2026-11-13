@@ -166,6 +166,72 @@ def 'get-diff：get patch from remote PR with exclude & include should work' [] 
   assert equal ($patch | get-uw) 2576
 }
 
+def 'thinking：flag "true" overrides env "false"' [] {
+  with-env { THINKING: "false" } {
+    let flag = "true"
+    let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+    assert equal $thinking true
+  }
+}
+
+def 'thinking：flag "false" overrides env "true"' [] {
+  with-env { THINKING: "true" } {
+    let flag = "false"
+    let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+    assert equal $thinking false
+  }
+}
+
+def 'thinking：null flag falls back to env "true"' [] {
+  with-env { THINKING: "true" } {
+    let flag = null
+    let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+    assert equal $thinking true
+  }
+}
+
+def 'thinking：null flag and no env defaults to false' [] {
+  let flag = null
+  let thinking = $flag | default (null | default "false") | into bool
+  assert equal $thinking false
+}
+
+def 'thinking：native bool true passes through into bool' [] {
+  let flag = true
+  let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+  assert equal $thinking true
+}
+
+def 'thinking：native bool false passes through into bool' [] {
+  let flag = false
+  let thinking = $flag | default ($env.THINKING? | default "false") | into bool
+  assert equal $thinking false
+}
+
+def 'thinking：payload includes thinking.type when enabled' [] {
+  let thinking = true
+  let payload = {} | if $thinking { merge { thinking: { type: 'enabled' } } } else { $in }
+  assert equal $payload.thinking.type 'enabled'
+}
+
+def 'thinking：payload sets thinking type disabled when disabled' [] {
+  let thinking = false
+  let thinking_type = if $thinking { 'enabled' } else { 'disabled' }
+  let payload = { model: 'test', stream: false, thinking: { type: $thinking_type } }
+  assert equal $payload.thinking.type 'disabled'
+  assert equal $payload.model 'test'
+}
+
+def 'thinking：payload includes thinking while preserving other fields' [] {
+  let thinking = true
+  let payload = { model: 'test', stream: false, temperature: 0.3 }
+    | if $thinking { merge { thinking: { type: 'enabled' } } } else { $in }
+  assert equal $payload.thinking.type 'enabled'
+  assert equal $payload.model 'test'
+  assert equal $payload.stream false
+  assert equal $payload.temperature 0.3
+}
+
 def 'get-diff：should read patch from file with --patch-file' [] {
   let expected = open --raw tests/resources/diff.patch
   let content = get-diff --patch-file tests/resources/diff.patch
@@ -317,6 +383,15 @@ def main [] {
     { name: "get-diff：get patch from remote PR with include should work", execute: { $ctx | get-diff：get patch from remote PR with include should work } }
     { name: "get-diff：get patch from remote PR with exclude should work", execute: { $ctx | get-diff：get patch from remote PR with exclude should work } }
     { name: "get-diff：get patch from remote PR with exclude & include should work", execute: { $ctx | get-diff：get patch from remote PR with exclude & include should work } }
+    { name: 'thinking：flag "true" overrides env "false"', execute: { $ctx | thinking：flag "true" overrides env "false" } }
+    { name: 'thinking：flag "false" overrides env "true"', execute: { $ctx | thinking：flag "false" overrides env "true" } }
+    { name: 'thinking：null flag falls back to env "true"', execute: { $ctx | thinking：null flag falls back to env "true" } }
+    { name: "thinking：null flag and no env defaults to false", execute: { $ctx | thinking：null flag and no env defaults to false } }
+    { name: "thinking：native bool true passes through into bool", execute: { $ctx | thinking：native bool true passes through into bool } }
+    { name: "thinking：native bool false passes through into bool", execute: { $ctx | thinking：native bool false passes through into bool } }
+    { name: "thinking：payload includes thinking.type when enabled", execute: { $ctx | thinking：payload includes thinking.type when enabled } }
+    { name: "thinking：payload sets thinking type disabled when disabled", execute: { $ctx | thinking：payload sets thinking type disabled when disabled } }
+    { name: "thinking：payload includes thinking while preserving other fields", execute: { $ctx | thinking：payload includes thinking while preserving other fields } }
     { name: "get-diff：should read patch from file with --patch-file", execute: { $ctx | get-diff：should read patch from file with --patch-file } }
     { name: "get-diff：--patch-file takes priority over --patch-cmd", execute: { $ctx | get-diff：--patch-file takes priority over --patch-cmd } }
     { name: "get-diff：--patch-file rejects a missing path and a directory", execute: { $ctx | get-diff：--patch-file rejects a missing path and a directory } }
